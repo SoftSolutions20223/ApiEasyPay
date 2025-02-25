@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "ubCLQ4zJ41I=",
+  "dgSpecHash": "1DuCwN8QwVY=",
   "success": true,
-  "projectFilePath": "C:\\Users\\Cristian\\source\\repos\\ApiEasyPay\\ApiEasyPay\\ApiEasyPay.csproj",
+  "projectFilePath": "C:\\Users\\Cristian\\Documents\\GitHub\\ApiEasyPay\\ApiEasyPay\\ApiEasyPay.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Cristian\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",
     "C:\\Users\\Cristian\\.nuget\\packages\\azure.identity\\1.11.4\\azure.identity.1.11.4.nupkg.sha512",

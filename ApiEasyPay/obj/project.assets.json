@@ -2638,11 +2638,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Cristian\\source\\repos\\ApiEasyPay\\ApiEasyPay\\ApiEasyPay.csproj",
+      "projectUniqueName": "C:\\Users\\Cristian\\Documents\\GitHub\\ApiEasyPay\\ApiEasyPay\\ApiEasyPay.csproj",
       "projectName": "ApiEasyPay",
-      "projectPath": "C:\\Users\\Cristian\\source\\repos\\ApiEasyPay\\ApiEasyPay\\ApiEasyPay.csproj",
+      "projectPath": "C:\\Users\\Cristian\\Documents\\GitHub\\ApiEasyPay\\ApiEasyPay\\ApiEasyPay.csproj",
       "packagesPath": "C:\\Users\\Cristian\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Cristian\\source\\repos\\ApiEasyPay\\ApiEasyPay\\obj\\",
+      "outputPath": "C:\\Users\\Cristian\\Documents\\GitHub\\ApiEasyPay\\ApiEasyPay\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\DevExpress 24.2\\Components\\Offline Packages",
