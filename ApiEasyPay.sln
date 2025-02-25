@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35527.113 d17.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiEasyPay", "ApiEasyPay\ApiEasyPay.csproj", "{F673D341-FFE4-4765-803B-3787E8263F3B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F673D341-FFE4-4765-803B-3787E8263F3B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F673D341-FFE4-4765-803B-3787E8263F3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F673D341-FFE4-4765-803B-3787E8263F3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F673D341-FFE4-4765-803B-3787E8263F3B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
