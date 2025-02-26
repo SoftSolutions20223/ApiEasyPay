@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "9JIW9EO71lB2z1E/vkuC3JJUf6FOADvAy0FOWc0UzwA=",
+  "Source": "ApiEasyPay",
+  "BasePath": "_content/ApiEasyPay",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}

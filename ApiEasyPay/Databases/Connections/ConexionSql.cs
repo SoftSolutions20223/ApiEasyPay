@@ -239,7 +239,7 @@ namespace ApiEasyPay.Databases.Connections
             }
             catch (Exception e)
             {
-                jsonResult.Append("[{\"msg\":" + e.Message + "}]");
+                jsonResult.Append("{\"msg\":" + e.Message + "}");
             }
             finally
             {

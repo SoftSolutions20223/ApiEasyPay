@@ -4,18 +4,43 @@ using ApiEasyPay.Seguridad.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins",
+        builder =>
+        {
+            builder.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+        });
+});
 
+// Add services to the container.
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-ApiEasyPay.Seguridad.Helpers.ConfigurationOptions.Initialize(builder.Configuration);
-builder.Services.AddSingleton(sp => new ConexionMongo(
-    ConfigurationOptions.Instance.StrConexBdMongo,
-    ConfigurationOptions.Instance.DatabaseNameMongo
-));
+
+// Inicializar configuración
+ConfigurationOptions.Initialize(builder.Configuration);
+
+// Registrar servicios de conexión
+builder.Services.AddScoped<ConexionSql>(_ => {
+    var conexion = new ConexionSql();
+    conexion.BdPrincipal = ConfigurationOptions.Instance.StrConexBdSql;
+    return conexion;
+});
+
+builder.Services.AddSingleton<ConexionMongo>(_ =>
+    new ConexionMongo(
+        ConfigurationOptions.Instance.StrConexBdMongo,
+        ConfigurationOptions.Instance.DatabaseNameMongo
+    )
+);
+
+// Registrar servicios de aplicación
 builder.Services.AddScoped<LoginService>();
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -24,17 +49,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.UseCors("AllowAllOrigins");
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
 
-app.MapGet("/AppEasyPayV4957*_ConexBd", () =>
-{
-    // Accede a la cadena de conexión según el entorno
-    string cadenaConexion = ApiEasyPay.Seguridad.Helpers.ConfigurationOptions.Instance.StrConexBdSql;
+app.MapGet("/AppEasyPayV4957*_ConexBd", () => {
+    string cadenaConexion = ConfigurationOptions.Instance.StrConexBdSql;
     return Results.Ok(cadenaConexion);
 });
 

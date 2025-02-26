@@ -2,6 +2,7 @@
 using ApiEasyPay.Databases.Connections;
 using ApiEasyPay.Seguridad.Helpers;
 using Microsoft.Data.SqlClient;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.IO.Compression;
 using System.Security.Cryptography;
@@ -25,7 +26,7 @@ namespace ApiEasyPay.Aplication.Services
 
         public async Task<SesionStatusDTO> VerificarEstadoSesionAsync(string usuario)
         {
-            var comando = new SqlCommand("SELECT * FROM (SELECT Cod, Token, SesionActiva, 'J' as TipoUsuario FROM Jefes WHERE Usuario = @Usuario UNION ALL SELECT Cod, Token, SesionActiva, 'C' as TipoUsuario FROM Cobrador WHERE Usuario = @Usuario) as Users");
+            var comando = new SqlCommand("SELECT * FROM (SELECT Cod, Token, SesionActiva, 'J' as TipoUsuario FROM Jefes WHERE Usuario = @Usuario UNION ALL SELECT Cod, Token, SesionActiva, 'C' as TipoUsuario FROM Cobrador WHERE Usuario = @Usuario) as Users FOR JSON PATH");
             comando.Parameters.AddWithValue("@Usuario", usuario);
 
             string resultado = _conexionSql.SqlJsonComand(true, comando);
@@ -34,9 +35,11 @@ namespace ApiEasyPay.Aplication.Services
             if (string.IsNullOrEmpty(resultado) || resultado == "[]")
                 return new SesionStatusDTO { Existe = false, UsuarioExiste = false };
 
-            var jsonObj = JArray.Parse(resultado).FirstOrDefault();
-            if (jsonObj == null)
+            var jsonArray = JArray.Parse(resultado);
+            if (jsonArray.Count == 0)
                 return new SesionStatusDTO { Existe = false, UsuarioExiste = false };
+
+            var jsonObj = jsonArray.First();
 
             return new SesionStatusDTO
             {
@@ -61,7 +64,15 @@ namespace ApiEasyPay.Aplication.Services
 
             if (string.IsNullOrEmpty(resultado) || resultado == "[]")
                 return null;
-
+            if (resultado.Contains("msg"))
+            {
+                JObject msgRes = JObject.Parse(resultado);
+                JObject ObjetoError = new JObject();
+                ObjetoError["MensajeError"] = msgRes["msg"];
+                ObjetoError["FuncionOrigen"] = "IniciarSesionAsync";
+                ObjetoError["ProcedimientoError"] = comando.CommandText;
+                return null;
+            }
             var jsonObj = JToken.Parse(resultado);
 
             // Verificar si es un mensaje de error
@@ -143,57 +154,109 @@ namespace ApiEasyPay.Aplication.Services
 
         public async Task<MemoryStream> GenerarArchivoSincronizacionAsync(int cobradorId)
         {
-            var datosCompletos = new JObject();
+            var outputStream = new MemoryStream();
 
-            // 1. Datos del cobrador (incluye token)
-            var cmdCobrador = new SqlCommand("SELECT * FROM Cobrador WHERE Cod = @Cod");
-            cmdCobrador.Parameters.AddWithValue("@Cod", cobradorId);
-            string datosCobrador = _conexionSql.SqlJsonComand(true, cmdCobrador);
-
-            if (!string.IsNullOrEmpty(datosCobrador) && datosCobrador != "[]")
-            {
-                datosCompletos["cobrador"] = JArray.Parse(datosCobrador).FirstOrDefault();
-            }
-
-            // 2. Datos del jefe
-            var cmdJefe = new SqlCommand(@"
-        SELECT j.Nombres, j.Apellidos, j.Telefono, j.Documento, j.Direccion, j.Correo, j.Cod, j.NumeroCobradores, j.Domingos
-        FROM Cobrador c
-        INNER JOIN Jefes j ON c.Jefe = j.Cod
-        WHERE c.Cod = @Cod");
-            cmdJefe.Parameters.AddWithValue("@Cod", cobradorId);
-            string datosJefe = _conexionSql.SqlJsonComand(true, cmdJefe);
-
-            if (!string.IsNullOrEmpty(datosJefe) && datosJefe != "[]")
-            {
-                datosCompletos["jefe"] = JArray.Parse(datosJefe).FirstOrDefault();
-            }
-
-            // 3. Datos operativos
-            var tablas = new[] { "Clientes", "Creditos", "Cuotas", "Bolsa", "RegDiarioCuotas", "ValoresBolsa", "Amortizaciones", "ViewCobros" };
-
-            foreach (var tabla in tablas)
-            {
-                var cmd = new SqlCommand($"SELECT * FROM {tabla} WHERE Cobrador = @Cobrador");
-                cmd.Parameters.AddWithValue("@Cobrador", cobradorId);
-                string datos = _conexionSql.SqlJsonComand(false, cmd);
-
-                if (!string.IsNullOrEmpty(datos) && datos != "[]")
-                {
-                    datosCompletos[tabla.ToLower()] = JArray.Parse(datos);
-                }
-            }
-
-            // Comprimir
-            var stream = new MemoryStream();
-            using (var gzipStream = new GZipStream(stream, CompressionMode.Compress, true))
+            using (var gzipStream = new GZipStream(outputStream, CompressionMode.Compress, true))
             using (var writer = new StreamWriter(gzipStream))
+            using (var jsonWriter = new JsonTextWriter(writer))
             {
-                await writer.WriteAsync(datosCompletos.ToString(Formatting.None));
+                jsonWriter.WriteStartObject();
+
+                // 1. Datos del cobrador con SqlDataReader
+                using (var conn = new SqlConnection(_conexionSql.BdPrincipal))
+                {
+                    await conn.OpenAsync();
+                    using (var cmd = new SqlCommand("SELECT * FROM Cobrador WHERE Cod = @Cod", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@Cod", cobradorId);
+                        using (var reader = await cmd.ExecuteReaderAsync())
+                        {
+                            jsonWriter.WritePropertyName("cobrador");
+                            await SerializarReaderComoObjetoAsync(reader, jsonWriter);
+                        }
+                    }
+
+                    // 2. Datos del jefe
+                    using (var cmd = new SqlCommand(@"
+                SELECT j.Nombres, j.Apellidos, j.Telefono, j.Documento, j.Direccion, j.Correo, j.Cod, j.NumeroCobradores, j.Domingos
+                FROM Cobrador c INNER JOIN Jefes j ON c.Jefe = j.Cod WHERE c.Cod = @Cod", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@Cod", cobradorId);
+                        using (var reader = await cmd.ExecuteReaderAsync())
+                        {
+                            jsonWriter.WritePropertyName("jefe");
+                            await SerializarReaderComoObjetoAsync(reader, jsonWriter);
+                        }
+                    }
+                }
+
+                // 3. Datos operativos
+                using (var conn = new SqlConnection(_conexionSql.BdCliente))
+                {
+                    await conn.OpenAsync();
+                    var tablas = new[] { "Clientes", "Creditos", "Cuotas", "Bolsa", "RegDiarioCuotas", "ValoresBolsa", "Amortizaciones", "ViewCobros" };
+
+                    foreach (var tabla in tablas)
+                    {
+                        using (var cmd = new SqlCommand($"SELECT * FROM {tabla} WHERE Cobrador = @Cobrador", conn))
+                        {
+                            cmd.Parameters.AddWithValue("@Cobrador", cobradorId);
+                            using (var reader = await cmd.ExecuteReaderAsync())
+                            {
+                                jsonWriter.WritePropertyName(tabla.ToLower());
+                                await SerializarReaderComoArrayAsync(reader, jsonWriter);
+                            }
+                        }
+                    }
+                }
+
+                jsonWriter.WriteEndObject();
             }
 
-            stream.Position = 0;
-            return stream;
+            outputStream.Position = 0;
+            return outputStream;
+        }
+
+        private async Task SerializarReaderComoObjetoAsync(SqlDataReader reader, JsonWriter writer)
+        {
+            if (await reader.ReadAsync())
+            {
+                writer.WriteStartObject();
+                for (int i = 0; i < reader.FieldCount; i++)
+                {
+                    writer.WritePropertyName(reader.GetName(i));
+                    WriteValue(writer, reader[i]);
+                }
+                writer.WriteEndObject();
+            }
+            else
+            {
+                writer.WriteNull();
+            }
+        }
+
+        private async Task SerializarReaderComoArrayAsync(SqlDataReader reader, JsonWriter writer)
+        {
+            writer.WriteStartArray();
+            while (await reader.ReadAsync())
+            {
+                writer.WriteStartObject();
+                for (int i = 0; i < reader.FieldCount; i++)
+                {
+                    writer.WritePropertyName(reader.GetName(i));
+                    WriteValue(writer, reader[i]);
+                }
+                writer.WriteEndObject();
+            }
+            writer.WriteEndArray();
+        }
+
+        private void WriteValue(JsonWriter writer, object value)
+        {
+            if (value == null || value == DBNull.Value)
+                writer.WriteNull();
+            else
+                writer.WriteValue(value);
         }
 
 

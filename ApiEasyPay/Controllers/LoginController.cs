@@ -44,15 +44,26 @@ namespace ApiEasyPay.Controllers
             }
         }
 
-        [HttpPost("validar")]
-        public async Task<IActionResult> ValidarSesion([FromBody] TokenValidationDTO request)
+        [HttpGet("estado")]
+        public async Task<IActionResult> VerificarEstadoSesion([FromQuery] string usuario = null, [FromQuery] string token = null)
         {
-            var sesion = await _loginService.ValidateSessionAsync(request.Token);
+            // Si se proporciona token, validamos la sesión existente
+            if (!string.IsNullOrEmpty(token))
+            {
+                var sesion = await _loginService.ValidateSessionAsync(token);
+                if (sesion == null)
+                    return Unauthorized("Sesión inválida o expirada");
+                return Ok(sesion);
+            }
 
-            if (sesion == null)
-                return Unauthorized("Sesión inválida o expirada");
+            // Si se proporciona usuario, verificamos su estado
+            if (!string.IsNullOrEmpty(usuario))
+            {
+                var estadoSesion = await _loginService.VerificarEstadoSesionAsync(usuario);
+                return Ok(estadoSesion);
+            }
 
-            return Ok(sesion);
+            return BadRequest("Debe proporcionar un token o un nombre de usuario");
         }
 
         [HttpPost("cerrar")]
