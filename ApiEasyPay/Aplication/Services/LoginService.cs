@@ -3,6 +3,7 @@ using ApiEasyPay.Databases.Connections;
 using ApiEasyPay.Seguridad.Helpers;
 using Microsoft.Data.SqlClient;
 using Newtonsoft.Json.Linq;
+using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -70,6 +71,13 @@ namespace ApiEasyPay.Aplication.Services
             // Crear token único
             string token = GenerateToken(usuario);
 
+            // Actualizar estado de sesión en SQL mediante procedimiento almacenado
+            var updateCmd = new SqlCommand("EXEC PActualizarEstadoSesion @Usuario, @Token, @TipoUsuario");
+            updateCmd.Parameters.AddWithValue("@Usuario", usuario);
+            updateCmd.Parameters.AddWithValue("@Token", token);
+            updateCmd.Parameters.AddWithValue("@TipoUsuario", jsonObj["Rol"].ToString() == "A" ? "J" : "U");
+            _conexionSql.SqlJsonComand(true, updateCmd);
+
             var sesion = new SesionDTO
             {
                 Nombres = jsonObj["Nombres"]?.ToString(),
@@ -132,6 +140,62 @@ namespace ApiEasyPay.Aplication.Services
             await _conexionMongo.DeleteSessionAsync(token);
             return true;
         }
+
+        public async Task<MemoryStream> GenerarArchivoSincronizacionAsync(int cobradorId)
+        {
+            var datosCompletos = new JObject();
+
+            // 1. Datos del cobrador (incluye token)
+            var cmdCobrador = new SqlCommand("SELECT * FROM Cobrador WHERE Cod = @Cod");
+            cmdCobrador.Parameters.AddWithValue("@Cod", cobradorId);
+            string datosCobrador = _conexionSql.SqlJsonComand(true, cmdCobrador);
+
+            if (!string.IsNullOrEmpty(datosCobrador) && datosCobrador != "[]")
+            {
+                datosCompletos["cobrador"] = JArray.Parse(datosCobrador).FirstOrDefault();
+            }
+
+            // 2. Datos del jefe
+            var cmdJefe = new SqlCommand(@"
+        SELECT j.Nombres, j.Apellidos, j.Telefono, j.Documento, j.Direccion, j.Correo, j.Cod, j.NumeroCobradores, j.Domingos
+        FROM Cobrador c
+        INNER JOIN Jefes j ON c.Jefe = j.Cod
+        WHERE c.Cod = @Cod");
+            cmdJefe.Parameters.AddWithValue("@Cod", cobradorId);
+            string datosJefe = _conexionSql.SqlJsonComand(true, cmdJefe);
+
+            if (!string.IsNullOrEmpty(datosJefe) && datosJefe != "[]")
+            {
+                datosCompletos["jefe"] = JArray.Parse(datosJefe).FirstOrDefault();
+            }
+
+            // 3. Datos operativos
+            var tablas = new[] { "Clientes", "Creditos", "Cuotas", "Bolsa", "RegDiarioCuotas", "ValoresBolsa", "Amortizaciones", "ViewCobros" };
+
+            foreach (var tabla in tablas)
+            {
+                var cmd = new SqlCommand($"SELECT * FROM {tabla} WHERE Cobrador = @Cobrador");
+                cmd.Parameters.AddWithValue("@Cobrador", cobradorId);
+                string datos = _conexionSql.SqlJsonComand(false, cmd);
+
+                if (!string.IsNullOrEmpty(datos) && datos != "[]")
+                {
+                    datosCompletos[tabla.ToLower()] = JArray.Parse(datos);
+                }
+            }
+
+            // Comprimir
+            var stream = new MemoryStream();
+            using (var gzipStream = new GZipStream(stream, CompressionMode.Compress, true))
+            using (var writer = new StreamWriter(gzipStream))
+            {
+                await writer.WriteAsync(datosCompletos.ToString(Formatting.None));
+            }
+
+            stream.Position = 0;
+            return stream;
+        }
+
 
         private string GenerateToken(string username)
         {
