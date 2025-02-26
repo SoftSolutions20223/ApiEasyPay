@@ -22,6 +22,32 @@ namespace ApiEasyPay.Aplication.Services
             _conexionSql.BdPrincipal = ConfigurationOptions.Instance.StrConexBdSql;
         }
 
+        public async Task<SesionStatusDTO> VerificarEstadoSesionAsync(string usuario)
+        {
+            var comando = new SqlCommand("SELECT * FROM (SELECT Cod, Token, SesionActiva, 'J' as TipoUsuario FROM Jefes WHERE Usuario = @Usuario UNION ALL SELECT Cod, Token, SesionActiva, 'C' as TipoUsuario FROM Cobrador WHERE Usuario = @Usuario) as Users");
+            comando.Parameters.AddWithValue("@Usuario", usuario);
+
+            string resultado = _conexionSql.SqlJsonComand(true, comando);
+
+            // Si no hay resultados, el usuario no existe
+            if (string.IsNullOrEmpty(resultado) || resultado == "[]")
+                return new SesionStatusDTO { Existe = false, UsuarioExiste = false };
+
+            var jsonObj = JArray.Parse(resultado).FirstOrDefault();
+            if (jsonObj == null)
+                return new SesionStatusDTO { Existe = false, UsuarioExiste = false };
+
+            return new SesionStatusDTO
+            {
+                Existe = true,
+                UsuarioExiste = true,
+                Cod = int.Parse(jsonObj["Cod"].ToString()),
+                SesionActiva = bool.Parse(jsonObj["SesionActiva"].ToString()),
+                TipoUsuario = jsonObj["TipoUsuario"].ToString(),
+                RequiereCodigoRecuperacion = jsonObj["TipoUsuario"].ToString() == "C" && bool.Parse(jsonObj["SesionActiva"].ToString())
+            };
+        }
+
         public async Task<SesionDTO> IniciarSesionAsync(string usuario, string contraseña, string codigoRecuperacion = null)
         {
             var comando = new SqlCommand("EXEC PIniciaSesion @Usuario, @Contraseña, @CodRecuperacion");
@@ -69,6 +95,27 @@ namespace ApiEasyPay.Aplication.Services
             await _conexionMongo.InsertOrUpdateSessionAsync(JObject.FromObject(sesion));
 
             return sesion;
+        }
+
+        public async Task<bool> CerrarSesionAsync(string token, string tipoUsuario)
+        {
+            // Primero, eliminar la sesión de MongoDB
+            await _conexionMongo.DeleteSessionAsync(token);
+
+            // Luego, actualizar el estado en SQL Server
+            var comando = new SqlCommand("EXEC PCerrarSesion @Token, @TipoUsuario");
+            comando.Parameters.AddWithValue("@Token", token);
+            comando.Parameters.AddWithValue("@TipoUsuario", tipoUsuario);
+
+            string resultado = _conexionSql.SqlJsonComand(true, comando);
+
+            // Verificar resultado
+            if (string.IsNullOrEmpty(resultado) || resultado == "[]")
+                return false;
+
+            var jsonObj = JToken.Parse(resultado);
+            return !jsonObj["msg"].ToString().Contains("Error") &&
+                   !jsonObj["msg"].ToString().Contains("No se encontró");
         }
 
         public async Task<SesionDTO> ValidateSessionAsync(string token)
