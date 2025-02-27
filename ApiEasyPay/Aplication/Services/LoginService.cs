@@ -52,7 +52,7 @@ namespace ApiEasyPay.Aplication.Services
             };
         }
 
-        public async Task<(SesionDTO sesion, string errorMsg)> IniciarSesionAsync(string usuario, string contraseña, string codigoRecuperacion = null)
+        public async Task<(SesionResponseDTO sesion, string errorMsg)> IniciarSesionAsync(string usuario, string contraseña, string codigoRecuperacion = null)
         {
             var comando = new SqlCommand("EXEC PIniciaSesion @Usuario, @Contraseña, @CodRecuperacion");
             comando.Parameters.AddWithValue("@Usuario", usuario);
@@ -87,25 +87,19 @@ namespace ApiEasyPay.Aplication.Services
                 return (null, $"Error al actualizar sesión: {updateResult["MensajeError"]}");
 
             // Crear objeto de sesión
-            var sesion = new SesionDTO
-            {
-                Nombres = resultado["Nombres"]?.ToString(),
-                Cod = int.Parse(resultado["Cod"]?.ToString() ?? "0"),
-                Host = resultado["Host"]?.ToString(),
-                Usu = resultado["Usu"]?.ToString(),
-                Pw = resultado["Pw"]?.ToString(),
-                TipoBd = int.Parse(resultado["TipoBd"]?.ToString() ?? "0"),
-                Bd = resultado["Bd"]?.ToString(),
-                Rol = resultado["Rol"]?.ToString(),
-                Token = token
-            };
+            SesionDTO sesion = resultado.ToObject<SesionDTO>();
+            sesion.Token = token;
+
+            // Crear objeto de sesión Minimizada
+            SesionResponseDTO sesionResponse = resultado.ToObject<SesionResponseDTO>();
+            sesionResponse.Token = token;
 
             // Configurar conexión del cliente
             _conexionSql.BdCliente = _conexionSql.CreaCadenaConexServ(
-                sesion.Host,
-                sesion.Bd,
-                sesion.Usu,
-                sesion.Pw
+                sesion.HostBd,
+                sesion.NameBd,
+                sesion.UsuBd,
+                sesion.PwBd
             );
 
             // Guardar sesión en MongoDB
@@ -118,10 +112,10 @@ namespace ApiEasyPay.Aplication.Services
                 return (null, $"Error al guardar sesión: {ex.Message}");
             }
 
-            return (sesion, null);
+            return (sesionResponse, null);
         }
 
-        public async Task<bool> CerrarSesionAsync(string token, string tipoUsuario)
+        public async Task<(bool res,string mensaje)> CerrarSesionAsync(string token, string tipoUsuario)
         {
             // Primero, eliminar la sesión de MongoDB
             await _conexionMongo.DeleteSessionAsync(token);
@@ -131,15 +125,14 @@ namespace ApiEasyPay.Aplication.Services
             comando.Parameters.AddWithValue("@Token", token);
             comando.Parameters.AddWithValue("@TipoUsuario", tipoUsuario);
 
-            string resultado = _conexionSql.SqlJsonComand(true, comando);
+            JObject resultado = _conexionSql.SqlJsonCommandObject(true, comando);
 
-            // Verificar resultado
-            if (string.IsNullOrEmpty(resultado) || resultado == "[]")
-                return false;
+            // Verificar error de conexión o SQL
+            if (resultado["MensajeError"] != null)
+                return (false, resultado["MensajeError"].ToString());
 
-            var jsonObj = JToken.Parse(resultado);
-            return !jsonObj["msg"].ToString().Contains("Error") &&
-                   !jsonObj["msg"].ToString().Contains("No se encontró");
+            
+            return (true, resultado["Mensaje"].ToString());
         }
 
         public async Task<SesionDTO> ValidateSessionAsync(string token)

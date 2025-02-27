@@ -71,12 +71,12 @@ namespace ApiEasyPay.Controllers
         [HttpPost("cerrar")]
         public async Task<IActionResult> CerrarSesion([FromBody] LogoutRequestDTO request)
         {
-            var resultado = await _loginService.CerrarSesionAsync(request.Token, request.TipoUsuario);
+            var (resultado,mensaje) = await _loginService.CerrarSesionAsync(request.Token, request.TipoUsuario);
 
             if (!resultado)
-                return BadRequest("No se pudo cerrar la sesión");
+                return BadRequest(mensaje);
 
-            return Ok(new { mensaje = "Sesión cerrada correctamente" });
+            return Ok(new { mensaje = mensaje });
         }
     }
 

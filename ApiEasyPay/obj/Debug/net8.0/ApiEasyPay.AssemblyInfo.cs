@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ApiEasyPay")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+803d7612f2ece801937fcec2f0adc457e5654ffd")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7e26a295f56244c6c0dccb224c903614ec71c70c")]
 [assembly: System.Reflection.AssemblyProductAttribute("ApiEasyPay")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ApiEasyPay")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

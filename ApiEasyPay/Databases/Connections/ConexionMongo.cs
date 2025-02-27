@@ -56,9 +56,18 @@ namespace ApiEasyPay.Databases.Connections
         public async Task InsertOrUpdateSessionAsync(JObject json)
         {
             string token = json["Token"]?.ToString();
+            string username = json["Usuario"]?.ToString(); // Suponiendo que "Usu" contiene el nombre de usuario
+
             if (string.IsNullOrEmpty(token))
             {
                 throw new ArgumentException("El JSON debe contener el campo 'Token'.");
+            }
+
+            if (!string.IsNullOrEmpty(username))
+            {
+                // Primero eliminamos todas las sesiones existentes para este usuario
+                var filterUser = Builders<BsonDocument>.Filter.Eq("Usuario", username);
+                await _sessionCollection.DeleteManyAsync(filterUser);
             }
 
             // Convertir el JObject a BsonDocument
@@ -66,9 +75,8 @@ namespace ApiEasyPay.Databases.Connections
             document["CreatedAt"] = DateTime.UtcNow;
             document["UpdatedAt"] = DateTime.UtcNow;
 
-            var filter = Builders<BsonDocument>.Filter.Eq("Token", token);
-            var options = new ReplaceOptions { IsUpsert = true };
-            await _sessionCollection.ReplaceOneAsync(filter, document, options);
+            // Insertar nuevo documento
+            await _sessionCollection.InsertOneAsync(document);
         }
 
         /// <summary>
