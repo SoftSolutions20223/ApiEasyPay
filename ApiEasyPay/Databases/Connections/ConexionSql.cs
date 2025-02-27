@@ -250,6 +250,7 @@ namespace ApiEasyPay.Databases.Connections
             return jsonResult.ToString();
         }
 
+
         public JArray SqlJsonCommandArray(bool bd, SqlCommand comando)
         {
             SqlConnection conec = new SqlConnection(Conection(bd));
@@ -262,37 +263,31 @@ namespace ApiEasyPay.Databases.Connections
                 var reader = comando.ExecuteReader();
 
                 if (!reader.HasRows)
-                {
-                    return resultArray; // Retorna un JArray vacío
-                }
+                    return resultArray;
 
                 while (reader.Read())
                 {
-                    // Asumimos que el primer valor es un JSON válido
                     string jsonStr = reader.GetValue(0).ToString();
                     if (!string.IsNullOrEmpty(jsonStr))
                     {
                         try
                         {
-                            // Si es un objeto individual
+                            // Si es objeto
                             if (jsonStr.TrimStart().StartsWith("{"))
                             {
                                 JObject jObject = JObject.Parse(jsonStr);
                                 resultArray.Add(jObject);
                             }
-                            // Si ya es un array
+                            // Si ya es array
                             else if (jsonStr.TrimStart().StartsWith("["))
                             {
                                 JArray parsedArray = JArray.Parse(jsonStr);
                                 foreach (var item in parsedArray)
-                                {
                                     resultArray.Add(item);
-                                }
                             }
                         }
                         catch (JsonReaderException)
                         {
-                            // Si hay un error al parsear el JSON, lo agregamos como string
                             resultArray.Add(new JValue(jsonStr));
                         }
                     }
@@ -300,10 +295,12 @@ namespace ApiEasyPay.Databases.Connections
             }
             catch (Exception e)
             {
-                // En caso de error, creamos un objeto de error y lo agregamos al array
                 JObject errorObj = new JObject
                 {
-                    ["msg"] = e.Message
+                    ["MensajeError"] = e.Message,
+                    ["FuncionOrigen"] = "SqlJsonCommandArray",
+                    ["ConsultaSQL"] = comando.CommandText,
+                    ["TipoError"] = e.GetType().Name
                 };
                 resultArray.Add(errorObj);
             }
@@ -316,6 +313,46 @@ namespace ApiEasyPay.Databases.Connections
             return resultArray;
         }
 
+        public JObject SqlJsonCommandObject(bool bd, SqlCommand comando)
+        {
+            SqlConnection conec = new SqlConnection(Conection(bd));
+            comando.Connection = conec;
+            JObject resultObject = new JObject();
+
+            try
+            {
+                conec.Open();
+                var reader = comando.ExecuteReader();
+
+                if (reader.HasRows && reader.Read())
+                {
+                    string jsonStr = reader.GetValue(0).ToString();
+                    if (!string.IsNullOrEmpty(jsonStr))
+                    {
+                        resultObject = JObject.Parse(jsonStr);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                resultObject = new JObject
+                {
+                    ["MensajeError"] = e.Message,
+                    ["FuncionOrigen"] = "SqlJsonCommandObject",
+                    ["ConsultaSQL"] = comando.CommandText,
+                    ["Parametros"] = new JObject(comando.Parameters.Cast<SqlParameter>().Select(p =>
+                        new JProperty(p.ParameterName, p.Value?.ToString() ?? "NULL"))),
+                    ["TipoError"] = e.GetType().Name
+                };
+            }
+            finally
+            {
+                conec.Close();
+                comando.Dispose();
+            }
+
+            return resultObject;
+        }
 
         public string SqlJson(string comandoSQL, bool bd)
         {

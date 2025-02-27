@@ -21,10 +21,13 @@ namespace ApiEasyPay.Controllers
         {
             try
             {
-                var sesion = await _loginService.IniciarSesionAsync(
+                var (sesion, errorMsg) = await _loginService.IniciarSesionAsync(
                     request.Usuario,
                     request.Contraseña,
                     request.CodigoRecuperacion);
+
+                if (!string.IsNullOrEmpty(errorMsg))
+                    return BadRequest(new { mensaje = errorMsg });
 
                 if (sesion == null)
                     return Unauthorized("Credenciales inválidas");
@@ -35,12 +38,11 @@ namespace ApiEasyPay.Controllers
                     return File(stream, "application/octet-stream", "sincronizacion.gz");
                 }
 
-                // Para jefes solo devolvemos el token
                 return Ok(sesion);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { mensaje = ex.Message });
             }
         }
 

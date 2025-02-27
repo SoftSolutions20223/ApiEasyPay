@@ -8,7 +8,7 @@
         public string Usu { get; set; }
         public string Pw { get; set; }
         public int TipoBd { get; set; }
-        public int Bd { get; set; }
+        public string Bd { get; set; }
         public string Rol { get; set; }
         public string Token { get; set; }
     }

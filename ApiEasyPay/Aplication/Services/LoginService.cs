@@ -52,68 +52,73 @@ namespace ApiEasyPay.Aplication.Services
             };
         }
 
-        public async Task<SesionDTO> IniciarSesionAsync(string usuario, string contraseña, string codigoRecuperacion = null)
+        public async Task<(SesionDTO sesion, string errorMsg)> IniciarSesionAsync(string usuario, string contraseña, string codigoRecuperacion = null)
         {
             var comando = new SqlCommand("EXEC PIniciaSesion @Usuario, @Contraseña, @CodRecuperacion");
             comando.Parameters.AddWithValue("@Usuario", usuario);
             comando.Parameters.AddWithValue("@Contraseña", contraseña);
-            comando.Parameters.AddWithValue("@CodRecuperacion",
-                (object)codigoRecuperacion ?? DBNull.Value);
+            comando.Parameters.AddWithValue("@CodRecuperacion", (object)codigoRecuperacion ?? DBNull.Value);
 
-            string resultado = _conexionSql.SqlJsonComand(true, comando);
+            JObject resultado = _conexionSql.SqlJsonCommandObject(true, comando);
 
-            if (string.IsNullOrEmpty(resultado) || resultado == "[]")
-                return null;
-            if (resultado.Contains("msg"))
-            {
-                JObject msgRes = JObject.Parse(resultado);
-                JObject ObjetoError = new JObject();
-                ObjetoError["MensajeError"] = msgRes["msg"];
-                ObjetoError["FuncionOrigen"] = "IniciarSesionAsync";
-                ObjetoError["ProcedimientoError"] = comando.CommandText;
-                return null;
-            }
-            var jsonObj = JToken.Parse(resultado);
+            // Verificar error de conexión o SQL
+            if (resultado["MensajeError"] != null)
+                return (null, resultado["MensajeError"].ToString());
 
-            // Verificar si es un mensaje de error
-            if (jsonObj["msg"] != null)
-                throw new Exception(jsonObj["msg"].ToString());
+            // Verificar mensaje del procedimiento almacenado
+            if (resultado["msg"] != null)
+                return (null, resultado["msg"].ToString());
 
-            // Crear token único
+            // Si no hay Nombres o Cod, es una respuesta inválida
+            if (resultado["Nombres"] == null || resultado["Cod"] == null)
+                return (null, "Respuesta inválida del servidor");
+
+            // Crear token único para la sesión
             string token = GenerateToken(usuario);
 
             // Actualizar estado de sesión en SQL mediante procedimiento almacenado
             var updateCmd = new SqlCommand("EXEC PActualizarEstadoSesion @Usuario, @Token, @TipoUsuario");
             updateCmd.Parameters.AddWithValue("@Usuario", usuario);
             updateCmd.Parameters.AddWithValue("@Token", token);
-            updateCmd.Parameters.AddWithValue("@TipoUsuario", jsonObj["Rol"].ToString() == "A" ? "J" : "U");
-            _conexionSql.SqlJsonComand(true, updateCmd);
+            updateCmd.Parameters.AddWithValue("@TipoUsuario", resultado["Rol"]?.ToString() == "A" ? "J" : "C");
 
+            JObject updateResult = _conexionSql.SqlJsonCommandObject(true, updateCmd);
+            if (updateResult["MensajeError"] != null)
+                return (null, $"Error al actualizar sesión: {updateResult["MensajeError"]}");
+
+            // Crear objeto de sesión
             var sesion = new SesionDTO
             {
-                Nombres = jsonObj["Nombres"]?.ToString(),
-                Cod = int.Parse(jsonObj["Cod"]?.ToString() ?? "0"),
-                Host = jsonObj["Host"]?.ToString(),
-                Usu = jsonObj["Usu"]?.ToString(),
-                Pw = jsonObj["Pw"]?.ToString(),
-                TipoBd = int.Parse(jsonObj["TipoBd"]?.ToString() ?? "0"),
-                Bd = int.Parse(jsonObj["Bd"]?.ToString() ?? "0"),
-                Rol = jsonObj["Rol"]?.ToString(),
+                Nombres = resultado["Nombres"]?.ToString(),
+                Cod = int.Parse(resultado["Cod"]?.ToString() ?? "0"),
+                Host = resultado["Host"]?.ToString(),
+                Usu = resultado["Usu"]?.ToString(),
+                Pw = resultado["Pw"]?.ToString(),
+                TipoBd = int.Parse(resultado["TipoBd"]?.ToString() ?? "0"),
+                Bd = resultado["Bd"]?.ToString(),
+                Rol = resultado["Rol"]?.ToString(),
                 Token = token
             };
 
             // Configurar conexión del cliente
             _conexionSql.BdCliente = _conexionSql.CreaCadenaConexServ(
                 sesion.Host,
-                "SysEasyPayV3",
+                sesion.Bd,
                 sesion.Usu,
                 sesion.Pw
             );
 
             // Guardar sesión en MongoDB
-            await _conexionMongo.InsertOrUpdateSessionAsync(JObject.FromObject(sesion));
+            try
+            {
+                await _conexionMongo.InsertOrUpdateSessionAsync(JObject.FromObject(sesion));
+            }
+            catch (Exception ex)
+            {
+                return (null, $"Error al guardar sesión: {ex.Message}");
+            }
 
-            return sesion;
+            return (sesion, null);
         }
 
         public async Task<bool> CerrarSesionAsync(string token, string tipoUsuario)
