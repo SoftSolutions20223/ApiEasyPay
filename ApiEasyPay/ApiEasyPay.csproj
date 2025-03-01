@@ -15,9 +15,6 @@
 
   <ItemGroup>
     <Folder Include="Databases\Helpers\" />
-    <Folder Include="Helpers\" />
-    <Folder Include="Domain\Model\" />
-    <Folder Include="Domain\" />
   </ItemGroup>
 
 </Project>
