@@ -76,6 +76,37 @@
         }
       }
     },
+    "/api/Login/generarCodigoRecuperacion": {
+      "post": {
+        "tags": [
+          "Login"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CodigoRecuperacionRequestDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CodigoRecuperacionRequestDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CodigoRecuperacionRequestDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Login/cerrar": {
       "post": {
         "tags": [
@@ -100,6 +131,98 @@
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Usuarios/crear": {
+      "post": {
+        "tags": [
+          "Usuarios"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsuarioRequestDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsuarioRequestDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsuarioRequestDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Usuarios/modificar": {
+      "put": {
+        "tags": [
+          "Usuarios"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsuarioRequestDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsuarioRequestDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsuarioRequestDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Usuarios/{codigo}": {
+      "get": {
+        "tags": [
+          "Usuarios"
+        ],
+        "parameters": [
+          {
+            "name": "codigo",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tipo",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "C"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -149,6 +272,21 @@
   },
   "components": {
     "schemas": {
+      "CodigoRecuperacionRequestDTO": {
+        "type": "object",
+        "properties": {
+          "cobradorId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "horasValidez": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "LoginRequestDTO": {
         "type": "object",
         "properties": {
@@ -177,6 +315,71 @@
           "tipoUsuario": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UsuarioRequestDTO": {
+        "required": [
+          "contraseña",
+          "jefe",
+          "nombres",
+          "tipoUsuario",
+          "usuario"
+        ],
+        "type": "object",
+        "properties": {
+          "cod": {
+            "type": "number",
+            "format": "double"
+          },
+          "nombres": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "apellidos": {
+            "maxLength": 200,
+            "type": "string",
+            "nullable": true
+          },
+          "telefono": {
+            "maxLength": 20,
+            "type": "string",
+            "nullable": true
+          },
+          "documento": {
+            "maxLength": 20,
+            "type": "string",
+            "nullable": true
+          },
+          "direccion": {
+            "maxLength": 20,
+            "type": "string",
+            "nullable": true
+          },
+          "contraseña": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "usuario": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "estado": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "tipoUsuario": {
+            "minLength": 1,
+            "pattern": "[CD]",
+            "type": "string"
+          },
+          "jefe": {
+            "type": "number",
+            "format": "double"
           }
         },
         "additionalProperties": false

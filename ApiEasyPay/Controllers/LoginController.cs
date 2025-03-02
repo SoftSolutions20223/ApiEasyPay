@@ -68,6 +68,26 @@ namespace ApiEasyPay.Controllers
             return BadRequest("Debe proporcionar un token o un nombre de usuario");
         }
 
+        [HttpPost("generarCodigoRecuperacion")]
+        public async Task<IActionResult> GenerarCodigoRecuperacion([FromBody] CodigoRecuperacionRequestDTO request)
+        {
+            try
+            {
+                var (exito, resultado) = await _loginService.GenerarCodigoRecuperacion(
+                    request.CobradorId,
+                    request.HorasValidez ?? 24);
+
+                if (!exito)
+                    return BadRequest(new { mensaje = resultado });
+
+                return Ok(new { codigo = resultado });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = ex.Message });
+            }
+        }
+
         [HttpPost("cerrar")]
         public async Task<IActionResult> CerrarSesion([FromBody] LogoutRequestDTO request)
         {

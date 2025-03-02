@@ -257,7 +257,74 @@ namespace ApiEasyPay.Aplication.Services
                 writer.WriteValue(value);
         }
 
+        // Añadir estos métodos a la clase LoginService existente
+        public async Task<(bool exito, string resultado)> GenerarCodigoRecuperacion(int cobradorId, int horasValidez = 24)
+        {
+            try
+            {
+                // Verificar si el cobrador existe
+                var comando = new SqlCommand("SELECT COUNT(1) FROM Cobrador WHERE Cod = @Cod");
+                comando.Parameters.AddWithValue("@Cod", cobradorId);
 
+                int existeCobrador = Convert.ToInt32(_conexionSql.TraerDato(comando.CommandText, true));
+
+                if (existeCobrador == 0)
+                {
+                    return (false, "El cobrador especificado no existe");
+                }
+
+                // Generar un código numérico de 6 dígitos
+                string codigoRecuperacion = GenerarCodigoAleatorio(6);
+
+                // Calcular fecha de expiración
+                DateTime fechaExpiracion = DateTime.UtcNow.AddHours(horasValidez);
+
+                // Actualizar en la base de datos
+                comando = new SqlCommand(@"
+            UPDATE Cobrador 
+            SET CodRecuperacion = @Codigo, 
+                TiempoExpiracionCodRecuperacion = @FechaExpiracion 
+            WHERE Cod = @CobradorId");
+
+                comando.Parameters.AddWithValue("@Codigo", codigoRecuperacion);
+                comando.Parameters.AddWithValue("@FechaExpiracion", fechaExpiracion);
+                comando.Parameters.AddWithValue("@CobradorId", cobradorId);
+
+                string resultado = _conexionSql.SqlQueryGestion(comando.CommandText, true);
+
+                if (resultado == "yes")
+                {
+                    return (true, codigoRecuperacion);
+                }
+                else
+                {
+                    return (false, "Error al actualizar el código de recuperación: " + resultado);
+                }
+            }
+            catch (Exception ex)
+            {
+                return (false, "Error al generar código de recuperación: " + ex.Message);
+            }
+        }
+
+        private string GenerarCodigoAleatorio(int longitud)
+        {
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                byte[] bytes = new byte[longitud];
+                rng.GetBytes(bytes);
+
+                // Convertir bytes a dígitos
+                var codigo = "";
+                for (int i = 0; i < longitud; i++)
+                {
+                    // Asegurarse de que solo sean dígitos del 0-9
+                    codigo += (bytes[i] % 10).ToString();
+                }
+
+                return codigo;
+            }
+        }
         private string GenerateToken(string username)
         {
             using (SHA256 sha256 = SHA256.Create())

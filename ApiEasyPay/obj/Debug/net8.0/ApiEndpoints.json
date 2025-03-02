@@ -38,6 +38,22 @@
   },
   {
     "ContainingType": "ApiEasyPay.Controllers.LoginController",
+    "Method": "GenerarCodigoRecuperacion",
+    "RelativePath": "api/Login/generarCodigoRecuperacion",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "ApiEasyPay.Aplication.DTOs.CodigoRecuperacionRequestDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.LoginController",
     "Method": "IniciarSesion",
     "RelativePath": "api/Login/iniciar",
     "HttpMethod": "POST",
@@ -47,6 +63,59 @@
       {
         "Name": "request",
         "Type": "ApiEasyPay.Aplication.DTOs.LoginRequestDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.UsuariosController",
+    "Method": "ObtenerUsuario",
+    "RelativePath": "api/Usuarios/{codigo}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "codigo",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "tipo",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.UsuariosController",
+    "Method": "CrearUsuario",
+    "RelativePath": "api/Usuarios/crear",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "ApiEasyPay.Aplication.DTOs.UsuarioRequestDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.UsuariosController",
+    "Method": "ModificarUsuario",
+    "RelativePath": "api/Usuarios/modificar",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "ApiEasyPay.Aplication.DTOs.UsuarioRequestDTO",
         "IsRequired": true
       }
     ],

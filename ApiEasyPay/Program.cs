@@ -39,6 +39,7 @@ builder.Services.AddSingleton<ConexionMongo>(_ =>
 
 // Registrar servicios de aplicación
 builder.Services.AddScoped<LoginService>();
+builder.Services.AddScoped<UsuariosService>();
 
 
 var app = builder.Build();

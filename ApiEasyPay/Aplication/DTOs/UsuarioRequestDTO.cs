@@ -1,30 +1,42 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ApiEasyPay.Domain.Model
+namespace ApiEasyPay.Aplication.DTOs
 {
-    public class Delegados
+    public class UsuarioRequestDTO
     {
+        public decimal Cod { get; set; }
+
+        [Required(ErrorMessage = "El nombre es obligatorio")]
         [MaxLength(200)]
         public string Nombres { get; set; }
+
         [MaxLength(200)]
         public string Apellidos { get; set; }
+
         [MaxLength(20)]
         public string Telefono { get; set; }
+
         [MaxLength(20)]
         public string Documento { get; set; }
+
         [MaxLength(20)]
         public string Direccion { get; set; }
+
+        [Required(ErrorMessage = "La contraseña es obligatoria")]
         [MaxLength(200)]
         public string Contraseña { get; set; }
-        [Range(-999999999999999999, 999999999999999999)]
-        public decimal Cod { get; set; }
+
+        [Required(ErrorMessage = "El usuario es obligatorio")]
         [MaxLength(200)]
         public string Usuario { get; set; }
+
         public bool? Estado { get; set; }
-        [Required]
-        [Range(-999999999999999999, 999999999999999999)]
+
+        [Required(ErrorMessage = "El tipo de usuario es obligatorio")]
+        [RegularExpression("[CD]", ErrorMessage = "El tipo de usuario debe ser 'C' para Cobrador o 'D' para Delegado")]
+        public string TipoUsuario { get; set; }
+
+        [Required(ErrorMessage = "El ID del jefe es obligatorio")]
         public decimal Jefe { get; set; }
-        [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy HH:mm:ss}", ApplyFormatInEditMode = true)]
-        public DateTime? FechaActualizacion { get; set; }
     }
 }

@@ -16,7 +16,6 @@ namespace ApiEasyPay.Domain.Model
         public string Direccion { get; set; }
         [MaxLength(200)]
         public string Contraseña { get; set; }
-        [Required]
         [Range(-999999999999999999, 999999999999999999)]
         public decimal Cod { get; set; }
         [MaxLength(200)]
