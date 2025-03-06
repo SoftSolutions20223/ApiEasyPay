@@ -44,7 +44,7 @@
               "RelativeDocumentMoniker": "ApiEasyPay\\Controllers\\LoginController.cs",
               "ToolTip": "C:\\Users\\Cristian\\Documents\\GitHub\\ApiEasyPay\\ApiEasyPay\\Controllers\\LoginController.cs",
               "RelativeToolTip": "ApiEasyPay\\Controllers\\LoginController.cs",
-              "ViewState": "AgIAAEEAAAAAAAAAAAAqwFgAAAAJAAAAAAAAAA==",
+              "ViewState": "AgIAAEEAAAAAAAAAAAAqwE8AAAAbAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-03-02T21:05:18.497Z",
               "EditorCaption": ""
@@ -57,10 +57,9 @@
               "RelativeDocumentMoniker": "ApiEasyPay\\Aplication\\Services\\LoginService.cs",
               "ToolTip": "C:\\Users\\Cristian\\Documents\\GitHub\\ApiEasyPay\\ApiEasyPay\\Aplication\\Services\\LoginService.cs",
               "RelativeToolTip": "ApiEasyPay\\Aplication\\Services\\LoginService.cs",
-              "ViewState": "AgIAACIBAAAAAAAAAAAuwEYBAAAJAAAAAAAAAA==",
+              "ViewState": "AgIAACIBAAAAAAAAAAArwC8BAAAIAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-01T20:41:12.728Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-03-01T20:41:12.728Z"
             },
             {
               "$type": "Document",
@@ -72,8 +71,7 @@
               "RelativeToolTip": "ApiEasyPay\\Program.cs",
               "ViewState": "AgIAADEAAAAAAAAAAAArwD4AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-01T19:59:06.165Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-03-01T19:59:06.165Z"
             },
             {
               "$type": "Document",
@@ -85,8 +83,7 @@
               "RelativeToolTip": "ApiEasyPay\\Aplication\\DTOs\\UsuarioRequestDTO.cs",
               "ViewState": "AgIAABYAAAAAAAAAAAAkwCcAAAApAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-01T19:54:15.057Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-03-01T19:54:15.057Z"
             },
             {
               "$type": "Document",
@@ -98,8 +95,7 @@
               "RelativeToolTip": "ApiEasyPay\\Controllers\\UsuariosController.cs",
               "ViewState": "AgIAACEAAAAAAAAAAAAYwD0AAAAVAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-01T18:41:41.733Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-03-01T18:41:41.733Z"
             },
             {
               "$type": "Document",
@@ -111,8 +107,7 @@
               "RelativeToolTip": "ApiEasyPay\\Aplication\\Services\\UsuariosService.cs",
               "ViewState": "AgIAAD8AAAAAAAAAAAAjwE4AAAAQAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-01T18:39:43.844Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-03-01T18:39:43.844Z"
             }
           ]
         }

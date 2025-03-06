@@ -1,5 +1,6 @@
 ﻿using ApiEasyPay.Aplication.DTOs;
 using ApiEasyPay.Databases.Connections;
+using ApiEasyPay.Domain.Model;
 using ApiEasyPay.Seguridad.Helpers;
 using Microsoft.Data.SqlClient;
 using Newtonsoft.Json;
@@ -263,8 +264,7 @@ namespace ApiEasyPay.Aplication.Services
             try
             {
                 // Verificar si el cobrador existe
-                var comando = new SqlCommand("SELECT COUNT(1) FROM Cobrador WHERE Cod = @Cod");
-                comando.Parameters.AddWithValue("@Cod", cobradorId);
+                var comando = new SqlCommand("SELECT COUNT(1) FROM Cobrador WHERE Cod ="+cobradorId.ToString());
 
                 int existeCobrador = Convert.ToInt32(_conexionSql.TraerDato(comando.CommandText, true));
 
@@ -282,13 +282,9 @@ namespace ApiEasyPay.Aplication.Services
                 // Actualizar en la base de datos
                 comando = new SqlCommand(@"
             UPDATE Cobrador 
-            SET CodRecuperacion = @Codigo, 
-                TiempoExpiracionCodRecuperacion = @FechaExpiracion 
-            WHERE Cod = @CobradorId");
-
-                comando.Parameters.AddWithValue("@Codigo", codigoRecuperacion);
-                comando.Parameters.AddWithValue("@FechaExpiracion", fechaExpiracion);
-                comando.Parameters.AddWithValue("@CobradorId", cobradorId);
+            SET CodRecuperacion = "+ codigoRecuperacion + @", 
+                TiempoExpiracionCodRecuperacion = '"+ fechaExpiracion.ToString("dd/MM/yyyy HH:mm:ss")+ @"' 
+            WHERE Cod ="+ cobradorId.ToString());
 
                 string resultado = _conexionSql.SqlQueryGestion(comando.CommandText, true);
 
