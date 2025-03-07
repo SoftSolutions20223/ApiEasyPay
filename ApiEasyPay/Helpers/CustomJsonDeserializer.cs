@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
+using System.Collections.Generic;
 
 namespace ApiEasyPay.Helpers
 {
@@ -12,10 +13,9 @@ namespace ApiEasyPay.Helpers
         public JArray Errors { get; private set; } = new JArray();
 
         /// <summary>
-        /// Deserializa un JObject al tipo T, validando cada propiedad según los atributos de DataAnnotations
-        /// definidos en la clase (como [Required], [MaxLength], [Range], [DisplayFormat], etc.).
+        /// Deserializa un JObject al tipo T, validando cada propiedad según los atributos de DataAnnotations.
         /// En caso de error, se registra el fallo pero no se sobrescribe el valor ya asignado en la instancia.
-        /// Se retorna siempre una instancia de T, y el llamador deberá revisar la propiedad Errors.
+        /// Se retorna siempre una instancia de T y el llamador deberá revisar la propiedad Errors.
         /// </summary>
         /// <typeparam name="T">Tipo destino (debe tener constructor por defecto y, opcionalmente, valores iniciales).</typeparam>
         /// <param name="json">El JObject que contiene los datos.</param>
@@ -163,13 +163,77 @@ namespace ApiEasyPay.Helpers
         /// </summary>
         /// <param name="type">Tipo destino.</param>
         /// <param name="json">JObject con los datos.</param>
-        /// <returns>Instancia del tipo indicado con valores ya establecidos (o los iniciales) y con errores registrados en Errors si los hubiera.</returns>
+        /// <returns>Instancia del tipo indicado con valores ya establecidos y errores registrados en Errors si los hubiera.</returns>
         public object Deserialize(Type type, JObject json)
         {
             MethodInfo method = typeof(CustomJsonDeserializer)
                                     .GetMethod(nameof(Deserialize), new Type[] { typeof(JObject) })
                                     .MakeGenericMethod(type);
             return method.Invoke(this, new object[] { json });
+        }
+
+        /// <summary>
+        /// Deserializa un JArray a una lista de objetos de tipo T, aplicando el mismo proceso de validación que se realiza para un solo objeto.
+        /// Cada elemento del arreglo se procesa individualmente y se acumulan los errores, asociándolos al índice correspondiente.
+        /// </summary>
+        /// <typeparam name="T">Tipo destino de cada elemento (debe tener constructor por defecto).</typeparam>
+        /// <param name="jsonArray">JArray que contiene los objetos JSON.</param>
+        /// <returns>Lista de instancias de T deserializadas.</returns>
+        public List<T> DeserializeList<T>(JArray jsonArray) where T : new()
+        {
+            // Reiniciamos los errores globales.
+            Errors = new JArray();
+            List<T> resultList = new List<T>();
+
+            for (int i = 0; i < jsonArray.Count; i++)
+            {
+                // Verificamos que el elemento sea un JObject.
+                if (jsonArray[i] is JObject obj)
+                {
+                    // Para cada elemento, se crea una instancia separada del deserializador
+                    // para evitar que la propiedad Errors se reinicie en cada llamada.
+                    CustomJsonDeserializer elementDeserializer = new CustomJsonDeserializer();
+                    T deserializedObject = elementDeserializer.Deserialize<T>(obj);
+
+                    // Se agregan los errores de la deserialización del elemento, indicando el índice.
+                    if (elementDeserializer.Errors.Count > 0)
+                    {
+                        foreach (JObject error in elementDeserializer.Errors)
+                        {
+                            error["Index"] = i;
+                            Errors.Add(error);
+                        }
+                    }
+
+                    resultList.Add(deserializedObject);
+                }
+                else
+                {
+                    // Si el elemento no es un objeto JSON válido, se registra el error.
+                    Errors.Add(new JObject
+                    {
+                        ["Index"] = i,
+                        ["ErrorMessage"] = "El elemento no es un objeto JSON."
+                    });
+                }
+            }
+
+            return resultList;
+        }
+
+        /// <summary>
+        /// Método de deserialización no genérico para JArray que recibe el Type destino.
+        /// Permite invocar el método genérico anterior mediante reflection.
+        /// </summary>
+        /// <param name="type">Tipo destino de cada elemento.</param>
+        /// <param name="jsonArray">JArray con los datos.</param>
+        /// <returns>Lista de instancias del tipo indicado con valores ya establecidos y errores registrados en Errors si los hubiera.</returns>
+        public object DeserializeList(Type type, JArray jsonArray)
+        {
+            MethodInfo method = typeof(CustomJsonDeserializer)
+                                    .GetMethod(nameof(DeserializeList), new Type[] { typeof(JArray) })
+                                    .MakeGenericMethod(type);
+            return method.Invoke(this, new object[] { jsonArray });
         }
     }
 }
