@@ -69,6 +69,59 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "ApiEasyPay.Controllers.SincronizacionController",
+    "Method": "SincronizarDatos",
+    "RelativePath": "api/Sincronizacion/sincronizar",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "ApiEasyPay.Aplication.DTOs.SincronizacionRequestDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.SincronizacionController",
+    "Method": "SincronizarArchivo",
+    "RelativePath": "api/Sincronizacion/sincronizar-archivo",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "tabla",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "modoEstricto",
+        "Type": "System.Boolean",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.SincronizacionController",
+    "Method": "SincronizarDatosMasivo",
+    "RelativePath": "api/Sincronizacion/sincronizar-masivo",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "ApiEasyPay.Aplication.DTOs.SincronizacionMasivaRequestDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "ApiEasyPay.Controllers.UsuariosController",
     "Method": "ObtenerUsuario",
     "RelativePath": "api/Usuarios/{codigo}",
@@ -123,7 +176,7 @@
   },
   {
     "ContainingType": "Program\u002B\u003C\u003Ec",
-    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_3",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_4",
     "RelativePath": "AppEasyPayV4957*_ConexBd",
     "HttpMethod": "GET",
     "IsController": false,

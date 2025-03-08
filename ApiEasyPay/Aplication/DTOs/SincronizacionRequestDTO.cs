@@ -7,9 +7,10 @@ namespace ApiEasyPay.Aplication.DTOs
     /// DTO para solicitud de sincronización de datos individual
     /// </summary>
     public class SincronizacionRequestDTO
-    { /// <summary>
-      /// Nombre de la tabla a sincronizar
-      /// </summary>
+    {
+        /// <summary>
+        /// Nombre de la tabla a sincronizar
+        /// </summary>
         [Required(ErrorMessage = "El nombre de la tabla es obligatorio")]
         public string Tabla { get; set; }
 
@@ -24,4 +25,5 @@ namespace ApiEasyPay.Aplication.DTOs
         /// </summary>
         public bool ModoEstricto { get; set; } = true;
     }
+
 }

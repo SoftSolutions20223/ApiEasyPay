@@ -6,9 +6,9 @@ namespace ApiEasyPay.Aplication.DTOs
     /// DTO para resultados individuales de sincronización
     /// </summary>
     public class SincronizacionResultadoDTO
-    {/// <summary>
-     /// Identificador de fila
-     /// </summary>
+    {  /// <summary>
+       /// Identificador de fila
+       /// </summary>
         public int RowId { get; set; }
 
         /// <summary>

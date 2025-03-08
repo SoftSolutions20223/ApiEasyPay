@@ -15,10 +15,10 @@ namespace ApiEasyPay.Aplication.DTOs
         public string Tabla { get; set; }
 
         /// <summary>
-        /// Colección de datos a sincronizar en formato JObject
+        /// Array JSON con los datos a sincronizar
         /// </summary>
         [Required(ErrorMessage = "Los datos son obligatorios")]
-        public List<JObject> DatosMasivos { get; set; }
+        public JArray DatosMasivos { get; set; }
 
         /// <summary>
         /// Indica si se aplica modo estricto en la validación

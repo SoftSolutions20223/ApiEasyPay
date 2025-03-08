@@ -1,6 +1,8 @@
 using ApiEasyPay.Aplication.Services;
 using ApiEasyPay.Databases.Connections;
 using ApiEasyPay.Seguridad.Helpers;
+using ApiEasyPay.Helpers;
+using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,6 +42,15 @@ builder.Services.AddSingleton<ConexionMongo>(_ =>
 // Registrar servicios de aplicación
 builder.Services.AddScoped<LoginService>();
 builder.Services.AddScoped<UsuariosService>();
+builder.Services.AddScoped<CustomJsonSerializer>();
+builder.Services.AddScoped<CustomJsonDeserializer>();
+builder.Services.AddScoped<SincronizacionService>();
+
+builder.Services.AddControllers()
+    .AddNewtonsoftJson(options =>
+    {
+        options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+    });
 
 
 var app = builder.Build();

@@ -5,9 +5,9 @@
     /// </summary>
 
     public class SincronizacionResponseDTO
-    {/// <summary>
-     /// Identificador único de la solicitud
-     /// </summary>
+    {  /// <summary>
+       /// Identificador único de la solicitud
+       /// </summary>
         public string RequestId { get; set; }
 
         /// <summary>

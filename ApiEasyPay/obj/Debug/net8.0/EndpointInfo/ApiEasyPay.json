@@ -24,6 +24,11 @@
         ],
         "requestBody": {
           "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequestDTO"
+              }
+            },
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/LoginRequestDTO"
@@ -83,6 +88,11 @@
         ],
         "requestBody": {
           "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CodigoRecuperacionRequestDTO"
+              }
+            },
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CodigoRecuperacionRequestDTO"
@@ -114,6 +124,11 @@
         ],
         "requestBody": {
           "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/LogoutRequestDTO"
+              }
+            },
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/LogoutRequestDTO"
@@ -138,6 +153,107 @@
         }
       }
     },
+    "/api/Sincronizacion/sincronizar": {
+      "post": {
+        "tags": [
+          "Sincronizacion"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SincronizacionRequestDTO"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SincronizacionRequestDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SincronizacionRequestDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SincronizacionRequestDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Sincronizacion/sincronizar-masivo": {
+      "post": {
+        "tags": [
+          "Sincronizacion"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SincronizacionMasivaRequestDTO"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SincronizacionMasivaRequestDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SincronizacionMasivaRequestDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SincronizacionMasivaRequestDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Sincronizacion/sincronizar-archivo": {
+      "post": {
+        "tags": [
+          "Sincronizacion"
+        ],
+        "parameters": [
+          {
+            "name": "tabla",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "modoEstricto",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Usuarios/crear": {
       "post": {
         "tags": [
@@ -145,6 +261,11 @@
         ],
         "requestBody": {
           "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsuarioRequestDTO"
+              }
+            },
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/UsuarioRequestDTO"
@@ -176,6 +297,11 @@
         ],
         "requestBody": {
           "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsuarioRequestDTO"
+              }
+            },
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/UsuarioRequestDTO"
@@ -287,6 +413,12 @@
         },
         "additionalProperties": false
       },
+      "JToken": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/JToken"
+        }
+      },
       "LoginRequestDTO": {
         "type": "object",
         "properties": {
@@ -315,6 +447,64 @@
           "tipoUsuario": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SincronizacionMasivaRequestDTO": {
+        "required": [
+          "datosMasivos",
+          "tabla"
+        ],
+        "type": "object",
+        "properties": {
+          "tabla": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "datosMasivos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JToken"
+            }
+          },
+          "modoEstricto": {
+            "type": "boolean"
+          },
+          "tamanoLote": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "timeoutSeconds": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "maxReintentos": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SincronizacionRequestDTO": {
+        "required": [
+          "datos",
+          "tabla"
+        ],
+        "type": "object",
+        "properties": {
+          "tabla": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "datos": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JToken"
+            }
+          },
+          "modoEstricto": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false

@@ -12,11 +12,13 @@ namespace ApiEasyPay.Aplication.Services
     {
         private readonly ConexionSql _conexionSql;
         private readonly CustomJsonDeserializer _jsonDeserializer;
+        private readonly CustomJsonSerializer _jsonSerializer;
 
         public SincronizacionService(ConexionSql conexionSql)
         {
             _conexionSql = conexionSql;
             _jsonDeserializer = new CustomJsonDeserializer();
+            _jsonSerializer = new CustomJsonSerializer();
 
             // Configurar cadena de conexión principal
             _conexionSql.BdPrincipal = ConfigurationOptions.Instance.StrConexBdSql;
@@ -35,7 +37,6 @@ namespace ApiEasyPay.Aplication.Services
                     return (false, "Debe proporcionar el nombre de la tabla y los datos a sincronizar", null);
                 }
 
-                // Deserializamos los datos para validar el formato y la estructura
                 // Obtenemos el tipo correspondiente al modelo según la tabla
                 Type modelType = GetModelTypeForTable(request.Tabla);
                 if (modelType == null)
@@ -52,10 +53,13 @@ namespace ApiEasyPay.Aplication.Services
                     return (false, $"Error de validación en los datos: {_jsonDeserializer.Errors.ToString()}", null);
                 }
 
+                // Serializamos de vuelta el objeto (esto aplicará los formatos de fecha, etc.)
+                JObject datosSerializados = _jsonSerializer.Serialize(model);
+
                 // Si todo está correcto, llamamos al procedimiento DynamicUpsertJson
                 var comando = new SqlCommand("DynamicUpsertJson");
                 comando.CommandType = CommandType.StoredProcedure;
-                comando.Parameters.AddWithValue("@json", request.Datos.ToString());
+                comando.Parameters.AddWithValue("@json", datosSerializados.ToString());
                 comando.Parameters.AddWithValue("@tabla", request.Tabla);
                 comando.Parameters.AddWithValue("@modoEstricto", request.ModoEstricto);
                 comando.Parameters.AddWithValue("@procesarPorLotes", false); // Porque es solo un registro
@@ -83,7 +87,7 @@ namespace ApiEasyPay.Aplication.Services
             try
             {
                 // Validar entrada
-                if (string.IsNullOrEmpty(request.Tabla) || request.DatosMasivos == null || !request.DatosMasivos.Any())
+                if (string.IsNullOrEmpty(request.Tabla) || request.DatosMasivos == null || request.DatosMasivos.Count == 0)
                 {
                     return (false, "Debe proporcionar el nombre de la tabla y al menos un registro a sincronizar", null);
                 }
@@ -95,51 +99,46 @@ namespace ApiEasyPay.Aplication.Services
                     return (false, $"No se encontró un modelo que corresponda a la tabla {request.Tabla}", null);
                 }
 
-                // Validamos cada elemento del array
-                var datosValidados = new JArray();
-                foreach (var item in request.DatosMasivos)
-                {
-                    // Convertimos el JObject a un tipo específico para validar
-                    object model = _jsonDeserializer.Deserialize(modelType, item);
+                // Usamos el método DeserializeList para validar la lista completa
+                object modelList = _jsonDeserializer.DeserializeList(modelType, request.DatosMasivos);
 
-                    // Si no hay errores de validación, lo añadimos al array validado
-                    if (_jsonDeserializer.Errors.Count == 0)
-                    {
-                        datosValidados.Add(item);
-                    }
-                    else
-                    {
-                        // Opcionalmente, podríamos registrar los errores o añadir alguna lógica de manejo
-                        // En este caso continuamos procesando los demás elementos
-                        continue;
-                    }
+                // Verificamos si hay errores de validación
+                if (_jsonDeserializer.Errors.Count > 0)
+                {
+                    // Podríamos devolver los errores detallados para que el cliente sepa qué filas tienen problemas
+                    return (false, $"Error de validación en los datos: {_jsonDeserializer.Errors.ToString()}", null);
                 }
 
-                // Si no hay datos válidos, terminamos
-                if (datosValidados.Count == 0)
+                // Obtenemos el tipo genérico IEnumerable<T> para usar SerializeList
+                Type listType = typeof(IEnumerable<>).MakeGenericType(modelType);
+
+                // Verificamos si modelList es del tipo correcto para SerializeList
+                if (listType.IsAssignableFrom(modelList.GetType()))
                 {
-                    return (false, "Ningún registro pasó la validación", null);
+                    // Serializamos la lista completa para aplicar formatos
+                    JArray datosSerializados = _jsonSerializer.SerializeList((dynamic)modelList);
+
+                    // Si todo está correcto, llamamos al procedimiento DynamicUpsertJson
+                    var comando = new SqlCommand("DynamicUpsertJson");
+                    comando.CommandType = CommandType.StoredProcedure;
+                    comando.Parameters.AddWithValue("@json", datosSerializados.ToString());
+                    comando.Parameters.AddWithValue("@tabla", request.Tabla);
+                    comando.Parameters.AddWithValue("@modoEstricto", request.ModoEstricto);
+                    comando.Parameters.AddWithValue("@procesarPorLotes", true);
+                    comando.Parameters.AddWithValue("@tamanoLote", request.TamanoLote > 0 ? request.TamanoLote : 100);
+                    comando.Parameters.AddWithValue("@timeoutSeconds", request.TimeoutSeconds > 0 ? request.TimeoutSeconds : 300);
+                    comando.Parameters.AddWithValue("@maxReintentos", request.MaxReintentos > 0 ? request.MaxReintentos : 3);
+                    comando.Parameters.AddWithValue("@registrarLog", true);
+
+                    string resultado = _conexionSql.SqlJsonComand(true, comando);
+
+                    // Si no hay error, retornar los datos sincronizados
+                    return (true, $"Datos sincronizados correctamente. Total procesados: {datosSerializados.Count}", resultado);
                 }
-
-                // Preparamos el JSON con todos los registros validados
-                string jsonData = datosValidados.ToString();
-
-                // Llamamos al procedimiento DynamicUpsertJson con los datos validados
-                var comando = new SqlCommand("DynamicUpsertJson");
-                comando.CommandType = CommandType.StoredProcedure;
-                comando.Parameters.AddWithValue("@json", jsonData);
-                comando.Parameters.AddWithValue("@tabla", request.Tabla);
-                comando.Parameters.AddWithValue("@modoEstricto", request.ModoEstricto);
-                comando.Parameters.AddWithValue("@procesarPorLotes", true);
-                comando.Parameters.AddWithValue("@tamanoLote", request.TamanoLote > 0 ? request.TamanoLote : 100);
-                comando.Parameters.AddWithValue("@timeoutSeconds", request.TimeoutSeconds > 0 ? request.TimeoutSeconds : 300);
-                comando.Parameters.AddWithValue("@maxReintentos", request.MaxReintentos > 0 ? request.MaxReintentos : 3);
-                comando.Parameters.AddWithValue("@registrarLog", true);
-
-                string resultado = _conexionSql.SqlJsonComand(true, comando);
-
-                // Si no hay error, retornar los datos sincronizados
-                return (true, $"Datos sincronizados correctamente. Total procesados: {datosValidados.Count}/{request.DatosMasivos.Count}", resultado);
+                else
+                {
+                    return (false, "Error al procesar la lista de objetos", null);
+                }
             }
             catch (Exception ex)
             {
@@ -158,6 +157,13 @@ namespace ApiEasyPay.Aplication.Services
                 "clientes" => typeof(Domain.Model.Clientes),
                 "cobradores" or "cobrador" => typeof(Domain.Model.Cobradores),
                 "delegados" or "delegado" => typeof(Domain.Model.Delegados),
+                "creditos" => typeof(Domain.Model.Creditos),
+                "cuotas" => typeof(Domain.Model.Cuotas),
+                //"bolsa" => typeof(Domain.Model.Bolsa),
+                //"regdiariocuotas" => typeof(Domain.Model.RegDiarioCuotas),
+                //"valoresbolsa" => typeof(Domain.Model.ValoresBolsa),
+                //"viewcobros" => typeof(Domain.Model.ViewCobros),
+                //"amortizaciones" => typeof(Domain.Model.Amortizaciones),
                 // Añadir más mapeos según sea necesario
                 _ => null
             };
