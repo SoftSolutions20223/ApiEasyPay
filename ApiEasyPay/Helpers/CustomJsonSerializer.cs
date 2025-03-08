@@ -30,15 +30,22 @@ namespace ApiEasyPay.Helpers
                     !string.IsNullOrEmpty(displayFormatAttr.DataFormatString))
                 {
                     // Se formatea el valor según el DataFormatString.
-                    // Por ejemplo: "{0:yyyy-MM-dd}" formateará una fecha en el formato indicado.
                     string formattedValue = string.Format(displayFormatAttr.DataFormatString, value);
                     json[propName] = formattedValue;
                 }
                 else
                 {
-                    // Si no hay DisplayFormat o el valor es null, se asigna normalmente.
-                    JToken token = value != null ? JToken.FromObject(value) : JValue.CreateNull();
-                    json[propName] = token;
+                    // Manejo especial para strings con caracteres especiales
+                    if (value is string stringValue)
+                    {
+                        json[propName] = stringValue; // JsonConvert manejará la codificación
+                    }
+                    else
+                    {
+                        // Si no hay DisplayFormat o el valor es null, se asigna normalmente.
+                        JToken token = value != null ? JToken.FromObject(value) : JValue.CreateNull();
+                        json[propName] = token;
+                    }
                 }
             }
 

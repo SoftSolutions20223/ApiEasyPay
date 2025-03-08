@@ -1,5 +1,6 @@
 ﻿using ApiEasyPay.Aplication.DTOs;
 using ApiEasyPay.Aplication.Services;
+using ApiEasyPay.Helpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
@@ -8,6 +9,7 @@ namespace ApiEasyPay.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [TokenAuthorization]
     public class SincronizacionController : ControllerBase
     {
         private readonly SincronizacionService _sincronizacionService;

@@ -68,8 +68,56 @@ namespace ApiEasyPay.Helpers
 
                 try
                 {
+                    // Manejo especial para enteros
+                    if (property.PropertyType == typeof(int) || property.PropertyType == typeof(int?))
+                    {
+                        if (token.Type == JTokenType.Integer)
+                        {
+                            // Si ya es entero, asignación directa
+                            property.SetValue(obj, token.ToObject<int>());
+                        }
+                        else if (token.Type == JTokenType.Float)
+                        {
+                            // Convierte double a int si no tiene parte decimal
+                            double doubleValue = token.ToObject<double>();
+                            if (Math.Abs(doubleValue - Math.Floor(doubleValue)) < 0.00001)
+                            {
+                                property.SetValue(obj, Convert.ToInt32(doubleValue));
+                            }
+                            else
+                            {
+                                Errors.Add(new JObject
+                                {
+                                    ["Property"] = propName,
+                                    ["ErrorMessage"] = $"El valor {doubleValue} contiene decimales y no puede ser convertido a entero."
+                                });
+                                continue;
+                            }
+                        }
+                        else if (token.Type == JTokenType.String && int.TryParse(token.ToString(), out int intValue))
+                        {
+                            // Convierte strings numéricas a enteros
+                            property.SetValue(obj, intValue);
+                        }
+                        else
+                        {
+                            Errors.Add(new JObject
+                            {
+                                ["Property"] = propName,
+                                ["ErrorMessage"] = $"No se puede convertir el valor '{token}' a entero."
+                            });
+                            continue;
+                        }
+
+                        // Verificar el rango para enteros
+                        var rangeAttr = property.GetCustomAttribute<RangeAttribute>();
+                        if (rangeAttr != null)
+                        {
+                            int value = (int)property.GetValue(obj);
+                        }
+                    }
                     // Si la propiedad es de tipo string, se realizan validaciones específicas.
-                    if (property.PropertyType == typeof(string))
+                    else if (property.PropertyType == typeof(string))
                     {
                         string value = token.ToObject<string>();
 
@@ -81,7 +129,6 @@ namespace ApiEasyPay.Helpers
                                 ["Property"] = propName,
                                 ["ErrorMessage"] = "La propiedad es requerida y no puede estar vacía."
                             });
-                            // No se asigna; se mantiene el valor inicial (definido en la clase) o null.
                             continue;
                         }
 

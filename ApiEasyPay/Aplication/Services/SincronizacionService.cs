@@ -68,7 +68,7 @@ namespace ApiEasyPay.Aplication.Services
                 comando.Parameters.AddWithValue("@maxReintentos", 3);
                 comando.Parameters.AddWithValue("@registrarLog", true);
 
-                string resultado = _conexionSql.SqlJsonComand(true, comando);
+                string resultado = _conexionSql.SqlJsonComand(false, comando);
 
                 // Si no hay error, retornar los datos sincronizados
                 return (true, "Datos sincronizados correctamente", resultado);
@@ -130,10 +130,10 @@ namespace ApiEasyPay.Aplication.Services
                     comando.Parameters.AddWithValue("@maxReintentos", request.MaxReintentos > 0 ? request.MaxReintentos : 3);
                     comando.Parameters.AddWithValue("@registrarLog", true);
 
-                    string resultado = _conexionSql.SqlJsonComand(true, comando);
+                    JArray resultado = _conexionSql.SqlJsonCommandArray(false, comando);
 
                     // Si no hay error, retornar los datos sincronizados
-                    return (true, $"Datos sincronizados correctamente. Total procesados: {datosSerializados.Count}", resultado);
+                    return (true, $"Datos sincronizados correctamente. Total procesados: {datosSerializados.Count}", resultado.ToString());
                 }
                 else
                 {
