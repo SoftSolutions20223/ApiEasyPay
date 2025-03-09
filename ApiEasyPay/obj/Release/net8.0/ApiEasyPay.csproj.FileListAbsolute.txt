@@ -87,3 +87,6 @@ C:\Users\Cristian\Documents\GitHub\ApiEasyPay\ApiEasyPay\obj\Release\net8.0\refi
 C:\Users\Cristian\Documents\GitHub\ApiEasyPay\ApiEasyPay\obj\Release\net8.0\ApiEasyPay.pdb
 C:\Users\Cristian\Documents\GitHub\ApiEasyPay\ApiEasyPay\obj\Release\net8.0\ApiEasyPay.genruntimeconfig.cache
 C:\Users\Cristian\Documents\GitHub\ApiEasyPay\ApiEasyPay\obj\Release\net8.0\ref\ApiEasyPay.dll
+C:\Users\Cristian\Documents\GitHub\ApiEasyPay\ApiEasyPay\bin\Release\net8.0\Microsoft.AspNetCore.JsonPatch.dll
+C:\Users\Cristian\Documents\GitHub\ApiEasyPay\ApiEasyPay\bin\Release\net8.0\Microsoft.AspNetCore.Mvc.NewtonsoftJson.dll
+C:\Users\Cristian\Documents\GitHub\ApiEasyPay\ApiEasyPay\bin\Release\net8.0\Newtonsoft.Json.Bson.dll

@@ -121,7 +121,6 @@ namespace ApiEasyPay.Aplication.Services
                     comando = new SqlCommand($"SELECT * FROM {tabla} For json path");
                     JArray resultado = _conexionSql.SqlJsonCommandArray(true, comando);
 
-
                     return (true, "Usuario encontrado", resultado);
                 }
                 else
@@ -135,7 +134,6 @@ namespace ApiEasyPay.Aplication.Services
                     comando = new SqlCommand($"SELECT * FROM {tabla} WHERE Cod = @Codigo for json path");
                     comando.Parameters.AddWithValue("@Codigo", codigoNum);
                     JArray resultado = _conexionSql.SqlJsonCommandArray(true, comando);
-
 
                     return (true, "Usuario encontrado", resultado);
                 }

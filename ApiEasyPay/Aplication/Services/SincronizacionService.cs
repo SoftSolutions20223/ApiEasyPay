@@ -117,6 +117,7 @@ namespace ApiEasyPay.Aplication.Services
                 {
                     // Serializamos la lista completa para aplicar formatos
                     JArray datosSerializados = _jsonSerializer.SerializeList((dynamic)modelList);
+                    string json = datosSerializados.ToString();
 
                     // Si todo está correcto, llamamos al procedimiento DynamicUpsertJson
                     var comando = new SqlCommand("DynamicUpsertJson");

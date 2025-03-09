@@ -1,5 +1,6 @@
 ﻿using ApiEasyPay.Aplication.DTOs;
 using ApiEasyPay.Aplication.Services;
+using ApiEasyPay.Helpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
@@ -8,6 +9,7 @@ namespace ApiEasyPay.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [TokenAuthorization]
     public class UsuariosController : ControllerBase
     {
         private readonly UsuariosService _usuariosService;
@@ -35,7 +37,8 @@ namespace ApiEasyPay.Controllers
             if (!success)
                 return BadRequest(new { mensaje = message });
 
-            return Content(data.ToString(), "application/json");
+            // Retornar directamente el objeto JSON en lugar de convertirlo a string
+            return Ok(data);
         }
 
         /// <summary>
@@ -56,7 +59,8 @@ namespace ApiEasyPay.Controllers
             if (!success)
                 return BadRequest(new { mensaje = message });
 
-            return Content(data.ToString(), "application/json");
+            // Retornar directamente el objeto JSON en lugar de convertirlo a string
+            return Ok(data);
         }
 
         /// <summary>
@@ -73,7 +77,8 @@ namespace ApiEasyPay.Controllers
             if (!success)
                 return NotFound(new { mensaje = message });
 
-            return Content(data.ToString(), "application/json");
+            // Retornar directamente el arreglo JSON en lugar de convertirlo a string
+            return Ok(data);
         }
     }
 }
