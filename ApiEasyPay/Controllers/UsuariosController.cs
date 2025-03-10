@@ -78,7 +78,7 @@ namespace ApiEasyPay.Controllers
                 return NotFound(new { mensaje = message });
 
             // Retornar directamente el arreglo JSON en lugar de convertirlo a string
-            return Ok(data);
+            return new JsonResult(data);
         }
     }
 }

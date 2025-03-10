@@ -146,6 +146,54 @@ namespace ApiEasyPay.Helpers
 
                         property.SetValue(obj, value);
                     }
+                    else if (property.PropertyType == typeof(DateTime) || property.PropertyType == typeof(DateTime?))
+                    {
+                        if (token.Type == JTokenType.String)
+                        {
+                            string dateStr = token.ToString();
+                            DateTime dateValue;
+
+                            // Intentar con varios formatos de fecha, comenzando con dd/MM/yyyy
+                            if (DateTime.TryParseExact(dateStr,
+                                                      new[] { "dd/MM/yyyy", "yyyy-MM-dd", "MM/dd/yyyy" },
+                                                      System.Globalization.CultureInfo.InvariantCulture,
+                                                      System.Globalization.DateTimeStyles.None,
+                                                      out dateValue))
+                            {
+                                property.SetValue(obj, dateValue);
+                            }
+                            else if (DateTime.TryParse(dateStr, out dateValue))
+                            {
+                                property.SetValue(obj, dateValue);
+                            }
+                            else
+                            {
+                                Errors.Add(new JObject
+                                {
+                                    ["Property"] = propName,
+                                    ["ErrorMessage"] = $"Error al convertir la propiedad: String '{dateStr}' was not recognized as a valid DateTime."
+                                });
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            try
+                            {
+                                object value = token.ToObject(property.PropertyType);
+                                property.SetValue(obj, value);
+                            }
+                            catch (Exception ex)
+                            {
+                                Errors.Add(new JObject
+                                {
+                                    ["Property"] = propName,
+                                    ["ErrorMessage"] = $"No se puede convertir el valor '{token}' a fecha: {ex.Message}"
+                                });
+                                continue;
+                            }
+                        }
+                    }
                     else
                     {
                         // Para otros tipos se intenta convertir el token al tipo de la propiedad.

@@ -156,15 +156,16 @@ namespace ApiEasyPay.Aplication.Services
             return tableName.ToLower() switch
             {
                 "clientes" => typeof(Domain.Model.Clientes),
-                "cobradores" or "cobrador" => typeof(Domain.Model.Cobradores),
-                "delegados" or "delegado" => typeof(Domain.Model.Delegados),
+                "historialsaldos" => typeof(Domain.Model.HistorialSaldos),
+                "movfondos" => typeof(Domain.Model.MovFondos),
                 "creditos" => typeof(Domain.Model.Creditos),
                 "cuotas" => typeof(Domain.Model.Cuotas),
-                //"bolsa" => typeof(Domain.Model.Bolsa),
-                //"regdiariocuotas" => typeof(Domain.Model.RegDiarioCuotas),
-                //"valoresbolsa" => typeof(Domain.Model.ValoresBolsa),
-                //"viewcobros" => typeof(Domain.Model.ViewCobros),
-                //"amortizaciones" => typeof(Domain.Model.Amortizaciones),
+                "bolsa" => typeof(Domain.Model.Bolsa),
+                "regdiariocuotas" => typeof(Domain.Model.RegDiarioCuotas),
+                "valoresbolsa" => typeof(Domain.Model.ValoresBolsa),
+                "viewcobros" => typeof(Domain.Model.ViewCobros),
+                "amortizaciones" => typeof(Domain.Model.Amortizaciones),
+                "statuss" => typeof(Domain.Model.Statuss),
                 // Añadir más mapeos según sea necesario
                 _ => null
             };
