@@ -27,7 +27,7 @@ namespace ApiEasyPay.Controllers
             try
             {
                 var resultado = _creditosService.ObtenerResumenCreditosJefe();
-                return Ok(resultado);
+                return new JsonResult(resultado);
             }
             catch (Exception ex)
             {
@@ -45,7 +45,7 @@ namespace ApiEasyPay.Controllers
             try
             {
                 var resultado = _creditosService.ObtenerResumenPorCobrador();
-                return Ok(resultado);
+                return new JsonResult(resultado);
             }
             catch (Exception ex)
             {
@@ -64,7 +64,7 @@ namespace ApiEasyPay.Controllers
             try
             {
                 var resultado = _creditosService.ObtenerCreditosVigentes(cobradorId);
-                return Ok(resultado);
+                return new JsonResult(resultado);
             }
             catch (Exception ex)
             {
@@ -83,7 +83,7 @@ namespace ApiEasyPay.Controllers
             try
             {
                 var resultado = _creditosService.ObtenerCreditosTerminados(cobradorId);
-                return Ok(resultado);
+                return new JsonResult(resultado);
             }
             catch (Exception ex)
             {
@@ -106,7 +106,7 @@ namespace ApiEasyPay.Controllers
                 if (resultado == null)
                     return NotFound(new { mensaje = "Crédito no encontrado" });
 
-                return Ok(resultado);
+                return new JsonResult(resultado);
             }
             catch (Exception ex)
             {
@@ -129,7 +129,7 @@ namespace ApiEasyPay.Controllers
                 if (resultado == null || !resultado.HasValues)
                     return NotFound(new { mensaje = "No se encontraron cuotas para este crédito" });
 
-                return Ok(resultado);
+                return new JsonResult(resultado);
             }
             catch (Exception ex)
             {
@@ -152,7 +152,7 @@ namespace ApiEasyPay.Controllers
                 if (resultado == null || !resultado.HasValues)
                     return NotFound(new { mensaje = "No se encontró historial para este crédito" });
 
-                return Ok(resultado);
+                return new JsonResult(resultado);
             }
             catch (Exception ex)
             {

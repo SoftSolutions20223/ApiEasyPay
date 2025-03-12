@@ -60,7 +60,7 @@ namespace ApiEasyPay.Controllers
                 return BadRequest(new { mensaje = message });
 
             // Devolvemos la respuesta tal como viene del procedimiento almacenado
-            return Content(data, "application/json");
+            return new JsonResult(data);
         }
 
         /// <summary>
@@ -131,7 +131,7 @@ namespace ApiEasyPay.Controllers
                     if (!success)
                         return BadRequest(new { mensaje = message });
 
-                    return Content(data, "application/json");
+                    return new JsonResult(data);
                 }
                 else
                 {

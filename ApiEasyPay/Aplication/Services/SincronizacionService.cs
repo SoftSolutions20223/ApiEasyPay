@@ -82,7 +82,7 @@ namespace ApiEasyPay.Aplication.Services
         /// <summary>
         /// Sincroniza datos masivos con la base de datos
         /// </summary>
-        public async Task<(bool success, string message, string data)> SincronizarDatosMasivoAsync(SincronizacionMasivaRequestDTO request)
+        public async Task<(bool success, string message, JArray data)> SincronizarDatosMasivoAsync(SincronizacionMasivaRequestDTO request)
         {
             try
             {
@@ -134,7 +134,7 @@ namespace ApiEasyPay.Aplication.Services
                     JArray resultado = _conexionSql.SqlJsonCommandArray(false, comando);
 
                     // Si no hay error, retornar los datos sincronizados
-                    return (true, $"Datos sincronizados correctamente. Total procesados: {datosSerializados.Count}", resultado.ToString());
+                    return (true, $"Datos sincronizados correctamente. Total procesados: {datosSerializados.Count}", resultado);
                 }
                 else
                 {
