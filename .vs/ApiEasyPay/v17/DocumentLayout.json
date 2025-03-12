@@ -3,6 +3,18 @@
   "WorkspaceRootPath": "C:\\Users\\Cristian\\Documents\\GitHub\\ApiEasyPay\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{F673D341-FFE4-4765-803B-3787E8263F3B}|ApiEasyPay\\ApiEasyPay.csproj|c:\\users\\cristian\\documents\\github\\apieasypay\\apieasypay\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F673D341-FFE4-4765-803B-3787E8263F3B}|ApiEasyPay\\ApiEasyPay.csproj|solutionrelative:apieasypay\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F673D341-FFE4-4765-803B-3787E8263F3B}|ApiEasyPay\\ApiEasyPay.csproj|c:\\users\\cristian\\documents\\github\\apieasypay\\apieasypay\\controllers\\creditoscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F673D341-FFE4-4765-803B-3787E8263F3B}|ApiEasyPay\\ApiEasyPay.csproj|solutionrelative:apieasypay\\controllers\\creditoscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F673D341-FFE4-4765-803B-3787E8263F3B}|ApiEasyPay\\ApiEasyPay.csproj|c:\\users\\cristian\\documents\\github\\apieasypay\\apieasypay\\aplication\\services\\creditosservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F673D341-FFE4-4765-803B-3787E8263F3B}|ApiEasyPay\\ApiEasyPay.csproj|solutionrelative:apieasypay\\aplication\\services\\creditosservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{F673D341-FFE4-4765-803B-3787E8263F3B}|ApiEasyPay\\ApiEasyPay.csproj|c:\\users\\cristian\\documents\\github\\apieasypay\\apieasypay\\aplication\\services\\sincronizacionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{F673D341-FFE4-4765-803B-3787E8263F3B}|ApiEasyPay\\ApiEasyPay.csproj|solutionrelative:apieasypay\\aplication\\services\\sincronizacionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -71,10 +83,6 @@
       "RelativeMoniker": "D:0:0:{F673D341-FFE4-4765-803B-3787E8263F3B}|ApiEasyPay\\ApiEasyPay.csproj|solutionrelative:apieasypay\\aplication\\services\\loginservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{F673D341-FFE4-4765-803B-3787E8263F3B}|ApiEasyPay\\ApiEasyPay.csproj|c:\\users\\cristian\\documents\\github\\apieasypay\\apieasypay\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{F673D341-FFE4-4765-803B-3787E8263F3B}|ApiEasyPay\\ApiEasyPay.csproj|solutionrelative:apieasypay\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Cristian\\AppData\\Local\\Temp\\.vsdbgsrc\\b3ab4fb85b206f2413edb729cada949a41704b6f8655f0c544f8427c6a3a5c21\\Task.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
@@ -85,23 +93,37 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": 5,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "ValoresBolsa.cs",
-              "DocumentMoniker": "C:\\Users\\Cristian\\Documents\\GitHub\\ApiEasyPay\\ApiEasyPay\\Domain\\Model\\ValoresBolsa.cs",
-              "RelativeDocumentMoniker": "ApiEasyPay\\Domain\\Model\\ValoresBolsa.cs",
-              "ToolTip": "C:\\Users\\Cristian\\Documents\\GitHub\\ApiEasyPay\\ApiEasyPay\\Domain\\Model\\ValoresBolsa.cs",
-              "RelativeToolTip": "ApiEasyPay\\Domain\\Model\\ValoresBolsa.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABoAAAA5AAAAAAAAAA==",
+              "DocumentIndex": 1,
+              "Title": "CreditosController.cs",
+              "DocumentMoniker": "C:\\Users\\Cristian\\Documents\\GitHub\\ApiEasyPay\\ApiEasyPay\\Controllers\\CreditosController.cs",
+              "RelativeDocumentMoniker": "ApiEasyPay\\Controllers\\CreditosController.cs",
+              "ToolTip": "C:\\Users\\Cristian\\Documents\\GitHub\\ApiEasyPay\\ApiEasyPay\\Controllers\\CreditosController.cs",
+              "RelativeToolTip": "ApiEasyPay\\Controllers\\CreditosController.cs",
+              "ViewState": "AgIAAIsAAAAAAAAAAAAwwAkAAAAYAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-09T23:16:14.632Z"
+              "WhenOpened": "2025-03-12T05:01:45.777Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 2,
+              "Title": "CreditosService.cs",
+              "DocumentMoniker": "C:\\Users\\Cristian\\Documents\\GitHub\\ApiEasyPay\\ApiEasyPay\\Aplication\\Services\\CreditosService.cs",
+              "RelativeDocumentMoniker": "ApiEasyPay\\Aplication\\Services\\CreditosService.cs",
+              "ToolTip": "C:\\Users\\Cristian\\Documents\\GitHub\\ApiEasyPay\\ApiEasyPay\\Aplication\\Services\\CreditosService.cs",
+              "RelativeToolTip": "ApiEasyPay\\Aplication\\Services\\CreditosService.cs",
+              "ViewState": "AgIAABYBAAAAAAAAAAAuwAYBAAAwAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-12T03:35:18.506Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
               "Title": "Statuss.cs",
               "DocumentMoniker": "C:\\Users\\Cristian\\Documents\\GitHub\\ApiEasyPay\\ApiEasyPay\\Domain\\Model\\Statuss.cs",
               "RelativeDocumentMoniker": "ApiEasyPay\\Domain\\Model\\Statuss.cs",
@@ -113,7 +135,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 7,
               "Title": "MovFondos.cs",
               "DocumentMoniker": "C:\\Users\\Cristian\\Documents\\GitHub\\ApiEasyPay\\ApiEasyPay\\Domain\\Model\\MovFondos.cs",
               "RelativeDocumentMoniker": "ApiEasyPay\\Domain\\Model\\MovFondos.cs",
@@ -121,11 +143,12 @@
               "RelativeToolTip": "ApiEasyPay\\Domain\\Model\\MovFondos.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAA5AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-09T23:14:12.959Z"
+              "WhenOpened": "2025-03-09T23:14:12.959Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 3,
               "Title": "SincronizacionService.cs",
               "DocumentMoniker": "C:\\Users\\Cristian\\Documents\\GitHub\\ApiEasyPay\\ApiEasyPay\\Aplication\\Services\\SincronizacionService.cs",
               "RelativeDocumentMoniker": "ApiEasyPay\\Aplication\\Services\\SincronizacionService.cs",
@@ -138,7 +161,33 @@
             },
             {
               "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\Cristian\\Documents\\GitHub\\ApiEasyPay\\ApiEasyPay\\Program.cs",
+              "RelativeDocumentMoniker": "ApiEasyPay\\Program.cs",
+              "ToolTip": "C:\\Users\\Cristian\\Documents\\GitHub\\ApiEasyPay\\ApiEasyPay\\Program.cs",
+              "RelativeToolTip": "ApiEasyPay\\Program.cs",
+              "ViewState": "AgIAAB0AAAAAAAAAAAAswDIAAAAhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-08T19:59:10.493Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 5,
+              "Title": "ValoresBolsa.cs",
+              "DocumentMoniker": "C:\\Users\\Cristian\\Documents\\GitHub\\ApiEasyPay\\ApiEasyPay\\Domain\\Model\\ValoresBolsa.cs",
+              "RelativeDocumentMoniker": "ApiEasyPay\\Domain\\Model\\ValoresBolsa.cs",
+              "ToolTip": "C:\\Users\\Cristian\\Documents\\GitHub\\ApiEasyPay\\ApiEasyPay\\Domain\\Model\\ValoresBolsa.cs",
+              "RelativeToolTip": "ApiEasyPay\\Domain\\Model\\ValoresBolsa.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABoAAAA5AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-09T23:16:14.632Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
               "Title": "HistorialSaldos.cs",
               "DocumentMoniker": "C:\\Users\\Cristian\\Documents\\GitHub\\ApiEasyPay\\ApiEasyPay\\Domain\\Model\\HistorialSaldos.cs",
               "RelativeDocumentMoniker": "ApiEasyPay\\Domain\\Model\\HistorialSaldos.cs",
@@ -146,11 +195,12 @@
               "RelativeToolTip": "ApiEasyPay\\Domain\\Model\\HistorialSaldos.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAA5AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-09T23:13:39.455Z"
+              "WhenOpened": "2025-03-09T23:13:39.455Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 9,
               "Title": "FondoInversion.cs",
               "DocumentMoniker": "C:\\Users\\Cristian\\Documents\\GitHub\\ApiEasyPay\\ApiEasyPay\\Domain\\Model\\FondoInversion.cs",
               "RelativeDocumentMoniker": "ApiEasyPay\\Domain\\Model\\FondoInversion.cs",
@@ -162,7 +212,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 10,
               "Title": "Bolsa.cs",
               "DocumentMoniker": "C:\\Users\\Cristian\\Documents\\GitHub\\ApiEasyPay\\ApiEasyPay\\Domain\\Model\\Bolsa.cs",
               "RelativeDocumentMoniker": "ApiEasyPay\\Domain\\Model\\Bolsa.cs",
@@ -170,11 +220,12 @@
               "RelativeToolTip": "ApiEasyPay\\Domain\\Model\\Bolsa.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABwAAAA5AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-09T23:12:11.487Z"
+              "WhenOpened": "2025-03-09T23:12:11.487Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 4,
               "Title": "ViewCobros.cs",
               "DocumentMoniker": "C:\\Users\\Cristian\\Documents\\GitHub\\ApiEasyPay\\ApiEasyPay\\Domain\\Model\\ViewCobros.cs",
               "RelativeDocumentMoniker": "ApiEasyPay\\Domain\\Model\\ViewCobros.cs",
@@ -186,7 +237,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 11,
               "Title": "UsuariosController.cs",
               "DocumentMoniker": "C:\\Users\\Cristian\\Documents\\GitHub\\ApiEasyPay\\ApiEasyPay\\Controllers\\UsuariosController.cs",
               "RelativeDocumentMoniker": "ApiEasyPay\\Controllers\\UsuariosController.cs",
@@ -198,7 +249,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 15,
+              "DocumentIndex": 18,
               "Title": "LoginController.cs",
               "DocumentMoniker": "C:\\Users\\Cristian\\Documents\\GitHub\\ApiEasyPay\\ApiEasyPay\\Controllers\\LoginController.cs",
               "RelativeDocumentMoniker": "ApiEasyPay\\Controllers\\LoginController.cs",
@@ -206,11 +257,12 @@
               "RelativeToolTip": "ApiEasyPay\\Controllers\\LoginController.cs",
               "ViewState": "AgIAAB4AAAAAAAAAAAAYwCgAAAAdAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-08T20:07:47.182Z"
+              "WhenOpened": "2025-03-08T20:07:47.182Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 12,
               "Title": "UsuariosService.cs",
               "DocumentMoniker": "C:\\Users\\Cristian\\Documents\\GitHub\\ApiEasyPay\\ApiEasyPay\\Aplication\\Services\\UsuariosService.cs",
               "RelativeDocumentMoniker": "ApiEasyPay\\Aplication\\Services\\UsuariosService.cs",
@@ -218,23 +270,12 @@
               "RelativeToolTip": "ApiEasyPay\\Aplication\\Services\\UsuariosService.cs",
               "ViewState": "AgIAAHAAAAAAAAAAAAAAwIcAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-08T20:03:07.28Z"
+              "WhenOpened": "2025-03-08T20:03:07.28Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 17,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\Cristian\\Documents\\GitHub\\ApiEasyPay\\ApiEasyPay\\Program.cs",
-              "RelativeDocumentMoniker": "ApiEasyPay\\Program.cs",
-              "ToolTip": "C:\\Users\\Cristian\\Documents\\GitHub\\ApiEasyPay\\ApiEasyPay\\Program.cs",
-              "RelativeToolTip": "ApiEasyPay\\Program.cs",
-              "ViewState": "AgIAAB0AAAAAAAAAAAAswBkAAAAUAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-08T19:59:10.493Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 13,
               "Title": "CustomJsonDeserializer.cs",
               "DocumentMoniker": "C:\\Users\\Cristian\\Documents\\GitHub\\ApiEasyPay\\ApiEasyPay\\Helpers\\CustomJsonDeserializer.cs",
               "RelativeDocumentMoniker": "ApiEasyPay\\Helpers\\CustomJsonDeserializer.cs",
@@ -242,11 +283,12 @@
               "RelativeToolTip": "ApiEasyPay\\Helpers\\CustomJsonDeserializer.cs",
               "ViewState": "AgIAAEgAAAAAAAAAAAAYwMMAAAAVAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-08T16:27:12.931Z"
+              "WhenOpened": "2025-03-08T16:27:12.931Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 17,
               "Title": "CustomJsonSerializer.cs",
               "DocumentMoniker": "C:\\Users\\Cristian\\Documents\\GitHub\\ApiEasyPay\\ApiEasyPay\\Helpers\\CustomJsonSerializer.cs",
               "RelativeDocumentMoniker": "ApiEasyPay\\Helpers\\CustomJsonSerializer.cs",
@@ -254,11 +296,12 @@
               "RelativeToolTip": "ApiEasyPay\\Helpers\\CustomJsonSerializer.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAYwIEAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-08T23:01:40.625Z"
+              "WhenOpened": "2025-03-08T23:01:40.625Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 14,
               "Title": "Cuotas.cs",
               "DocumentMoniker": "C:\\Users\\Cristian\\Documents\\GitHub\\ApiEasyPay\\ApiEasyPay\\Domain\\Model\\Cuotas.cs",
               "RelativeDocumentMoniker": "ApiEasyPay\\Domain\\Model\\Cuotas.cs",
@@ -266,11 +309,12 @@
               "RelativeToolTip": "ApiEasyPay\\Domain\\Model\\Cuotas.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-09T12:52:06.895Z"
+              "WhenOpened": "2025-03-09T12:52:06.895Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 16,
+              "DocumentIndex": 19,
               "Title": "LoginService.cs",
               "DocumentMoniker": "C:\\Users\\Cristian\\Documents\\GitHub\\ApiEasyPay\\ApiEasyPay\\Aplication\\Services\\LoginService.cs",
               "RelativeDocumentMoniker": "ApiEasyPay\\Aplication\\Services\\LoginService.cs",
@@ -278,11 +322,12 @@
               "RelativeToolTip": "ApiEasyPay\\Aplication\\Services\\LoginService.cs",
               "ViewState": "AgIAAE0AAAAAAAAAAAAgwGIAAAAdAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-08T16:26:59.193Z"
+              "WhenOpened": "2025-03-08T16:26:59.193Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 16,
               "Title": "Clientes.cs",
               "DocumentMoniker": "C:\\Users\\Cristian\\Documents\\GitHub\\ApiEasyPay\\ApiEasyPay\\Domain\\Model\\Clientes.cs",
               "RelativeDocumentMoniker": "ApiEasyPay\\Domain\\Model\\Clientes.cs",
@@ -290,11 +335,12 @@
               "RelativeToolTip": "ApiEasyPay\\Domain\\Model\\Clientes.cs",
               "ViewState": "AgIAAAgAAAAAAAAAAAAAwBAAAAAtAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-08T16:15:38.799Z"
+              "WhenOpened": "2025-03-08T16:15:38.799Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 18,
+              "DocumentIndex": 20,
               "Title": "Task.cs",
               "DocumentMoniker": "C:\\Users\\Cristian\\AppData\\Local\\Temp\\.vsdbgsrc\\b3ab4fb85b206f2413edb729cada949a41704b6f8655f0c544f8427c6a3a5c21\\Task.cs",
               "RelativeDocumentMoniker": "..\\..\\..\\AppData\\Local\\Temp\\.vsdbgsrc\\b3ab4fb85b206f2413edb729cada949a41704b6f8655f0c544f8427c6a3a5c21\\Task.cs",
@@ -307,7 +353,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 15,
               "Title": "SincronizacionController.cs",
               "DocumentMoniker": "C:\\Users\\Cristian\\Documents\\GitHub\\ApiEasyPay\\ApiEasyPay\\Controllers\\SincronizacionController.cs",
               "RelativeDocumentMoniker": "ApiEasyPay\\Controllers\\SincronizacionController.cs",
@@ -315,7 +361,8 @@
               "RelativeToolTip": "ApiEasyPay\\Controllers\\SincronizacionController.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-08T16:11:15.879Z"
+              "WhenOpened": "2025-03-08T16:11:15.879Z",
+              "EditorCaption": ""
             }
           ]
         }

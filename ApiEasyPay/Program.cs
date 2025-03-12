@@ -45,6 +45,7 @@ builder.Services.AddScoped<UsuariosService>();
 builder.Services.AddScoped<CustomJsonSerializer>();
 builder.Services.AddScoped<CustomJsonDeserializer>();
 builder.Services.AddScoped<SincronizacionService>();
+builder.Services.AddScoped<CreditosService>();
 
 builder.Services.AddControllers()
     .AddNewtonsoftJson(options =>
