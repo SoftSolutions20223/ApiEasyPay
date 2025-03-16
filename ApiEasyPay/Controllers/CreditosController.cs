@@ -45,7 +45,7 @@ namespace ApiEasyPay.Controllers
             try
             {
                 var resultado = _creditosService.ObtenerResumenPorCobrador();
-                return new JsonResult(resultado);
+                return Ok(resultado);
             }
             catch (Exception ex)
             {

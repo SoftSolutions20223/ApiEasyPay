@@ -9,7 +9,6 @@ namespace ApiEasyPay.Aplication.Services
     {
         private readonly ConexionSql _conexionSql;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private int _jefeId;
 
         public BolsasService(ConexionSql conexionSql, IHttpContextAccessor httpContextAccessor)
         {
@@ -20,23 +19,21 @@ namespace ApiEasyPay.Aplication.Services
             _conexionSql.BdPrincipal = ConfigurationOptions.Instance.StrConexBdSql;
 
             // Obtener ID del jefe desde el contexto HTTP
-            ObtenerIdJefe();
         }
-
-        private void ObtenerIdJefe()
+        private int ObtenerIdJefe()
         {
             var context = _httpContextAccessor.HttpContext;
             if (context == null)
-                return;
+                throw new UnauthorizedAccessException("Contexto HTTP no disponible");
 
             var sesionData = context.Items["SesionData"] as JObject;
             if (sesionData == null)
-                return;
+                throw new UnauthorizedAccessException("Información de sesión no disponible");
 
             // Si el rol es 'A' (Admin/Jefe), obtener su ID
             if (sesionData["Rol"]?.ToString() == "A")
             {
-                _jefeId = sesionData["Cod"]?.Value<int>() ?? 0;
+                return sesionData["Cod"]?.Value<int>() ?? 0;
             }
             else
             {
@@ -50,6 +47,7 @@ namespace ApiEasyPay.Aplication.Services
         /// </summary>
         public JArray ObtenerBolsasAbiertas()
         {
+            var _jefeId = ObtenerIdJefe();
             var comando = new SqlCommand(@"
                 SELECT 
                     ISNULL(B.TotalGastos, 0) AS TotalGastos,
@@ -67,11 +65,12 @@ namespace ApiEasyPay.Aplication.Services
                     CONVERT(VARCHAR(12), B.FechaInicio, 103) AS FechaInicio
                 FROM Bolsa B 
                 INNER JOIN Cobrador C ON B.Cobrador = C.Cod 
-                WHERE B.Estado = 'A' AND C.Jefe = @jefeId");
+                WHERE B.Estado = 'A' AND C.Jefe = " + _jefeId + " for json path");
 
-            comando.Parameters.AddWithValue("@jefeId", _jefeId);
+            string jsonResult = _conexionSql.SqlJsonComand(false, comando);
+            JArray resultado = JArray.Parse(jsonResult);
 
-            return _conexionSql.SqlJsonCommandArray(false, comando);
+            return resultado;
         }
 
         /// <summary>
@@ -79,6 +78,7 @@ namespace ApiEasyPay.Aplication.Services
         /// </summary>
         public JArray ObtenerBolsasCerradas()
         {
+            var _jefeId = ObtenerIdJefe();
             var comando = new SqlCommand(@"
                 SELECT 
                     ISNULL(B.TotalGastos, 0) AS TotalGastos,
@@ -97,11 +97,12 @@ namespace ApiEasyPay.Aplication.Services
                     CONVERT(VARCHAR(12), B.FechaInicio, 103) AS FechaInicio
                 FROM Bolsa B 
                 INNER JOIN Cobrador C ON B.Cobrador = C.Cod 
-                WHERE B.Estado = 'C' AND C.Jefe = @jefeId");
+                WHERE B.Estado = 'C' AND C.Jefe ="+_jefeId + " for json path");
 
-            comando.Parameters.AddWithValue("@jefeId", _jefeId);
+            string jsonResult = _conexionSql.SqlJsonComand(false, comando);
+            JArray resultado = JArray.Parse(jsonResult);
 
-            return _conexionSql.SqlJsonCommandArray(false, comando);
+            return resultado;
         }
 
         /// <summary>
@@ -109,24 +110,23 @@ namespace ApiEasyPay.Aplication.Services
         /// </summary>
         public JObject ObtenerDatosBolsa(string fecha)
         {
+            var _jefeId = ObtenerIdJefe();
             var comando = new SqlCommand(@"
                 SELECT 
-                    CONVERT(VARCHAR(12), @fecha, 103) AS Fecha, 
+                    CONVERT(VARCHAR(12),"+ fecha + @", 103) AS Fecha, 
                     ISNULL((
                         SELECT SUM(B.SaldoActual) AS Total 
                         FROM Bolsa B 
                         INNER JOIN Cobrador C ON B.Cobrador = C.Cod 
-                        WHERE B.Estado = 'A' AND C.Jefe = @jefeId
+                        WHERE B.Estado = 'A' AND C.Jefe = "+ _jefeId + @"
                     ), 0) AS TotalBolsaA, 
                     ISNULL((
                         SELECT Monto 
                         FROM FondoInversion 
-                        WHERE Jefe = @jefeId
+                        WHERE Jefe = "+ _jefeId + @"
                     ), 0) AS TotalBolsaC
                 FOR JSON PATH, WITHOUT_ARRAY_WRAPPER");
 
-            comando.Parameters.AddWithValue("@fecha", fecha);
-            comando.Parameters.AddWithValue("@jefeId", _jefeId);
 
             string resultado = _conexionSql.SqlJsonComand(false, comando);
             if (string.IsNullOrEmpty(resultado) || resultado == "[]")
@@ -152,11 +152,14 @@ namespace ApiEasyPay.Aplication.Services
                 FROM ValoresBolsa 
                 WHERE Credito IS NULL 
                   AND Gasto IS NULL 
-                  AND Bolsa = @codBolsa");
+                  AND Bolsa ="+ codBolsa.ToString() + " for json path");
 
-            comando.Parameters.AddWithValue("@codBolsa", codBolsa);
 
-            return _conexionSql.SqlJsonCommandArray(false, comando);
+
+            string jsonResult = _conexionSql.SqlJsonComand(false, comando);
+            JArray resultado = JArray.Parse(jsonResult);
+
+            return resultado;
         }
 
         /// <summary>
@@ -176,26 +179,26 @@ namespace ApiEasyPay.Aplication.Services
                 FROM ValoresBolsa 
                 WHERE Credito IS NULL 
                   AND Entregas IS NULL 
-                  AND Bolsa = @codBolsa");
+                  AND Bolsa ="+ codBolsa.ToString() + " for json path");
 
-            comando.Parameters.AddWithValue("@codBolsa", codBolsa);
+            string jsonResult = _conexionSql.SqlJsonComand(false, comando);
+            JArray resultado = JArray.Parse(jsonResult);
 
-            return _conexionSql.SqlJsonCommandArray(false, comando);
+            return resultado;
         }
+
 
         /// <summary>
         /// Valida que la bolsa pertenezca a un cobrador del jefe actual
         /// </summary>
         private void ValidarBolsaPerteneciente(int codBolsa)
         {
+            var _jefeId = ObtenerIdJefe();
             var comando = new SqlCommand(@"
                 SELECT COUNT(1) 
                 FROM Bolsa B
                 INNER JOIN Cobrador C ON B.Cobrador = C.Cod
-                WHERE B.Cod = @codBolsa AND C.Jefe = @jefeId");
-
-            comando.Parameters.AddWithValue("@codBolsa", codBolsa);
-            comando.Parameters.AddWithValue("@jefeId", _jefeId);
+                WHERE B.Cod = "+codBolsa+" AND C.Jefe ="+_jefeId.ToString() + " for json path");
 
             int count = Convert.ToInt32(_conexionSql.TraerDato(comando.CommandText, true));
 

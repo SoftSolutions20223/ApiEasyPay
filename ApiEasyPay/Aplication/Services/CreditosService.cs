@@ -10,7 +10,6 @@ namespace ApiEasyPay.Aplication.Services
         {
         private readonly ConexionSql _conexionSql;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private int _jefeId;
 
         public CreditosService(ConexionSql conexionSql, IHttpContextAccessor httpContextAccessor)
         {
@@ -20,24 +19,22 @@ namespace ApiEasyPay.Aplication.Services
             // Configurar cadena de conexión principal
             _conexionSql.BdPrincipal = ConfigurationOptions.Instance.StrConexBdSql;
 
-            // Obtener ID del jefe desde el contexto HTTP
-            ObtenerIdJefe();
         }
 
-        private void ObtenerIdJefe()
+        private int ObtenerIdJefe()
         {
             var context = _httpContextAccessor.HttpContext;
             if (context == null)
-                return;
+                throw new UnauthorizedAccessException("Contexto HTTP no disponible");
 
             var sesionData = context.Items["SesionData"] as JObject;
             if (sesionData == null)
-                return;
+                throw new UnauthorizedAccessException("Información de sesión no disponible");
 
             // Si el rol es 'A' (Admin/Jefe), obtener su ID
             if (sesionData["Rol"]?.ToString() == "A")
             {
-                _jefeId = sesionData["Cod"]?.Value<int>() ?? 0;
+                return sesionData["Cod"]?.Value<int>() ?? 0;
             }
             else
             {
@@ -51,9 +48,8 @@ namespace ApiEasyPay.Aplication.Services
         /// </summary>
         private void ValidarCobradorPerteneciente(int cobradorId)
         {
-            var comando = new SqlCommand("SELECT COUNT(1) FROM Cobrador WHERE Cod = @cobradorId AND Jefe = @jefeId");
-            comando.Parameters.AddWithValue("@cobradorId", cobradorId);
-            comando.Parameters.AddWithValue("@jefeId", _jefeId);
+            var _jefeId = ObtenerIdJefe();
+            var comando = new SqlCommand("SELECT COUNT(1) FROM Cobrador WHERE Cod = "+cobradorId.ToString()+" AND Jefe ="+_jefeId);
 
             int count = Convert.ToInt32(_conexionSql.TraerDato(comando.CommandText, true));
 
@@ -68,6 +64,7 @@ namespace ApiEasyPay.Aplication.Services
         /// </summary>
         public JArray ObtenerResumenCreditosJefe()
         {
+            var _jefeId = ObtenerIdJefe();
             var comando = new SqlCommand(@"
                 SELECT 
                     COUNT(CR.Cod) AS CreditosCreados,
@@ -83,11 +80,12 @@ namespace ApiEasyPay.Aplication.Services
                     SUM(CASE WHEN CR.Estado = 'T' THEN CR.TotalPagar - CR.TotalPagado ELSE 0 END) AS SaldoPrestadoT
                 FROM Creditos CR 
                 INNER JOIN Cobrador C ON C.Cod = CR.Cobrador 
-                WHERE C.Jefe = @jefeId");
+                WHERE C.Jefe = "+_jefeId+" for json path");
 
-            comando.Parameters.AddWithValue("@jefeId", _jefeId);
+            string jsonResult = _conexionSql.SqlJsonComand(false, comando);
+            JArray resultado = JArray.Parse(jsonResult);
 
-            return _conexionSql.SqlJsonCommandArray(false, comando);
+            return resultado;
         }
 
         /// <summary>
@@ -95,6 +93,7 @@ namespace ApiEasyPay.Aplication.Services
         /// </summary>
         public JArray ObtenerResumenPorCobrador()
         {
+            var _jefeId = ObtenerIdJefe();
             var comando = new SqlCommand(@"
                 SELECT 
                     C.Cod AS CodCobrador,
@@ -112,12 +111,12 @@ namespace ApiEasyPay.Aplication.Services
                     SUM(CASE WHEN CR.Estado = 'T' THEN CR.TotalPagar - CR.TotalPagado ELSE 0 END) AS SaldoPrestadoT
                 FROM Cobrador C
                 LEFT JOIN Creditos CR ON C.Cod = CR.Cobrador
-                WHERE C.Jefe = @jefeId
-                GROUP BY C.Cod, C.Nombres, C.Apellidos");
+                WHERE C.Jefe = "+_jefeId+@"
+                GROUP BY C.Cod, C.Nombres, C.Apellidos for json path");
+            string jsonResult = _conexionSql.SqlJsonComand(false, comando);
+            JArray resultado = JArray.Parse(jsonResult);
 
-            comando.Parameters.AddWithValue("@jefeId", _jefeId);
-
-            return _conexionSql.SqlJsonCommandArray(false, comando);
+            return resultado;
         }
 
         /// <summary>
@@ -158,12 +157,13 @@ namespace ApiEasyPay.Aplication.Services
                 FROM Creditos Cr 
                 INNER JOIN Clientes Cl ON Cr.Cliente = Cl.Cod AND Cr.Cobrador = Cl.Cobrador
                 INNER JOIN Cobrador CB ON CB.Cod = Cr.Cobrador
-                WHERE Cr.Estado = 'V' AND Cr.Cobrador = @cobradorId
-                ORDER BY Cr.OrdenRuta ASC");
+                WHERE Cr.Estado = 'V' AND Cr.Cobrador = "+cobradorId.ToString()+@"
+                ORDER BY Cr.OrdenRuta ASC for json path");
 
-            comando.Parameters.AddWithValue("@cobradorId", cobradorId);
+            string jsonResult = _conexionSql.SqlJsonComand(false, comando);
+            JArray resultado = JArray.Parse(jsonResult);
 
-            return _conexionSql.SqlJsonCommandArray(false, comando);
+            return resultado;
         }
 
         /// <summary>
@@ -204,12 +204,14 @@ namespace ApiEasyPay.Aplication.Services
                 FROM Creditos Cr 
                 INNER JOIN Clientes Cl ON Cr.Cliente = Cl.Cod AND Cr.Cobrador = Cl.Cobrador
                 INNER JOIN Cobrador CB ON CB.Cod = Cr.Cobrador
-                WHERE Cr.Estado = 'T' AND Cr.Cobrador = @cobradorId
-                ORDER BY Cr.Cod DESC");
+                WHERE Cr.Estado = 'T' AND Cr.Cobrador = "+cobradorId.ToString()+@"
+                ORDER BY Cr.Cod DESC for json path");
 
-            comando.Parameters.AddWithValue("@cobradorId", cobradorId);
 
-            return _conexionSql.SqlJsonCommandArray(false, comando);
+            string jsonResult = _conexionSql.SqlJsonComand(false, comando);
+            JArray resultado = JArray.Parse(jsonResult);
+
+            return resultado;
         }
 
         /// <summary>
@@ -232,11 +234,8 @@ namespace ApiEasyPay.Aplication.Services
                 FROM Creditos Cr 
                 INNER JOIN Clientes Cl ON Cr.Cliente = Cl.Cod AND Cr.Cobrador = Cl.Cobrador
                 INNER JOIN Cobrador CB ON CB.Cod = Cr.Cobrador
-                WHERE Cr.Cod = @creditoId AND Cr.Cobrador = @cobradorId
+                WHERE Cr.Cod = "+creditoId.ToString()+" AND Cr.Cobrador = "+cobradorId.ToString()+@"
                 FOR JSON PATH, WITHOUT_ARRAY_WRAPPER");
-
-            comando.Parameters.AddWithValue("@creditoId", creditoId);
-            comando.Parameters.AddWithValue("@cobradorId", cobradorId);
 
             string resultado = _conexionSql.SqlJsonComand(false, comando);
             if (string.IsNullOrEmpty(resultado) || resultado == "[]")
@@ -265,13 +264,13 @@ namespace ApiEasyPay.Aplication.Services
                         WHEN 'C' THEN 'Cancelada' 
                     END AS EstadoDescripcion
                 FROM Cuotas Cu
-                WHERE Cu.Credito = @creditoId AND Cu.Cobrador = @cobradorId
-                ORDER BY Cu.NumCuota ASC");
+                WHERE Cu.Credito = "+creditoId.ToString()+" AND Cu.Cobrador = "+cobradorId.ToString()+@"
+                ORDER BY Cu.NumCuota ASC for json path");
 
-            comando.Parameters.AddWithValue("@creditoId", creditoId);
-            comando.Parameters.AddWithValue("@cobradorId", cobradorId);
+            string jsonResult = _conexionSql.SqlJsonComand(false, comando);
+            JArray resultado = JArray.Parse(jsonResult);
 
-            return _conexionSql.SqlJsonCommandArray(false, comando);
+            return resultado;
         }
 
         /// <summary>
@@ -291,13 +290,14 @@ namespace ApiEasyPay.Aplication.Services
                     CONVERT(VARCHAR(10), RD.Fecha, 103) AS FechaFormateada
                 FROM RegDiarioCuotas RD
                 INNER JOIN Bolsa B ON RD.Bolsa = B.Cod
-                WHERE RD.Credito = @creditoId AND RD.Cobrador = @cobradorId
-                ORDER BY RD.Fecha DESC");
+                WHERE RD.Credito = "+creditoId.ToString()+" AND RD.Cobrador = "+cobradorId.ToString()+@"
+                ORDER BY RD.Fecha DESC for json path");
 
-            comando.Parameters.AddWithValue("@creditoId", creditoId);
-            comando.Parameters.AddWithValue("@cobradorId", cobradorId);
 
-            return _conexionSql.SqlJsonCommandArray(false, comando);
+            string jsonResult = _conexionSql.SqlJsonComand(false, comando);
+            JArray resultado = JArray.Parse(jsonResult);
+
+            return resultado;
         }
     }
 }

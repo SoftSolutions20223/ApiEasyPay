@@ -48,11 +48,13 @@ builder.Services.AddScoped<SincronizacionService>();
 builder.Services.AddScoped<CreditosService>();
 builder.Services.AddScoped<BolsasService>();
 
+
 builder.Services.AddControllers()
     .AddNewtonsoftJson(options =>
     {
         options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
     });
+builder.Services.AddHttpContextAccessor();
 
 
 var app = builder.Build();

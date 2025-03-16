@@ -11,34 +11,33 @@ namespace ApiEasyPay.Aplication.Services
     {
         private readonly ConexionSql _conexionSql;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private string _Contraseña;
-        private string _Rol;
 
-        public UsuariosService(ConexionSql conexionSql,string Contraseña, string Rol)
+
+        public UsuariosService(ConexionSql conexionSql, IHttpContextAccessor httpContextAccessor)
         {
             _conexionSql = conexionSql;
-            _Contraseña=Contraseña;
-            _Rol=Rol;
+            _httpContextAccessor = httpContextAccessor;
+
             // Configurar cadena de conexión principal
             _conexionSql.BdPrincipal = ConfigurationOptions.Instance.StrConexBdSql;
-            ObtenerIdJefe();
+
+            // Inicializar valores desde el contexto HTTP
         }
 
-        private void ObtenerIdJefe()
+        private JObject ObtenerIdJefe()
         {
             var context = _httpContextAccessor.HttpContext;
             if (context == null)
-                return;
+                throw new UnauthorizedAccessException("Contexto HTTP no disponible");
 
             var sesionData = context.Items["SesionData"] as JObject;
             if (sesionData == null)
-                return;
+                throw new UnauthorizedAccessException("Información de sesión no disponible");
 
             // Si el rol es 'A' (Admin/Jefe), obtener su ID
             if (sesionData["Rol"]?.ToString() == "A")
             {
-                _Contraseña = sesionData["Contraseña"]?.ToString();
-                _Rol = sesionData["Rol"]?.ToString();
+                return sesionData;
             }
             else
             {
@@ -317,9 +316,10 @@ namespace ApiEasyPay.Aplication.Services
         {
             try
             {
+                var sesion = ObtenerIdJefe();
                 // Verificar la contraseña del administrador con el token de sesión
-                if ( _Rol != "A" ||
-                    _Contraseña != adminPassword)
+                if ( sesion["Rol"].ToString() != "A" ||
+                    sesion["Contraseña"].ToString() != adminPassword)
                 {
                     return (false, "Contraseña de administrador incorrecta o permisos insuficientes");
                 }

@@ -46,6 +46,7 @@ namespace ApiEasyPay.Helpers
             // Almacenar información del usuario en el contexto
             context.HttpContext.Items["Usuario"] = sesion.Usuario;
             context.HttpContext.Items["Rol"] = sesion.Rol;
+            context.HttpContext.Items["Contraseña"] = sesion.Contraseña;
             context.HttpContext.Items["SesionData"] = sessionData;
 
             await next();
