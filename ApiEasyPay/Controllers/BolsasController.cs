@@ -137,5 +137,75 @@ namespace ApiEasyPay.Controllers
                 return BadRequest(new { mensaje = $"Error al obtener gastos de bolsa: {ex.Message}" });
             }
         }
+
+        /// <summary>
+        /// Obtiene un resumen de las bolsas abiertas de los cobradores asignados a un delegado específico
+        /// </summary>
+        /// <returns>Lista de bolsas abiertas en formato JSON</returns>
+        [HttpGet("delegado/abiertas")]
+        public IActionResult GetBolsasAbiertasPorDelegado()
+        {
+            try
+            {
+                var resultado = _bolsaService.ObtenerBolsasAbiertasPorDelegado();
+                return new JsonResult(resultado);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { mensaje = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = $"Error al obtener bolsas abiertas por delegado: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
+        /// Obtiene un resumen de las bolsas cerradas de los cobradores asignados a un delegado específico
+        /// </summary>
+        /// <returns>Lista de bolsas cerradas en formato JSON</returns>
+        [HttpGet("delegado/cerradas")]
+        public IActionResult GetBolsasCerradasPorDelegado()
+        {
+            try
+            {
+                var resultado = _bolsaService.ObtenerBolsasCerradasPorDelegado();
+                return new JsonResult(resultado);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { mensaje = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = $"Error al obtener bolsas cerradas por delegado: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
+        /// Obtiene datos resumidos de bolsa para los cobradores de un delegado específico en la fecha indicada
+        /// </summary>
+        /// <param name="fecha">Fecha en formato yyyy-MM-dd (opcional)</param>
+        /// <returns>Datos de las bolsas en formato JSON</returns>
+        [HttpGet("delegado/datos")]
+        public IActionResult GetDatosBolsaPorDelegado([FromQuery] string fecha)
+        {
+            try
+            {
+                var resultado = _bolsaService.ObtenerDatosBolsaPorDelegado(fecha);
+                if (resultado == null)
+                    return NotFound(new { mensaje = "No se encontraron datos para el delegado y fecha especificados" });
+
+                return new JsonResult(resultado);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { mensaje = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = $"Error al obtener datos de bolsa por delegado: {ex.Message}" });
+            }
+        }
     }
 }

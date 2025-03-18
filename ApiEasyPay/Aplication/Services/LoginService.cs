@@ -81,7 +81,7 @@ namespace ApiEasyPay.Aplication.Services
             var updateCmd = new SqlCommand("EXEC PActualizarEstadoSesion @Usuario, @Token, @TipoUsuario");
             updateCmd.Parameters.AddWithValue("@Usuario", usuario);
             updateCmd.Parameters.AddWithValue("@Token", token);
-            updateCmd.Parameters.AddWithValue("@TipoUsuario", resultado["Rol"]?.ToString() == "A" ? "J" : "C");
+            updateCmd.Parameters.AddWithValue("@TipoUsuario", resultado["Rol"]?.ToString());
 
             JObject updateResult = _conexionSql.SqlJsonCommandObject(true, updateCmd);
             if (updateResult["MensajeError"] != null)

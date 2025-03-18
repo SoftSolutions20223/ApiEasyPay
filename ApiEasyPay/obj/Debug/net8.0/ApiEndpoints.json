@@ -1,5 +1,244 @@
 [
   {
+    "ContainingType": "ApiEasyPay.Controllers.BolsasController",
+    "Method": "GetEntregasBolsa",
+    "RelativePath": "api/Bolsas/{codBolsa}/entregas",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "codBolsa",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.BolsasController",
+    "Method": "GetGastosBolsa",
+    "RelativePath": "api/Bolsas/{codBolsa}/gastos",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "codBolsa",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.BolsasController",
+    "Method": "GetBolsasAbiertas",
+    "RelativePath": "api/Bolsas/abiertas",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.BolsasController",
+    "Method": "GetBolsasCerradas",
+    "RelativePath": "api/Bolsas/cerradas",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.BolsasController",
+    "Method": "GetDatosBolsa",
+    "RelativePath": "api/Bolsas/datos",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "fecha",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.BolsasController",
+    "Method": "GetBolsasAbiertasPorDelegado",
+    "RelativePath": "api/Bolsas/delegado/abiertas",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.BolsasController",
+    "Method": "GetBolsasCerradasPorDelegado",
+    "RelativePath": "api/Bolsas/delegado/cerradas",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.BolsasController",
+    "Method": "GetDatosBolsaPorDelegado",
+    "RelativePath": "api/Bolsas/delegado/datos",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "fecha",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.CreditosController",
+    "Method": "GetCreditoDetalle",
+    "RelativePath": "api/Creditos/{cobradorId}/credito/{creditoId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "cobradorId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "creditoId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.CreditosController",
+    "Method": "GetCuotasCredito",
+    "RelativePath": "api/Creditos/{cobradorId}/credito/{creditoId}/cuotas",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "cobradorId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "creditoId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.CreditosController",
+    "Method": "GetHistorialCredito",
+    "RelativePath": "api/Creditos/{cobradorId}/credito/{creditoId}/historial",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "cobradorId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "creditoId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.CreditosController",
+    "Method": "GetResumenCreditosDelegado",
+    "RelativePath": "api/Creditos/resumen-delegado",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.CreditosController",
+    "Method": "GetResumenCreditosJefe",
+    "RelativePath": "api/Creditos/resumen-jefe",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.CreditosController",
+    "Method": "GetResumenPorCobrador",
+    "RelativePath": "api/Creditos/resumen-por-cobrador",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.CreditosController",
+    "Method": "GetResumenPorCobradorDelegado",
+    "RelativePath": "api/Creditos/resumen-por-cobrador-delegado",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.CreditosController",
+    "Method": "GetCreditosTerminados",
+    "RelativePath": "api/Creditos/terminados/{cobradorId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "cobradorId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.CreditosController",
+    "Method": "GetCreditosVigentes",
+    "RelativePath": "api/Creditos/vigentes/{cobradorId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "cobradorId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "ApiEasyPay.Controllers.LoginController",
     "Method": "CerrarSesion",
     "RelativePath": "api/Login/cerrar",
@@ -144,6 +383,27 @@
   },
   {
     "ContainingType": "ApiEasyPay.Controllers.UsuariosController",
+    "Method": "EliminarCobrador",
+    "RelativePath": "api/Usuarios/cobradores/{cobradorId}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "cobradorId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "request",
+        "Type": "ApiEasyPay.Aplication.DTOs.DeleteCobradorRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.UsuariosController",
     "Method": "CrearUsuario",
     "RelativePath": "api/Usuarios/crear",
     "HttpMethod": "POST",
@@ -153,6 +413,80 @@
       {
         "Name": "request",
         "Type": "ApiEasyPay.Aplication.DTOs.UsuarioRequestDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.UsuariosController",
+    "Method": "EliminarDelegado",
+    "RelativePath": "api/Usuarios/delegados/{delegadoId}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "delegadoId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.UsuariosController",
+    "Method": "AsignarCobradorADelegado",
+    "RelativePath": "api/Usuarios/delegados/{delegadoId}/asignar-cobrador/{cobradorId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "delegadoId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "cobradorId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.UsuariosController",
+    "Method": "ObtenerCobradoresDeDelegado",
+    "RelativePath": "api/Usuarios/delegados/{delegadoId}/cobradores",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "delegadoId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.UsuariosController",
+    "Method": "QuitarCobradorDeDelegado",
+    "RelativePath": "api/Usuarios/delegados/{delegadoId}/quitar-cobrador/{cobradorId}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "delegadoId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "cobradorId",
+        "Type": "System.Int32",
         "IsRequired": true
       }
     ],

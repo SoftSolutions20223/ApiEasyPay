@@ -21,7 +21,7 @@ namespace ApiEasyPay.Aplication.Services
 
         }
 
-        private int ObtenerIdJefe()
+        private int ObtenerId()
         {
             var context = _httpContextAccessor.HttpContext;
             if (context == null)
@@ -32,7 +32,7 @@ namespace ApiEasyPay.Aplication.Services
                 throw new UnauthorizedAccessException("Información de sesión no disponible");
 
             // Si el rol es 'A' (Admin/Jefe), obtener su ID
-            if (sesionData["Rol"]?.ToString() == "A")
+            if (sesionData["Rol"]?.ToString() == "J" || sesionData["Rol"]?.ToString() == "D")
             {
                 return sesionData["Cod"]?.Value<int>() ?? 0;
             }
@@ -48,7 +48,7 @@ namespace ApiEasyPay.Aplication.Services
         /// </summary>
         private void ValidarCobradorPerteneciente(int cobradorId)
         {
-            var _jefeId = ObtenerIdJefe();
+            var _jefeId = ObtenerId();
             var comando = new SqlCommand("SELECT COUNT(1) FROM Cobrador WHERE Cod = "+cobradorId.ToString()+" AND Jefe ="+_jefeId);
 
             int count = Convert.ToInt32(_conexionSql.TraerDato(comando.CommandText, true));
@@ -64,7 +64,7 @@ namespace ApiEasyPay.Aplication.Services
         /// </summary>
         public JArray ObtenerResumenCreditosJefe()
         {
-            var _jefeId = ObtenerIdJefe();
+            var _jefeId = ObtenerId();
             var comando = new SqlCommand(@"
                 SELECT 
                     COUNT(CR.Cod) AS CreditosCreados,
@@ -89,11 +89,74 @@ namespace ApiEasyPay.Aplication.Services
         }
 
         /// <summary>
+        /// Obtiene un resumen estadístico de créditos para el delegado actual
+        /// </summary>
+        public JArray ObtenerResumenCreditosDelegado()
+        {
+            var _delegadoId = ObtenerId();
+            var comando = new SqlCommand(@"
+        SELECT 
+            COUNT(CR.Cod) AS CreditosCreados,
+            SUM(CASE WHEN CR.Estado = 'V' THEN CR.Total ELSE 0 END) AS TotalPrestadoV,
+            SUM(CASE WHEN CR.Estado = 'V' THEN CR.TotalPagado ELSE 0 END) AS TotalPagadoV,
+            SUM(CASE WHEN CR.Estado = 'V' THEN CR.TotalPagar ELSE 0 END) AS TotalPagarV,
+            SUM(CASE WHEN CR.Estado = 'V' THEN CR.TotalPagar - CR.TotalPagado ELSE 0 END) AS SaldoPrestadoV,
+            SUM(CASE WHEN CR.Estado = 'V' THEN 1 ELSE 0 END) AS CreditosVigentes,
+            SUM(CASE WHEN CR.Estado = 'T' THEN CR.Total ELSE 0 END) AS TotalPrestadoT,
+            SUM(CASE WHEN CR.Estado = 'T' THEN CR.TotalPagado ELSE 0 END) AS TotalPagadoT,
+            SUM(CASE WHEN CR.Estado = 'T' THEN CR.TotalPagar ELSE 0 END) AS TotalPagarT,
+            SUM(CASE WHEN CR.Estado = 'T' THEN 1 ELSE 0 END) AS CreditosTerminados,
+            SUM(CASE WHEN CR.Estado = 'T' THEN CR.TotalPagar - CR.TotalPagado ELSE 0 END) AS SaldoPrestadoT
+        FROM Creditos CR 
+        INNER JOIN Cobrador C ON C.Cod = CR.Cobrador 
+        INNER JOIN Delegados_Cobradores DC ON DC.Cobrador = C.Cod
+        WHERE DC.Delegado = " + _delegadoId + " for json path");
+
+            string jsonResult = _conexionSql.SqlJsonComand(false, comando);
+            JArray resultado = JArray.Parse(jsonResult);
+
+            return resultado;
+        }
+
+        /// <summary>
+        /// Obtiene estadísticas de créditos agrupadas por cobrador asignado al delegado
+        /// </summary>
+        public JArray ObtenerResumenPorCobradorDelegado()
+        {
+            var _delegadoId = ObtenerId();
+            var comando = new SqlCommand(@"
+        SELECT 
+            C.Cod AS CodCobrador,
+            C.Nombres + ' ' + C.Apellidos AS Nombres,
+            COUNT(CR.Cod) AS CreditosCreados,
+            SUM(CASE WHEN CR.Estado = 'V' THEN 1 ELSE 0 END) AS CreditosVigentes,
+            SUM(CASE WHEN CR.Estado = 'V' THEN CR.Total ELSE 0 END) AS TotalPrestadoV,
+            SUM(CASE WHEN CR.Estado = 'V' THEN CR.TotalPagar ELSE 0 END) AS TotalPagarV,
+            SUM(CASE WHEN CR.Estado = 'V' THEN CR.TotalPagado ELSE 0 END) AS TotalPagadoV,
+            SUM(CASE WHEN CR.Estado = 'V' THEN CR.TotalPagar - CR.TotalPagado ELSE 0 END) AS SaldoPrestadoV,
+            SUM(CASE WHEN CR.Estado = 'T' THEN 1 ELSE 0 END) AS CreditosTerminados,
+            SUM(CASE WHEN CR.Estado = 'T' THEN CR.Total ELSE 0 END) AS TotalPrestadoT,
+            SUM(CASE WHEN CR.Estado = 'T' THEN CR.TotalPagado ELSE 0 END) AS TotalPagadoT,
+            SUM(CASE WHEN CR.Estado = 'T' THEN CR.TotalPagar ELSE 0 END) AS TotalPagarT,
+            SUM(CASE WHEN CR.Estado = 'T' THEN CR.TotalPagar - CR.TotalPagado ELSE 0 END) AS SaldoPrestadoT
+        FROM Cobrador C
+        INNER JOIN Delegados_Cobradores DC ON C.Cod = DC.Cobrador
+        LEFT JOIN Creditos CR ON C.Cod = CR.Cobrador
+        WHERE DC.Delegado = " + _delegadoId + @"
+        GROUP BY C.Cod, C.Nombres, C.Apellidos for json path");
+
+            string jsonResult = _conexionSql.SqlJsonComand(false, comando);
+            JArray resultado = JArray.Parse(jsonResult);
+
+            return resultado;
+        }
+
+        /// <summary>
         /// Obtiene estadísticas de créditos agrupadas por cobrador
         /// </summary>
         public JArray ObtenerResumenPorCobrador()
         {
-            var _jefeId = ObtenerIdJefe();
+            var _jefeId = ObtenerId();
             var comando = new SqlCommand(@"
                 SELECT 
                     C.Cod AS CodCobrador,

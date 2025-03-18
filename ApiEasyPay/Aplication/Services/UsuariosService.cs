@@ -24,7 +24,7 @@ namespace ApiEasyPay.Aplication.Services
             // Inicializar valores desde el contexto HTTP
         }
 
-        private JObject ObtenerIdJefe()
+        private JObject ObtenerSesion()
         {
             var context = _httpContextAccessor.HttpContext;
             if (context == null)
@@ -35,7 +35,7 @@ namespace ApiEasyPay.Aplication.Services
                 throw new UnauthorizedAccessException("Información de sesión no disponible");
 
             // Si el rol es 'A' (Admin/Jefe), obtener su ID
-            if (sesionData["Rol"]?.ToString() == "A")
+            if (sesionData["Rol"]?.ToString() != "")
             {
                 return sesionData;
             }
@@ -43,6 +43,41 @@ namespace ApiEasyPay.Aplication.Services
             {
                 // Si no es jefe, verificar que tenga permisos
                 throw new UnauthorizedAccessException("Solo los jefes pueden acceder a esta funcionalidad");
+            }
+        }
+
+        public async Task<(bool success, string message, JArray data)> ObtenerCobradoresDeDelegado2()
+        {
+            try
+            {
+                var sesion = ObtenerSesion();
+                if (sesion["Rol"].ToString() != "D")
+                {
+                    return (false, "El token enviado, no pertenece a una cuenta de Delegado.", null);
+                }
+                int delegadoId = sesion["Cod"]?.Value<int>() ?? 0;
+                // Verificar que el delegado exista
+                var comandoDelegado = new SqlCommand("SELECT COUNT(*) FROM Delegado WHERE Cod =" + delegadoId.ToString());
+                var existeDelegado = Convert.ToInt32(_conexionSql.TraerDato(comandoDelegado.CommandText, true));
+
+                if (existeDelegado == 0)
+                    return (false, "El delegado especificado no existe", null);
+
+                // Obtener los cobradores asignados al delegado
+                var comando = new SqlCommand(@"
+            SELECT c.* 
+            FROM Cobrador c
+            INNER JOIN Delegados_Cobradores dc ON c.Cod = dc.Cobrador
+            WHERE dc.Delegado = " + delegadoId.ToString() + @"
+            FOR JSON PATH");
+
+                JArray resultado = _conexionSql.SqlJsonCommandArray(false, comando);
+
+                return (true, "Cobradores obtenidos correctamente", resultado);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Error al obtener cobradores del delegado: {ex.Message}", null);
             }
         }
 
@@ -153,8 +188,7 @@ namespace ApiEasyPay.Aplication.Services
                         return (false, "Código de usuario inválido", null);
                     }
 
-                    comando = new SqlCommand($"SELECT * FROM {tabla} WHERE Cod = @Codigo for json path");
-                    comando.Parameters.AddWithValue("@Codigo", codigoNum);
+                    comando = new SqlCommand($"SELECT * FROM {tabla} WHERE Cod = {codigoNum.ToString()} for json path");
                 }
                 string jsonResult = _conexionSql.SqlJsonComand(true, comando);
                 JArray resultado = JArray.Parse(jsonResult);
@@ -173,12 +207,9 @@ namespace ApiEasyPay.Aplication.Services
             try
             {
                 // Verificar que el delegado y el cobrador existan
-                var comandoDelegado = new SqlCommand("SELECT COUNT(*) FROM Delegado WHERE Cod = @DelegadoId");
-                comandoDelegado.Parameters.AddWithValue("@DelegadoId", delegadoId);
+                var comandoDelegado = new SqlCommand("SELECT COUNT(*) FROM Delegado WHERE Cod ="+ delegadoId.ToString());
                 var existeDelegado = Convert.ToInt32(_conexionSql.TraerDato(comandoDelegado.CommandText, true));
-
-                var comandoCobrador = new SqlCommand("SELECT COUNT(*) FROM Cobrador WHERE Cod = @CobradorId");
-                comandoCobrador.Parameters.AddWithValue("@CobradorId", cobradorId);
+                var comandoCobrador = new SqlCommand("SELECT COUNT(*) FROM Cobrador WHERE Cod ="+cobradorId.ToString());
                 var existeCobrador = Convert.ToInt32(_conexionSql.TraerDato(comandoCobrador.CommandText, true));
 
                 if (existeDelegado == 0)
@@ -188,18 +219,14 @@ namespace ApiEasyPay.Aplication.Services
                     return (false, "El cobrador especificado no existe", null);
 
                 // Verificar si ya existe la asignación
-                var comandoVerificar = new SqlCommand("SELECT COUNT(*) FROM Delegados_Cobradores WHERE Delegado = @DelegadoId AND Cobrador = @CobradorId");
-                comandoVerificar.Parameters.AddWithValue("@DelegadoId", delegadoId);
-                comandoVerificar.Parameters.AddWithValue("@CobradorId", cobradorId);
+                var comandoVerificar = new SqlCommand($"SELECT COUNT(*) FROM Delegados_Cobradores WHERE Delegado = {delegadoId.ToString()} AND Cobrador = {cobradorId.ToString()}");
                 var existeAsignacion = Convert.ToInt32(_conexionSql.TraerDato(comandoVerificar.CommandText, true));
 
                 if (existeAsignacion > 0)
                     return (false, "El cobrador ya está asignado a este delegado", null);
 
                 // Insertar la asignación
-                var comando = new SqlCommand("INSERT INTO Delegados_Cobradores (Cod, Delegado, Cobrador) VALUES ((SELECT ISNULL(MAX(Cod),0)+1 FROM Delegados_Cobradores), @DelegadoId, @CobradorId)");
-                comando.Parameters.AddWithValue("@DelegadoId", delegadoId);
-                comando.Parameters.AddWithValue("@CobradorId", cobradorId);
+                var comando = new SqlCommand($"INSERT INTO Delegados_Cobradores (Cod, Delegado, Cobrador) VALUES ((SELECT ISNULL(MAX(Cod),0)+1 FROM Delegados_Cobradores), {delegadoId.ToString()}, {cobradorId.ToString()})");
 
                 string resultado = _conexionSql.SqlQueryGestion(comando.CommandText, true);
 
@@ -207,8 +234,7 @@ namespace ApiEasyPay.Aplication.Services
                     return (false, "Error al asignar cobrador al delegado: " + resultado, null);
 
                 return (true, "Cobrador asignado correctamente al delegado", _conexionSql.SqlJsonCommandArray(true,
-                    new SqlCommand("SELECT * FROM Delegados_Cobradores WHERE Delegado = @DelegadoId AND Cobrador = @CobradorId FOR JSON PATH")
-                    { Parameters = { new SqlParameter("@DelegadoId", delegadoId), new SqlParameter("@CobradorId", cobradorId) } }));
+                    new SqlCommand($"SELECT * FROM Delegados_Cobradores WHERE Delegado = {delegadoId.ToString()} AND Cobrador = @{cobradorId.ToString()} FOR JSON PATH")));
             }
             catch (Exception ex)
             {
@@ -221,18 +247,14 @@ namespace ApiEasyPay.Aplication.Services
             try
             {
                 // Verificar que la asignación exista
-                var comandoVerificar = new SqlCommand("SELECT COUNT(*) FROM Delegados_Cobradores WHERE Delegado = @DelegadoId AND Cobrador = @CobradorId");
-                comandoVerificar.Parameters.AddWithValue("@DelegadoId", delegadoId);
-                comandoVerificar.Parameters.AddWithValue("@CobradorId", cobradorId);
+                var comandoVerificar = new SqlCommand($"SELECT COUNT(*) FROM Delegados_Cobradores WHERE Delegado = {delegadoId.ToString()} AND Cobrador = {cobradorId.ToString()}");
                 var existeAsignacion = Convert.ToInt32(_conexionSql.TraerDato(comandoVerificar.CommandText, true));
 
                 if (existeAsignacion == 0)
                     return (false, "El cobrador no está asignado a este delegado", null);
 
                 // Eliminar la asignación
-                var comando = new SqlCommand("DELETE FROM Delegados_Cobradores WHERE Delegado = @DelegadoId AND Cobrador = @CobradorId");
-                comando.Parameters.AddWithValue("@DelegadoId", delegadoId);
-                comando.Parameters.AddWithValue("@CobradorId", cobradorId);
+                var comando = new SqlCommand($"DELETE FROM Delegados_Cobradores WHERE Delegado = {delegadoId.ToString()} AND Cobrador = {cobradorId.ToString()}");
 
                 string resultado = _conexionSql.SqlQueryGestion(comando.CommandText, true);
 
@@ -252,8 +274,7 @@ namespace ApiEasyPay.Aplication.Services
             try
             {
                 // Verificar que el delegado exista
-                var comandoDelegado = new SqlCommand("SELECT COUNT(*) FROM Delegado WHERE Cod = @DelegadoId");
-                comandoDelegado.Parameters.AddWithValue("@DelegadoId", delegadoId);
+                var comandoDelegado = new SqlCommand("SELECT COUNT(*) FROM Delegado WHERE Cod ="+delegadoId.ToString());
                 var existeDelegado = Convert.ToInt32(_conexionSql.TraerDato(comandoDelegado.CommandText, true));
 
                 if (existeDelegado == 0)
@@ -264,9 +285,8 @@ namespace ApiEasyPay.Aplication.Services
             SELECT c.* 
             FROM Cobrador c
             INNER JOIN Delegados_Cobradores dc ON c.Cod = dc.Cobrador
-            WHERE dc.Delegado = @DelegadoId
+            WHERE dc.Delegado = "+delegadoId.ToString()+@"
             FOR JSON PATH");
-                comando.Parameters.AddWithValue("@DelegadoId", delegadoId);
 
                 JArray resultado = _conexionSql.SqlJsonCommandArray(true, comando);
 
@@ -283,21 +303,18 @@ namespace ApiEasyPay.Aplication.Services
             try
             {
                 // Verificar que el delegado exista
-                var comandoDelegado = new SqlCommand("SELECT COUNT(*) FROM Delegado WHERE Cod = @DelegadoId");
-                comandoDelegado.Parameters.AddWithValue("@DelegadoId", delegadoId);
+                var comandoDelegado = new SqlCommand("SELECT COUNT(*) FROM Delegado WHERE Cod ="+delegadoId.ToString());
                 var existeDelegado = Convert.ToInt32(_conexionSql.TraerDato(comandoDelegado.CommandText, true));
 
                 if (existeDelegado == 0)
                     return (false, "El delegado especificado no existe");
 
                 // Eliminar primero las relaciones en Delegados_Cobradores
-                var comandoRelaciones = new SqlCommand("DELETE FROM Delegados_Cobradores WHERE Delegado = @DelegadoId");
-                comandoRelaciones.Parameters.AddWithValue("@DelegadoId", delegadoId);
+                var comandoRelaciones = new SqlCommand("DELETE FROM Delegados_Cobradores WHERE Delegado =" + delegadoId.ToString());
                 _conexionSql.SqlQueryGestion(comandoRelaciones.CommandText, true);
 
                 // Ahora eliminar el delegado
-                var comando = new SqlCommand("DELETE FROM Delegado WHERE Cod = @DelegadoId");
-                comando.Parameters.AddWithValue("@DelegadoId", delegadoId);
+                var comando = new SqlCommand("DELETE FROM Delegado WHERE Cod =" + delegadoId.ToString());
 
                 string resultado = _conexionSql.SqlQueryGestion(comando.CommandText, true);
 
@@ -316,17 +333,16 @@ namespace ApiEasyPay.Aplication.Services
         {
             try
             {
-                var sesion = ObtenerIdJefe();
+                var sesion = ObtenerSesion();
                 // Verificar la contraseña del administrador con el token de sesión
-                if ( sesion["Rol"].ToString() != "A" ||
+                if ( sesion["Rol"].ToString() != "J" ||
                     sesion["Contraseña"].ToString() != adminPassword)
                 {
                     return (false, "Contraseña de administrador incorrecta o permisos insuficientes");
                 }
 
                 // Verificar que el cobrador exista
-                var comandoCobrador = new SqlCommand("SELECT COUNT(*) FROM Cobrador WHERE Cod = @CobradorId");
-                comandoCobrador.Parameters.AddWithValue("@CobradorId", cobradorId);
+                var comandoCobrador = new SqlCommand("SELECT COUNT(*) FROM Cobrador WHERE Cod ="+cobradorId.ToString());
                 var existeCobrador = Convert.ToInt32(_conexionSql.TraerDato(comandoCobrador.CommandText, true));
 
                 if (existeCobrador == 0)
@@ -341,8 +357,7 @@ namespace ApiEasyPay.Aplication.Services
                         try
                         {
                             // Eliminar registros en Delegados_Cobradores
-                            var cmdDelegadosCobra = new SqlCommand("DELETE FROM Delegados_Cobradores WHERE Cobrador = @CobradorId", connection, transaction);
-                            cmdDelegadosCobra.Parameters.AddWithValue("@CobradorId", cobradorId);
+                            var cmdDelegadosCobra = new SqlCommand("DELETE FROM Delegados_Cobradores WHERE Cobrador =" + cobradorId.ToString(), connection, transaction);
                             await cmdDelegadosCobra.ExecuteNonQueryAsync();
 
                             // Eliminar registros en todas las tablas que tengan campo Cobrador
@@ -354,14 +369,12 @@ namespace ApiEasyPay.Aplication.Services
 
                             foreach (var tabla in tablasConCobrador)
                             {
-                                var cmdTabla = new SqlCommand($"DELETE FROM {tabla} WHERE Cobrador = @CobradorId", connection, transaction);
-                                cmdTabla.Parameters.AddWithValue("@CobradorId", cobradorId);
+                                var cmdTabla = new SqlCommand($"DELETE FROM {tabla} WHERE Cobrador = {cobradorId }", connection, transaction);
                                 await cmdTabla.ExecuteNonQueryAsync();
                             }
 
                             // Finalmente eliminar el cobrador
-                            var cmdCobrador = new SqlCommand("DELETE FROM Cobrador WHERE Cod = @CobradorId", connection, transaction);
-                            cmdCobrador.Parameters.AddWithValue("@CobradorId", cobradorId);
+                            var cmdCobrador = new SqlCommand("DELETE FROM Cobrador WHERE Cod =" + cobradorId.ToString(), connection, transaction);
                             await cmdCobrador.ExecuteNonQueryAsync();
 
                             transaction.Commit();

@@ -159,5 +159,49 @@ namespace ApiEasyPay.Controllers
                 return BadRequest(new { mensaje = $"Error al obtener historial del crédito: {ex.Message}" });
             }
         }
+
+        /// <summary>
+        /// Obtiene un resumen estadístico de créditos para el delegado actual
+        /// </summary>
+        /// <returns>Estadísticas de créditos en formato JSON</returns>
+        [HttpGet("resumen-delegado")]
+        public IActionResult GetResumenCreditosDelegado()
+        {
+            try
+            {
+                var resultado = _creditosService.ObtenerResumenCreditosDelegado();
+                return new JsonResult(resultado);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { mensaje = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = $"Error al obtener resumen de créditos: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
+        /// Obtiene estadísticas de créditos agrupadas por cobrador asignado al delegado
+        /// </summary>
+        /// <returns>Estadísticas por cobrador en formato JSON</returns>
+        [HttpGet("resumen-por-cobrador-delegado")]
+        public IActionResult GetResumenPorCobradorDelegado()
+        {
+            try
+            {
+                var resultado = _creditosService.ObtenerResumenPorCobradorDelegado();
+                return new JsonResult(resultado);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { mensaje = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = $"Error al obtener resumen por cobrador: {ex.Message}" });
+            }
+        }
     }
 }
