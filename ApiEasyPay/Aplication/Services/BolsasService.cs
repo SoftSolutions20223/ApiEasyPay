@@ -715,7 +715,7 @@ WHERE VB.Credito IS NOT NULL
         /// <returns>JArray con los créditos creados en la bolsa en el rango de fechas</returns>
         public JArray ObtenerCreditosBolsaRango( string fechaInicio, string fechaFin)
         {
-
+            var _jefeId = ObtenerId();
             // Aseguramos que tengamos fechas válidas
             if (string.IsNullOrEmpty(fechaInicio))
             {
@@ -741,9 +741,11 @@ WHERE VB.Credito IS NOT NULL
         FROM ValoresBolsa VB
         INNER JOIN Creditos C ON VB.Credito = C.Cod
         INNER JOIN Clientes CL ON C.Cliente = CL.Cod
+        INNER JOIN Cobrador CO ON VB.Cobrador = CO.Cod
         WHERE VB.Credito IS NOT NULL 
           AND VB.Credito > 0
           AND CONVERT(DATE, VB.Fecha) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
+          AND C.Jefe = " + _jefeId + @" 
         FOR JSON PATH");
 
             string jsonResult = _conexionSql.SqlJsonComand(false, comando);

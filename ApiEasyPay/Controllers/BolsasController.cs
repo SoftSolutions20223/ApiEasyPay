@@ -266,7 +266,7 @@ namespace ApiEasyPay.Controllers
         /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
         /// <returns>Lista de bolsas abiertas en el rango de fechas en formato JSON</returns>
         [HttpGet("delegado/bolsas-rango")]
-        public IActionResult GetBolsasAbiertasPorDelegadoRango([FromQuery] string fechaInicio, [FromQuery] string fechaFin)
+        public IActionResult GetBolsasPorDelegadoRango([FromQuery] string fechaInicio, [FromQuery] string fechaFin)
         {
             try
             {
@@ -290,7 +290,7 @@ namespace ApiEasyPay.Controllers
         /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
         /// <returns>Lista de bolsas abiertas en el rango de fechas en formato JSON</returns>
         [HttpGet("bolsas-rango")]
-        public IActionResult GetBolsasAbiertasRango([FromQuery] string fechaInicio, [FromQuery] string fechaFin)
+        public IActionResult GetBolsasRango([FromQuery] string fechaInicio, [FromQuery] string fechaFin)
         {
             try
             {
@@ -315,11 +315,11 @@ namespace ApiEasyPay.Controllers
         /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
         /// <returns>Lista de créditos en formato JSON</returns>
         [HttpGet("{codBolsa}/creditos-rango")]
-        public IActionResult GetCreditosBolsaRango(int codBolsa, [FromQuery] string fechaInicio, [FromQuery] string fechaFin)
+        public IActionResult GetCreditosBolsaRango( [FromQuery] string fechaInicio, [FromQuery] string fechaFin)
         {
             try
             {
-                var resultado = _bolsaService.ObtenerCreditosBolsaRango(codBolsa, fechaInicio, fechaFin);
+                var resultado = _bolsaService.ObtenerCreditosBolsaRango( fechaInicio, fechaFin);
                 return new JsonResult(resultado);
             }
             catch (UnauthorizedAccessException ex)
@@ -340,11 +340,11 @@ namespace ApiEasyPay.Controllers
         /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
         /// <returns>Lista de gastos en formato JSON</returns>
         [HttpGet("{codBolsa}/gastos-rango")]
-        public IActionResult GetGastosBolsaRango(int codBolsa, [FromQuery] string fechaInicio, [FromQuery] string fechaFin)
+        public IActionResult GetGastosBolsaRango( [FromQuery] string fechaInicio, [FromQuery] string fechaFin)
         {
             try
             {
-                var resultado = _bolsaService.ObtenerGastosBolsaRango(codBolsa, fechaInicio, fechaFin);
+                var resultado = _bolsaService.ObtenerGastosBolsaRango( fechaInicio, fechaFin);
                 return new JsonResult(resultado);
             }
             catch (UnauthorizedAccessException ex)
@@ -354,6 +354,30 @@ namespace ApiEasyPay.Controllers
             catch (Exception ex)
             {
                 return BadRequest(new { mensaje = $"Error al obtener gastos de bolsa en rango de fechas: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
+        /// Obtiene las entregas de todas las bolsas del jefe actual entre dos fechas
+        /// </summary>
+        /// <param name="fechaInicio">Fecha inicial en formato yyyy-MM-dd</param>
+        /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
+        /// <returns>Lista de entregas en formato JSON</returns>
+        [HttpGet("entregas-rango")]
+        public IActionResult GetEntregasRango([FromQuery] string fechaInicio, [FromQuery] string fechaFin)
+        {
+            try
+            {
+                var resultado = _bolsaService.ObtenerEntregasRango(fechaInicio, fechaFin);
+                return new JsonResult(resultado);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { mensaje = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = $"Error al obtener entregas en rango de fechas: {ex.Message}" });
             }
         }
 
