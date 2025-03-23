@@ -823,6 +823,183 @@ WHERE VB.Credito IS NOT NULL
         }
 
         /// <summary>
+        /// Obtiene los créditos creados para los cobradores asignados a un delegado específico en un rango de fechas
+        /// </summary>
+        /// <param name="fechaInicio">Fecha inicial en formato yyyy-MM-dd</param>
+        /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
+        /// <returns>JArray con los créditos creados en el rango de fechas</returns>
+        public JArray ObtenerCreditosPorDelegadoRango(string fechaInicio, string fechaFin)
+        {
+            // Primero verificamos que el delegado pertenezca al jefe actual (seguridad)
+            var delegadoId = ObtenerId();
+            var comandoVerificarDelegado = new SqlCommand(
+                $"SELECT COUNT(1) FROM Delegado WHERE Cod = {delegadoId}");
+
+            int delegadoValido = Convert.ToInt32(_conexionSql.TraerDato(comandoVerificarDelegado.CommandText, true));
+
+            if (delegadoValido == 0)
+            {
+                throw new UnauthorizedAccessException("El token proporcionado no pertenece a un delegado");
+            }
+
+            // Aseguramos que tengamos fechas válidas
+            if (string.IsNullOrEmpty(fechaInicio))
+            {
+                fechaInicio = DateTime.Now.AddDays(-30).ToString("yyyy-MM-dd"); // Por defecto, 30 días atrás
+            }
+
+            if (string.IsNullOrEmpty(fechaFin))
+            {
+                fechaFin = DateTime.Now.ToString("yyyy-MM-dd"); // Por defecto, hoy
+            }
+
+            var comando = new SqlCommand(@"
+        SELECT 
+            VB.Credito,
+            VB.Cod,
+            VB.Valor,
+            CONVERT(VARCHAR(12), VB.Fecha, 103) AS Fecha,
+            C.TotalPagar AS TotalPagar,
+            C.NumeroDeCuotas AS NumeroDeCuotas,
+            C.PorceInteres AS PorceInteres,
+            CL.Nombres + ' ' + CL.Apellidos AS NombreCliente,
+            CL.Documento AS DocumentoCliente,
+            CB.Nombres + ' ' + CB.Apellidos AS NombreCobrador
+        FROM ValoresBolsa VB
+        INNER JOIN Creditos C ON VB.Credito = C.Cod
+        INNER JOIN Clientes CL ON C.Cliente = CL.Cod
+        INNER JOIN Cobrador CB ON VB.Cobrador = CB.Cod
+        INNER JOIN Delegados_Cobradores DC ON CB.Cod = DC.Cobrador
+        WHERE VB.Credito IS NOT NULL 
+          AND VB.Credito > 0
+          AND CONVERT(DATE, VB.Fecha) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
+          AND DC.Delegado = " + delegadoId + @" 
+        ORDER BY VB.Fecha DESC
+        FOR JSON PATH");
+
+            string jsonResult = _conexionSql.SqlJsonComand(false, comando);
+            JArray resultado = JArray.Parse(jsonResult);
+
+            return resultado;
+        }
+
+        /// <summary>
+        /// Obtiene los gastos de los cobradores asignados a un delegado específico en un rango de fechas
+        /// </summary>
+        /// <param name="fechaInicio">Fecha inicial en formato yyyy-MM-dd</param>
+        /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
+        /// <returns>JArray con los gastos en el rango de fechas</returns>
+        public JArray ObtenerGastosPorDelegadoRango(string fechaInicio, string fechaFin)
+        {
+            // Primero verificamos que el delegado pertenezca al jefe actual (seguridad)
+            var delegadoId = ObtenerId();
+            var comandoVerificarDelegado = new SqlCommand(
+                $"SELECT COUNT(1) FROM Delegado WHERE Cod = {delegadoId}");
+
+            int delegadoValido = Convert.ToInt32(_conexionSql.TraerDato(comandoVerificarDelegado.CommandText, true));
+
+            if (delegadoValido == 0)
+            {
+                throw new UnauthorizedAccessException("El token proporcionado no pertenece a un delegado");
+            }
+
+            // Aseguramos que tengamos fechas válidas
+            if (string.IsNullOrEmpty(fechaInicio))
+            {
+                fechaInicio = DateTime.Now.AddDays(-30).ToString("yyyy-MM-dd"); // Por defecto, 30 días atrás
+            }
+
+            if (string.IsNullOrEmpty(fechaFin))
+            {
+                fechaFin = DateTime.Now.ToString("yyyy-MM-dd"); // Por defecto, hoy
+            }
+
+            var comando = new SqlCommand(@"
+        SELECT 
+            VB.Gasto AS Descripcion,
+            VB.Cod,
+            VB.Valor,
+            CONVERT(VARCHAR(12), VB.Fecha, 103) AS Fecha,
+            B.Cod AS CodBolsa,
+            CB.Nombres + ' ' + CB.Apellidos AS NombreCobrador
+        FROM ValoresBolsa VB
+        INNER JOIN Bolsa B ON VB.Bolsa = B.Cod
+        INNER JOIN Cobrador CB ON B.Cobrador = CB.Cod
+        INNER JOIN Delegados_Cobradores DC ON CB.Cod = DC.Cobrador
+        WHERE VB.Gasto IS NOT NULL 
+          AND VB.Gasto <> ''
+          AND CONVERT(DATE, VB.Fecha) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
+          AND DC.Delegado = " + delegadoId + @"
+        ORDER BY VB.Fecha DESC
+        FOR JSON PATH");
+
+            string jsonResult = _conexionSql.SqlJsonComand(false, comando);
+            JArray resultado = JArray.Parse(jsonResult);
+
+            return resultado;
+        }
+
+        /// <summary>
+        /// Obtiene las entregas de los cobradores asignados a un delegado específico en un rango de fechas
+        /// </summary>
+        /// <param name="fechaInicio">Fecha inicial en formato yyyy-MM-dd</param>
+        /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
+        /// <returns>JArray con las entregas en el rango de fechas</returns>
+        public JArray ObtenerEntregasPorDelegadoRango(string fechaInicio, string fechaFin)
+        {
+            // Primero verificamos que el delegado pertenezca al jefe actual (seguridad)
+            var delegadoId = ObtenerId();
+            var comandoVerificarDelegado = new SqlCommand(
+                $"SELECT COUNT(1) FROM Delegado WHERE Cod = {delegadoId}");
+
+            int delegadoValido = Convert.ToInt32(_conexionSql.TraerDato(comandoVerificarDelegado.CommandText, true));
+
+            if (delegadoValido == 0)
+            {
+                throw new UnauthorizedAccessException("El token proporcionado no pertenece a un delegado");
+            }
+
+            // Aseguramos que tengamos fechas válidas
+            if (string.IsNullOrEmpty(fechaInicio))
+            {
+                fechaInicio = DateTime.Now.AddDays(-30).ToString("yyyy-MM-dd"); // Por defecto, 30 días atrás
+            }
+
+            if (string.IsNullOrEmpty(fechaFin))
+            {
+                fechaFin = DateTime.Now.ToString("yyyy-MM-dd"); // Por defecto, hoy
+            }
+
+            var comando = new SqlCommand(@"
+        SELECT 
+            VB.Entregas AS Descripcion,
+            VB.Cod,
+            VB.Valor,
+            CONVERT(VARCHAR(12), VB.Fecha, 103) AS Fecha,
+            B.Cod AS CodBolsa,
+            CB.Nombres + ' ' + CB.Apellidos AS NombreCobrador
+        FROM ValoresBolsa VB
+        INNER JOIN Bolsa B ON VB.Bolsa = B.Cod
+        INNER JOIN Cobrador CB ON B.Cobrador = CB.Cod
+        INNER JOIN Delegados_Cobradores DC ON CB.Cod = DC.Cobrador
+        WHERE VB.Entregas IS NOT NULL 
+          AND VB.Entregas <> ''
+          AND CONVERT(DATE, VB.Fecha) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
+          AND DC.Delegado = " + delegadoId + @"
+        ORDER BY VB.Fecha DESC
+        FOR JSON PATH");
+
+            string jsonResult = _conexionSql.SqlJsonComand(false, comando);
+
+            // Si no hay resultados, devolver un array vacío
+            if (string.IsNullOrEmpty(jsonResult) || jsonResult == "[]")
+                return new JArray();
+
+            JArray resultado = JArray.Parse(jsonResult);
+            return resultado;
+        }
+
+        /// <summary>
         /// Obtiene las entregas de todas las bolsas del jefe actual entre dos fechas
         /// </summary>
         /// <param name="fechaInicio">Fecha de inicio en formato yyyy-MM-dd</param>
