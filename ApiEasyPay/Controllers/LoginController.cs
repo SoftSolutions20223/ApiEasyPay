@@ -32,7 +32,7 @@ namespace ApiEasyPay.Controllers
                 if (sesion == null)
                     return Unauthorized("Credenciales inválidas");
 
-                if (sesion.Rol == "U") // Si es cobrador
+                if (sesion.Rol == "C") // Si es cobrador
                 {
                     var stream = await _loginService.GenerarArchivoSincronizacionAsync(sesion.Cod);
                     return File(stream, "application/octet-stream", "sincronizacion.gz");

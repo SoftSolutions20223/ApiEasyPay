@@ -175,10 +175,10 @@ C:\Users\crist\OneDrive\Documentos\GitHub\ApiEasyPay\ApiEasyPay\obj\Debug\net8.0
 C:\Users\crist\OneDrive\Documentos\GitHub\ApiEasyPay\ApiEasyPay\obj\Debug\net8.0\staticwebassets\msbuild.buildMultiTargeting.ApiEasyPay.props
 C:\Users\crist\OneDrive\Documentos\GitHub\ApiEasyPay\ApiEasyPay\obj\Debug\net8.0\staticwebassets\msbuild.buildTransitive.ApiEasyPay.props
 C:\Users\crist\OneDrive\Documentos\GitHub\ApiEasyPay\ApiEasyPay\obj\Debug\net8.0\staticwebassets.pack.json
-C:\Users\crist\OneDrive\Documentos\GitHub\ApiEasyPay\ApiEasyPay\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 C:\Users\crist\OneDrive\Documentos\GitHub\ApiEasyPay\ApiEasyPay\obj\Debug\net8.0\ApiEasyPay.csproj.Up2Date
 C:\Users\crist\OneDrive\Documentos\GitHub\ApiEasyPay\ApiEasyPay\obj\Debug\net8.0\ApiEasyPay.dll
 C:\Users\crist\OneDrive\Documentos\GitHub\ApiEasyPay\ApiEasyPay\obj\Debug\net8.0\refint\ApiEasyPay.dll
 C:\Users\crist\OneDrive\Documentos\GitHub\ApiEasyPay\ApiEasyPay\obj\Debug\net8.0\ApiEasyPay.pdb
 C:\Users\crist\OneDrive\Documentos\GitHub\ApiEasyPay\ApiEasyPay\obj\Debug\net8.0\ApiEasyPay.genruntimeconfig.cache
 C:\Users\crist\OneDrive\Documentos\GitHub\ApiEasyPay\ApiEasyPay\obj\Debug\net8.0\ref\ApiEasyPay.dll
+C:\Users\crist\OneDrive\Documentos\GitHub\ApiEasyPay\ApiEasyPay\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

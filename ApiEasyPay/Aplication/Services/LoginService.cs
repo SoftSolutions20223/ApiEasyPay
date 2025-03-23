@@ -27,7 +27,7 @@ namespace ApiEasyPay.Aplication.Services
 
         public async Task<SesionStatusDTO> VerificarEstadoSesionAsync(string usuario)
         {
-            var comando = new SqlCommand("SELECT * FROM (SELECT Cod, Token, SesionActiva, 'J' as TipoUsuario FROM Jefes WHERE Usuario = @Usuario UNION ALL SELECT Cod, Token, SesionActiva, 'C' as TipoUsuario FROM Cobrador WHERE Usuario = @Usuario) as Users FOR JSON PATH");
+            var comando = new SqlCommand("SELECT * FROM (SELECT Cod, Token, SesionActiva, 'J' as TipoUsuario FROM Jefes WHERE Usuario = @Usuario UNION ALL SELECT Cod, Token, SesionActiva, 'C' as TipoUsuario FROM Cobrador WHERE Usuario = @Usuario UNION ALL SELECT Cod, Token, SesionActiva, 'D' as TipoUsuario FROM Delegado WHERE Usuario = @Usuario) as Users FOR JSON PATH");
             comando.Parameters.AddWithValue("@Usuario", usuario);
 
             string resultado = _conexionSql.SqlJsonComand(true, comando);

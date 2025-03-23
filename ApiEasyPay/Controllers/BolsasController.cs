@@ -139,6 +139,29 @@ namespace ApiEasyPay.Controllers
         }
 
         /// <summary>
+        /// Obtiene los créditos creados en una bolsa específica
+        /// </summary>
+        /// <param name="codBolsa">Código de la bolsa</param>
+        /// <returns>Lista de créditos en formato JSON</returns>
+        [HttpGet("{codBolsa}/creditos")]
+        public IActionResult GetCreditosBolsa(int codBolsa)
+        {
+            try
+            {
+                var resultado = _bolsaService.ObtenerCreditosBolsa(codBolsa);
+                return new JsonResult(resultado);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { mensaje = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = $"Error al obtener créditos de bolsa: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
         /// Obtiene un resumen de las bolsas abiertas de los cobradores asignados a un delegado específico
         /// </summary>
         /// <returns>Lista de bolsas abiertas en formato JSON</returns>
@@ -179,6 +202,158 @@ namespace ApiEasyPay.Controllers
             catch (Exception ex)
             {
                 return BadRequest(new { mensaje = $"Error al obtener bolsas cerradas por delegado: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
+        /// Obtiene datos resumidos de bolsa para un rango de fechas específico
+        /// </summary>
+        /// <param name="fechaInicio">Fecha inicial en formato yyyy-MM-dd</param>
+        /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
+        /// <returns>Datos agregados de las bolsas en el rango de fechas especificado en formato JSON</returns>
+        [HttpGet("datos-rango")]
+        public IActionResult GetDatosBolsaRango([FromQuery] string fechaInicio, [FromQuery] string fechaFin)
+        {
+            try
+            {
+                var resultado = _bolsaService.ObtenerDatosBolsaRango(fechaInicio, fechaFin);
+                if (resultado == null)
+                    return NotFound(new { mensaje = "No se encontraron datos para el rango de fechas especificado" });
+
+                return new JsonResult(resultado);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { mensaje = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = $"Error al obtener datos de bolsa por rango de fechas: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
+        /// Obtiene datos resumidos de bolsa para los cobradores de un delegado específico en un rango de fechas
+        /// </summary>
+        /// <param name="fechaInicio">Fecha inicial en formato yyyy-MM-dd</param>
+        /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
+        /// <returns>Datos agregados de las bolsas en el rango de fechas especificado en formato JSON</returns>
+        [HttpGet("delegado/datos-rango")]
+        public IActionResult GetDatosBolsaPorDelegadoRango([FromQuery] string fechaInicio, [FromQuery] string fechaFin)
+        {
+            try
+            {
+                var resultado = _bolsaService.ObtenerDatosBolsaPorDelegadoRango(fechaInicio, fechaFin);
+                if (resultado == null)
+                    return NotFound(new { mensaje = "No se encontraron datos para el delegado y rango de fechas especificados" });
+
+                return new JsonResult(resultado);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { mensaje = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = $"Error al obtener datos de bolsa por delegado en rango de fechas: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
+        /// Obtiene un resumen de las bolsas abiertas de los cobradores asignados a un delegado específico en un rango de fechas
+        /// </summary>
+        /// <param name="fechaInicio">Fecha inicial en formato yyyy-MM-dd</param>
+        /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
+        /// <returns>Lista de bolsas abiertas en el rango de fechas en formato JSON</returns>
+        [HttpGet("delegado/bolsas-rango")]
+        public IActionResult GetBolsasAbiertasPorDelegadoRango([FromQuery] string fechaInicio, [FromQuery] string fechaFin)
+        {
+            try
+            {
+                var resultado = _bolsaService.ObtenerBolsasPorDelegadoRango(fechaInicio, fechaFin);
+                return new JsonResult(resultado);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { mensaje = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = $"Error al obtener bolsas abiertas por delegado en rango de fechas: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
+        /// Obtiene un resumen de las bolsas abiertas del jefe actual en un rango de fechas
+        /// </summary>
+        /// <param name="fechaInicio">Fecha inicial en formato yyyy-MM-dd</param>
+        /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
+        /// <returns>Lista de bolsas abiertas en el rango de fechas en formato JSON</returns>
+        [HttpGet("bolsas-rango")]
+        public IActionResult GetBolsasAbiertasRango([FromQuery] string fechaInicio, [FromQuery] string fechaFin)
+        {
+            try
+            {
+                var resultado = _bolsaService.ObtenerBolsasRango(fechaInicio, fechaFin);
+                return new JsonResult(resultado);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { mensaje = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = $"Error al obtener bolsas abiertas en rango de fechas: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
+        /// Obtiene los créditos creados en una bolsa específica en un rango de fechas
+        /// </summary>
+        /// <param name="codBolsa">Código de la bolsa</param>
+        /// <param name="fechaInicio">Fecha inicial en formato yyyy-MM-dd</param>
+        /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
+        /// <returns>Lista de créditos en formato JSON</returns>
+        [HttpGet("{codBolsa}/creditos-rango")]
+        public IActionResult GetCreditosBolsaRango(int codBolsa, [FromQuery] string fechaInicio, [FromQuery] string fechaFin)
+        {
+            try
+            {
+                var resultado = _bolsaService.ObtenerCreditosBolsaRango(codBolsa, fechaInicio, fechaFin);
+                return new JsonResult(resultado);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { mensaje = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = $"Error al obtener créditos de bolsa en rango de fechas: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
+        /// Obtiene los gastos de una bolsa específica en un rango de fechas
+        /// </summary>
+        /// <param name="codBolsa">Código de la bolsa</param>
+        /// <param name="fechaInicio">Fecha inicial en formato yyyy-MM-dd</param>
+        /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
+        /// <returns>Lista de gastos en formato JSON</returns>
+        [HttpGet("{codBolsa}/gastos-rango")]
+        public IActionResult GetGastosBolsaRango(int codBolsa, [FromQuery] string fechaInicio, [FromQuery] string fechaFin)
+        {
+            try
+            {
+                var resultado = _bolsaService.ObtenerGastosBolsaRango(codBolsa, fechaInicio, fechaFin);
+                return new JsonResult(resultado);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { mensaje = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = $"Error al obtener gastos de bolsa en rango de fechas: {ex.Message}" });
             }
         }
 
