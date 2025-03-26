@@ -652,7 +652,7 @@ namespace ApiEasyPay.Aplication.Services
         public JArray ObtenerEntregasBolsa(int codBolsa)
         {
             // Verificar que la bolsa pertenezca a un cobrador del jefe actual
-            ValidarBolsaPerteneciente(codBolsa);
+            /// ValidarBolsaPerteneciente(codBolsa);
 
             var comando = new SqlCommand(@"
                 SELECT 
@@ -680,7 +680,7 @@ namespace ApiEasyPay.Aplication.Services
         public JArray ObtenerCreditosBolsa(int codBolsa)
         {
             // Verificar que la bolsa pertenezca a un cobrador del jefe actual
-            ValidarBolsaPerteneciente(codBolsa);
+            /// ValidarBolsaPerteneciente(codBolsa);
 
             var comando = new SqlCommand(@"
         SELECT 
@@ -760,7 +760,7 @@ WHERE VB.Credito IS NOT NULL
         public JArray ObtenerGastosBolsa(int codBolsa)
         {
             // Verificar que la bolsa pertenezca a un cobrador del jefe actual
-            ValidarBolsaPerteneciente(codBolsa);
+            ///  ValidarBolsaPerteneciente(codBolsa);
 
             var comando = new SqlCommand(@"
                 SELECT 
@@ -1048,23 +1048,174 @@ WHERE VB.Credito IS NOT NULL
         }
 
         /// <summary>
+        /// Obtiene los pagos de una bolsa específica
+        /// </summary>
+        /// <param name="codBolsa">Código de la bolsa</param>
+        /// <returns>JArray con los pagos de la bolsa</returns>
+        public JArray ObtenerPagosBolsa(int codBolsa)
+        {
+
+            var comando = new SqlCommand(@"
+        SELECT 
+            RD.Cod,
+            RD.Credito,
+            RD.Fecha,
+            RD.Visitado,
+            RD.Valor,
+            RD.Descripcion,
+            CONVERT(VARCHAR(12), RD.Fecha, 103) AS FechaFormateada,
+            C.Nombres + ' ' + C.Apellidos AS NombreCliente,
+            C.Documento AS DocumentoCliente
+        FROM RegDiarioCuotas RD
+        INNER JOIN Creditos CR ON RD.Credito = CR.Cod
+        INNER JOIN Clientes C ON CR.Cliente = C.Cod
+        WHERE RD.Bolsa = " + codBolsa.ToString() + @"
+        ORDER BY RD.Fecha DESC FOR JSON PATH");
+
+            string jsonResult = _conexionSql.SqlJsonComand(false, comando);
+            JArray resultado = JArray.Parse(jsonResult);
+
+            return resultado;
+        }
+
+        /// <summary>
+        /// Obtiene los pagos realizados en un rango de fechas para el jefe actual
+        /// </summary>
+        /// <param name="fechaInicio">Fecha inicial en formato yyyy-MM-dd</param>
+        /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
+        /// <returns>JArray con los pagos en el rango de fechas</returns>
+        public JArray ObtenerPagosRango(string fechaInicio, string fechaFin)
+        {
+            // Aseguramos que tengamos fechas válidas
+            if (string.IsNullOrEmpty(fechaInicio))
+            {
+                fechaInicio = DateTime.Now.AddDays(-30).ToString("yyyy-MM-dd"); // Por defecto, 30 días atrás
+            }
+
+            if (string.IsNullOrEmpty(fechaFin))
+            {
+                fechaFin = DateTime.Now.ToString("yyyy-MM-dd"); // Por defecto, hoy
+            }
+
+            // Obtener el ID del jefe actual desde el contexto
+            var _jefeId = ObtenerId();
+
+            var comando = new SqlCommand(@"
+        SELECT 
+            RD.Cod,
+            RD.Credito,
+            RD.Fecha,
+            RD.Visitado,
+            RD.Valor,
+            RD.Descripcion,
+            CONVERT(VARCHAR(12), RD.Fecha, 103) AS FechaFormateada,
+            C.Nombres + ' ' + C.Apellidos AS NombreCliente,
+            C.Documento AS DocumentoCliente,
+            CB.Nombres + ' ' + CB.Apellidos AS NombreCobrador,
+            B.Cod AS CodBolsa
+        FROM RegDiarioCuotas RD
+        INNER JOIN Bolsa B ON RD.Bolsa = B.Cod
+        INNER JOIN Cobrador CB ON B.Cobrador = CB.Cod
+        INNER JOIN Creditos CR ON RD.Credito = CR.Cod
+        INNER JOIN Clientes C ON CR.Cliente = C.Cod
+        WHERE CONVERT(DATE, RD.Fecha) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
+          AND CB.Jefe = " + _jefeId + @"
+        ORDER BY RD.Fecha DESC
+        FOR JSON PATH");
+
+            string jsonResult = _conexionSql.SqlJsonComand(false, comando);
+
+            // Si no hay resultados, devolver un array vacío
+            if (string.IsNullOrEmpty(jsonResult) || jsonResult == "[]")
+                return new JArray();
+
+            JArray resultado = JArray.Parse(jsonResult);
+            return resultado;
+        }
+
+        /// <summary>
+        /// Obtiene los pagos realizados en un rango de fechas para los cobradores asignados a un delegado específico
+        /// </summary>
+        /// <param name="fechaInicio">Fecha inicial en formato yyyy-MM-dd</param>
+        /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
+        /// <returns>JArray con los pagos en el rango de fechas</returns>
+        public JArray ObtenerPagosPorDelegadoRango(string fechaInicio, string fechaFin)
+        {
+            // Primero verificamos que el delegado pertenezca al jefe actual (seguridad)
+            var delegadoId = ObtenerId();
+            var comandoVerificarDelegado = new SqlCommand(
+                $"SELECT COUNT(1) FROM Delegado WHERE Cod = {delegadoId}");
+
+            int delegadoValido = Convert.ToInt32(_conexionSql.TraerDato(comandoVerificarDelegado.CommandText, true));
+
+            if (delegadoValido == 0)
+            {
+                throw new UnauthorizedAccessException("El token proporcionado no pertenece a un delegado");
+            }
+
+            // Aseguramos que tengamos fechas válidas
+            if (string.IsNullOrEmpty(fechaInicio))
+            {
+                fechaInicio = DateTime.Now.AddDays(-30).ToString("yyyy-MM-dd"); // Por defecto, 30 días atrás
+            }
+
+            if (string.IsNullOrEmpty(fechaFin))
+            {
+                fechaFin = DateTime.Now.ToString("yyyy-MM-dd"); // Por defecto, hoy
+            }
+
+            var comando = new SqlCommand(@"
+        SELECT 
+            RD.Cod,
+            RD.Credito,
+            RD.Fecha,
+            RD.Visitado,
+            RD.Valor,
+            RD.Descripcion,
+            CONVERT(VARCHAR(12), RD.Fecha, 103) AS FechaFormateada,
+            C.Nombres + ' ' + C.Apellidos AS NombreCliente,
+            C.Documento AS DocumentoCliente,
+            CB.Nombres + ' ' + CB.Apellidos AS NombreCobrador,
+            B.Cod AS CodBolsa
+        FROM RegDiarioCuotas RD
+        INNER JOIN Bolsa B ON RD.Bolsa = B.Cod
+        INNER JOIN Cobrador CB ON B.Cobrador = CB.Cod
+        INNER JOIN Creditos CR ON RD.Credito = CR.Cod
+        INNER JOIN Clientes C ON CR.Cliente = C.Cod
+        INNER JOIN Delegados_Cobradores DC ON CB.Cod = DC.Cobrador
+        WHERE CONVERT(DATE, RD.Fecha) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
+          AND DC.Delegado = " + delegadoId + @"
+        ORDER BY RD.Fecha DESC
+        FOR JSON PATH");
+
+            string jsonResult = _conexionSql.SqlJsonComand(false, comando);
+
+            // Si no hay resultados, devolver un array vacío
+            if (string.IsNullOrEmpty(jsonResult) || jsonResult == "[]")
+                return new JArray();
+
+            JArray resultado = JArray.Parse(jsonResult);
+            return resultado;
+        }
+
+        /// <summary>
         /// Valida que la bolsa pertenezca a un cobrador del jefe actual
         /// </summary>
-        private void ValidarBolsaPerteneciente(int codBolsa)
-        {
-            var _jefeId = ObtenerId();
-            var comando = new SqlCommand(@"
-                SELECT COUNT(1) 
-                FROM Bolsa B
-                INNER JOIN Cobrador C ON B.Cobrador = C.Cod
-                WHERE B.Cod = "+codBolsa+" AND C.Jefe ="+_jefeId.ToString() + " for json path");
+        /// private void ValidarBolsaPerteneciente(int codBolsa)
+        /// {
+        /// var _jefeId = ObtenerId();
+        ///  var comando = new SqlCommand(@"
+        /// SELECT COUNT(1) 
+        /// FROM Bolsa B
+        /// INNER JOIN Cobrador C ON B.Cobrador = C.Cod
+        /// WHERE B.Cod = "+codBolsa+" AND C.Jefe ="+_jefeId.ToString() + " for json path");
 
-            int count = Convert.ToInt32(_conexionSql.TraerDato(comando.CommandText, true));
+        /// int count = Convert.ToInt32(_conexionSql.TraerDato(comando.CommandText, true));
 
-            if (count == 0)
-            {
-                throw new UnauthorizedAccessException("La bolsa especificada no pertenece a un cobrador de este jefe");
-            }
-        }
+        ///   if (count == 0)
+        ///  {
+        ///      throw new UnauthorizedAccessException("La bolsa especificada no pertenece a un cobrador de este jefe");
+        ///}
+        ///  }
     }
 }
