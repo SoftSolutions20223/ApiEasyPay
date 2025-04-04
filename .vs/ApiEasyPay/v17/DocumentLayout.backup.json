@@ -9,6 +9,18 @@
     {
       "AbsoluteMoniker": "D:0:0:{F673D341-FFE4-4765-803B-3787E8263F3B}|ApiEasyPay\\ApiEasyPay.csproj|c:\\users\\crist\\onedrive\\documentos\\github\\apieasypay\\apieasypay\\aplication\\services\\bolsasservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{F673D341-FFE4-4765-803B-3787E8263F3B}|ApiEasyPay\\ApiEasyPay.csproj|solutionrelative:apieasypay\\aplication\\services\\bolsasservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F673D341-FFE4-4765-803B-3787E8263F3B}|ApiEasyPay\\ApiEasyPay.csproj|c:\\users\\crist\\onedrive\\documentos\\github\\apieasypay\\apieasypay\\aplication\\services\\sincronizacionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F673D341-FFE4-4765-803B-3787E8263F3B}|ApiEasyPay\\ApiEasyPay.csproj|solutionrelative:apieasypay\\aplication\\services\\sincronizacionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F673D341-FFE4-4765-803B-3787E8263F3B}|ApiEasyPay\\ApiEasyPay.csproj|c:\\users\\crist\\onedrive\\documentos\\github\\apieasypay\\apieasypay\\controllers\\sincronizacioncontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F673D341-FFE4-4765-803B-3787E8263F3B}|ApiEasyPay\\ApiEasyPay.csproj|solutionrelative:apieasypay\\controllers\\sincronizacioncontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F673D341-FFE4-4765-803B-3787E8263F3B}|ApiEasyPay\\ApiEasyPay.csproj|c:\\users\\crist\\onedrive\\documentos\\github\\apieasypay\\apieasypay\\domain\\model\\bolsa.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F673D341-FFE4-4765-803B-3787E8263F3B}|ApiEasyPay\\ApiEasyPay.csproj|solutionrelative:apieasypay\\domain\\model\\bolsa.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -28,9 +40,9 @@
               "RelativeDocumentMoniker": "ApiEasyPay\\Aplication\\Services\\BolsasService.cs",
               "ToolTip": "C:\\Users\\crist\\OneDrive\\Documentos\\GitHub\\ApiEasyPay\\ApiEasyPay\\Aplication\\Services\\BolsasService.cs",
               "RelativeToolTip": "ApiEasyPay\\Aplication\\Services\\BolsasService.cs",
-              "ViewState": "AgIAAC0EAAAAAAAAAAAAwHkEAAAoAAAAAAAAAA==",
+              "ViewState": "AgIAAO0CAAAAAAAAAAAAAAoAAABDAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-26T15:45:30.403Z",
+              "WhenOpened": "2025-03-31T04:56:14.694Z",
               "EditorCaption": ""
             },
             {
@@ -39,12 +51,49 @@
               "Title": "BolsasController.cs",
               "DocumentMoniker": "C:\\Users\\crist\\OneDrive\\Documentos\\GitHub\\ApiEasyPay\\ApiEasyPay\\Controllers\\BolsasController.cs",
               "RelativeDocumentMoniker": "ApiEasyPay\\Controllers\\BolsasController.cs",
-              "ToolTip": "C:\\Users\\crist\\OneDrive\\Documentos\\GitHub\\ApiEasyPay\\ApiEasyPay\\Controllers\\BolsasController.cs*",
-              "RelativeToolTip": "ApiEasyPay\\Controllers\\BolsasController.cs*",
-              "ViewState": "AgIAAMABAAAAAAAAAAAAwM0BAAAlAAAAAAAAAA==",
+              "ToolTip": "C:\\Users\\crist\\OneDrive\\Documentos\\GitHub\\ApiEasyPay\\ApiEasyPay\\Controllers\\BolsasController.cs",
+              "RelativeToolTip": "ApiEasyPay\\Controllers\\BolsasController.cs",
+              "ViewState": "AgIAAI8AAAAAAAAAAAAAAJIAAAA6AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-23T13:54:59.453Z",
+              "WhenOpened": "2025-03-31T04:55:33.676Z",
               "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "SincronizacionService.cs",
+              "DocumentMoniker": "C:\\Users\\crist\\OneDrive\\Documentos\\GitHub\\ApiEasyPay\\ApiEasyPay\\Aplication\\Services\\SincronizacionService.cs",
+              "RelativeDocumentMoniker": "ApiEasyPay\\Aplication\\Services\\SincronizacionService.cs",
+              "ToolTip": "C:\\Users\\crist\\OneDrive\\Documentos\\GitHub\\ApiEasyPay\\ApiEasyPay\\Aplication\\Services\\SincronizacionService.cs",
+              "RelativeToolTip": "ApiEasyPay\\Aplication\\Services\\SincronizacionService.cs",
+              "ViewState": "AgIAAKYAAAAAAAAAAAAAwNcAAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-28T21:20:32.244Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "SincronizacionController.cs",
+              "DocumentMoniker": "C:\\Users\\crist\\OneDrive\\Documentos\\GitHub\\ApiEasyPay\\ApiEasyPay\\Controllers\\SincronizacionController.cs",
+              "RelativeDocumentMoniker": "ApiEasyPay\\Controllers\\SincronizacionController.cs",
+              "ToolTip": "C:\\Users\\crist\\OneDrive\\Documentos\\GitHub\\ApiEasyPay\\ApiEasyPay\\Controllers\\SincronizacionController.cs",
+              "RelativeToolTip": "ApiEasyPay\\Controllers\\SincronizacionController.cs",
+              "ViewState": "AgIAAGAAAAAAAAAAAAAAADgAAABSAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-28T21:15:39.333Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Bolsa.cs",
+              "DocumentMoniker": "C:\\Users\\crist\\OneDrive\\Documentos\\GitHub\\ApiEasyPay\\ApiEasyPay\\Domain\\Model\\Bolsa.cs",
+              "RelativeDocumentMoniker": "ApiEasyPay\\Domain\\Model\\Bolsa.cs",
+              "ToolTip": "C:\\Users\\crist\\OneDrive\\Documentos\\GitHub\\ApiEasyPay\\ApiEasyPay\\Domain\\Model\\Bolsa.cs",
+              "RelativeToolTip": "ApiEasyPay\\Domain\\Model\\Bolsa.cs",
+              "ViewState": "AgIAABcAAAAAAAAAAAA0wAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-28T21:15:14.181Z"
             }
           ]
         }

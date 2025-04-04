@@ -92,6 +92,71 @@ namespace ApiEasyPay.Aplication.Services
                     return (false, "Debe proporcionar el nombre de la tabla y al menos un registro a sincronizar", null);
                 }
 
+                // Crear una lista para almacenar los registros eliminados
+                var eliminados = new List<JObject>();
+                // Crear una lista para almacenar los registros a mantener para el upsert
+                var registrosParaUpsert = new JArray();
+
+                // Iterar sobre cada objeto del JArray para identificar los marcados como eliminados
+                foreach (JToken token in request.DatosMasivos)
+                {
+                    if (token is JObject jObject)
+                    {
+                        // Verificar si existe la propiedad "Eliminado" y si su valor es 1
+                        if (jObject["Eliminado"] != null && jObject["Eliminado"].Value<int>() == 1)
+                        {
+                            // Verificar que tenga Cod y Cobrador para identificar el registro
+                            if (jObject["Cod"] != null && jObject["Cobrador"] != null)
+                            {
+                                // Agregar a la lista de eliminados
+                                eliminados.Add(jObject);
+                            }
+                        }
+                        else
+                        {
+                            // Si no está marcado como eliminado, agregar a la lista para upsert
+                            // Primero, eliminar la propiedad "Eliminado" si existe ya que no es parte del modelo
+                            if (jObject["Eliminado"] != null)
+                            {
+                                jObject.Remove("Eliminado");
+                            }
+                            registrosParaUpsert.Add(jObject);
+                        }
+                    }
+                }
+
+                // Procesar los registros marcados como eliminados
+                foreach (var registro in eliminados)
+                {
+                    var cod = registro["Cod"].Value<string>();
+                    var cobrador = registro["Cobrador"].Value<string>();
+
+                    // Verificar si el registro existe en la base de datos
+                    var comandoVerificar = new SqlCommand($"SELECT COUNT(1) FROM {request.Tabla} WHERE Cod = {cod} AND Cobrador = {cobrador}");
+                    var existeRegistro = Convert.ToInt32(_conexionSql.TraerDato(comandoVerificar.CommandText, false));
+
+                    if (existeRegistro > 0)
+                    {
+                        // El registro existe, procedemos a eliminarlo
+                        var comandoEliminar = new SqlCommand($"DELETE FROM {request.Tabla} WHERE Cod = {cod} AND Cobrador = {cobrador}");
+                        string resultado = _conexionSql.SqlQueryGestion(comandoEliminar.CommandText, false);
+
+                        if (resultado != "yes")
+                        {
+                            // Si hay un error al eliminar, podríamos decidir continuar o abortar
+                            // Para este caso, solo registramos el error y continuamos
+                            // También podríamos agregar esto a un log o a la respuesta
+                            Console.WriteLine($"Error al eliminar registro Cod={cod}, Cobrador={cobrador}: {resultado}");
+                        }
+                    }
+                }
+
+                // Continuar solo si hay registros para el upsert
+                if (registrosParaUpsert.Count == 0)
+                {
+                    return (true, $"Datos procesados correctamente. Se eliminaron {eliminados.Count} registros. No hay registros para actualizar.", new JArray());
+                }
+
                 // Obtenemos el tipo correspondiente al modelo según la tabla
                 Type modelType = GetModelTypeForTable(request.Tabla);
                 if (modelType == null)
@@ -100,12 +165,11 @@ namespace ApiEasyPay.Aplication.Services
                 }
 
                 // Usamos el método DeserializeList para validar la lista completa
-                object modelList = _jsonDeserializer.DeserializeList(modelType, request.DatosMasivos);
+                object modelList = _jsonDeserializer.DeserializeList(modelType, registrosParaUpsert);
 
                 // Verificamos si hay errores de validación
                 if (_jsonDeserializer.Errors.Count > 0)
                 {
-                    // Podríamos devolver los errores detallados para que el cliente sepa qué filas tienen problemas
                     return (false, $"Error de validación en los datos: {_jsonDeserializer.Errors.ToString()}", null);
                 }
 
@@ -117,7 +181,6 @@ namespace ApiEasyPay.Aplication.Services
                 {
                     // Serializamos la lista completa para aplicar formatos
                     JArray datosSerializados = _jsonSerializer.SerializeList((dynamic)modelList);
-                    string json = datosSerializados.ToString();
 
                     // Si todo está correcto, llamamos al procedimiento DynamicUpsertJson
                     var comando = new SqlCommand("DynamicUpsertJson");
@@ -133,8 +196,13 @@ namespace ApiEasyPay.Aplication.Services
 
                     JArray resultado = _conexionSql.SqlJsonCommandArray(false, comando);
 
+                    // Agregar información sobre los registros eliminados a la respuesta
+                    var respuesta = new JObject();
+                    respuesta["Resultado"] = resultado;
+                    respuesta["EliminadosCount"] = eliminados.Count;
+
                     // Si no hay error, retornar los datos sincronizados
-                    return (true, $"Datos sincronizados correctamente. Total procesados: {datosSerializados.Count}", resultado);
+                    return (true, $"Datos sincronizados correctamente. Se eliminaron {eliminados.Count} registros. Total procesados para upsert: {datosSerializados.Count}", resultado);
                 }
                 else
                 {

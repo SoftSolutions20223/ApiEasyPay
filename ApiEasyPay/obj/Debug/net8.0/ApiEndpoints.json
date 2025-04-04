@@ -1,6 +1,48 @@
 [
   {
     "ContainingType": "ApiEasyPay.Controllers.BolsasController",
+    "Method": "GetCreditosBolsa",
+    "RelativePath": "api/Bolsas/{codBolsa}/creditos",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "codBolsa",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.BolsasController",
+    "Method": "GetCreditosBolsaRango",
+    "RelativePath": "api/Bolsas/{codBolsa}/creditos-rango",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "fechaInicio",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "fechaFin",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "codBolsa",
+        "Type": "",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.BolsasController",
     "Method": "GetEntregasBolsa",
     "RelativePath": "api/Bolsas/{codBolsa}/entregas",
     "HttpMethod": "GET",
@@ -33,12 +75,75 @@
   },
   {
     "ContainingType": "ApiEasyPay.Controllers.BolsasController",
+    "Method": "GetGastosBolsaRango",
+    "RelativePath": "api/Bolsas/{codBolsa}/gastos-rango",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "fechaInicio",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "fechaFin",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "codBolsa",
+        "Type": "",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.BolsasController",
+    "Method": "GetPagosBolsa",
+    "RelativePath": "api/Bolsas/{codBolsa}/pagos",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "codBolsa",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.BolsasController",
     "Method": "GetBolsasAbiertas",
     "RelativePath": "api/Bolsas/abiertas",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.BolsasController",
+    "Method": "GetBolsasRango",
+    "RelativePath": "api/Bolsas/bolsas-rango",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "fechaInicio",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "fechaFin",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
     "ReturnTypes": []
   },
   {
@@ -69,12 +174,54 @@
   },
   {
     "ContainingType": "ApiEasyPay.Controllers.BolsasController",
+    "Method": "GetDatosBolsaRango",
+    "RelativePath": "api/Bolsas/datos-rango",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "fechaInicio",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "fechaFin",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.BolsasController",
     "Method": "GetBolsasAbiertasPorDelegado",
     "RelativePath": "api/Bolsas/delegado/abiertas",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.BolsasController",
+    "Method": "GetBolsasPorDelegadoRango",
+    "RelativePath": "api/Bolsas/delegado/bolsas-rango",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "fechaInicio",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "fechaFin",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
     "ReturnTypes": []
   },
   {
@@ -89,6 +236,27 @@
   },
   {
     "ContainingType": "ApiEasyPay.Controllers.BolsasController",
+    "Method": "GetCreditosPorDelegadoRango",
+    "RelativePath": "api/Bolsas/delegado/creditos-rango",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "fechaInicio",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "fechaFin",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.BolsasController",
     "Method": "GetDatosBolsaPorDelegado",
     "RelativePath": "api/Bolsas/delegado/datos",
     "HttpMethod": "GET",
@@ -97,6 +265,132 @@
     "Parameters": [
       {
         "Name": "fecha",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.BolsasController",
+    "Method": "GetDatosBolsaPorDelegadoRango",
+    "RelativePath": "api/Bolsas/delegado/datos-rango",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "fechaInicio",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "fechaFin",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.BolsasController",
+    "Method": "GetEntregasPorDelegadoRango",
+    "RelativePath": "api/Bolsas/delegado/entregas-rango",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "fechaInicio",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "fechaFin",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.BolsasController",
+    "Method": "GetGastosPorDelegadoRango",
+    "RelativePath": "api/Bolsas/delegado/gastos-rango",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "fechaInicio",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "fechaFin",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.BolsasController",
+    "Method": "GetPagosPorDelegadoRango",
+    "RelativePath": "api/Bolsas/delegado/pagos-rango",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "fechaInicio",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "fechaFin",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.BolsasController",
+    "Method": "GetEntregasRango",
+    "RelativePath": "api/Bolsas/entregas-rango",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "fechaInicio",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "fechaFin",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.BolsasController",
+    "Method": "GetPagosRango",
+    "RelativePath": "api/Bolsas/pagos-rango",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "fechaInicio",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "fechaFin",
         "Type": "System.String",
         "IsRequired": false
       }
