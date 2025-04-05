@@ -1,22 +1,6 @@
 [
   {
     "ContainingType": "ApiEasyPay.Controllers.BolsasController",
-    "Method": "GetCreditosBolsa",
-    "RelativePath": "api/Bolsas/{codBolsa}/creditos",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "codBolsa",
-        "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "ApiEasyPay.Controllers.BolsasController",
     "Method": "GetCreditosBolsaRango",
     "RelativePath": "api/Bolsas/{codBolsa}/creditos-rango",
     "HttpMethod": "GET",
@@ -43,8 +27,8 @@
   },
   {
     "ContainingType": "ApiEasyPay.Controllers.BolsasController",
-    "Method": "GetEntregasBolsa",
-    "RelativePath": "api/Bolsas/{codBolsa}/entregas",
+    "Method": "GetCreditosBolsa",
+    "RelativePath": "api/Bolsas/{codBolsa}/creditos/{cobradorId}",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -53,20 +37,30 @@
         "Name": "codBolsa",
         "Type": "System.Int32",
         "IsRequired": true
+      },
+      {
+        "Name": "cobradorId",
+        "Type": "System.Int32",
+        "IsRequired": true
       }
     ],
     "ReturnTypes": []
   },
   {
     "ContainingType": "ApiEasyPay.Controllers.BolsasController",
-    "Method": "GetGastosBolsa",
-    "RelativePath": "api/Bolsas/{codBolsa}/gastos",
+    "Method": "GetEntregasBolsa",
+    "RelativePath": "api/Bolsas/{codBolsa}/entregas/{cobradorId}",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
         "Name": "codBolsa",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "cobradorId",
         "Type": "System.Int32",
         "IsRequired": true
       }
@@ -101,14 +95,40 @@
   },
   {
     "ContainingType": "ApiEasyPay.Controllers.BolsasController",
-    "Method": "GetPagosBolsa",
-    "RelativePath": "api/Bolsas/{codBolsa}/pagos",
+    "Method": "GetGastosBolsa",
+    "RelativePath": "api/Bolsas/{codBolsa}/gastos/{cobradorId}",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
         "Name": "codBolsa",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "cobradorId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.BolsasController",
+    "Method": "GetPagosBolsa",
+    "RelativePath": "api/Bolsas/{codBolsa}/pagos/{cobradorId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "codBolsa",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "cobradorId",
         "Type": "System.Int32",
         "IsRequired": true
       }

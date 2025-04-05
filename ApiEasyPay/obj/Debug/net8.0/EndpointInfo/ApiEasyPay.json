@@ -62,7 +62,7 @@
         }
       }
     },
-    "/api/Bolsas/{codBolsa}/entregas": {
+    "/api/Bolsas/{codBolsa}/entregas/{cobradorId}": {
       "get": {
         "tags": [
           "Bolsas"
@@ -70,6 +70,15 @@
         "parameters": [
           {
             "name": "codBolsa",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "cobradorId",
             "in": "path",
             "required": true,
             "schema": {
@@ -85,7 +94,7 @@
         }
       }
     },
-    "/api/Bolsas/{codBolsa}/gastos": {
+    "/api/Bolsas/{codBolsa}/gastos/{cobradorId}": {
       "get": {
         "tags": [
           "Bolsas"
@@ -93,6 +102,15 @@
         "parameters": [
           {
             "name": "codBolsa",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "cobradorId",
             "in": "path",
             "required": true,
             "schema": {
@@ -108,7 +126,7 @@
         }
       }
     },
-    "/api/Bolsas/{codBolsa}/creditos": {
+    "/api/Bolsas/{codBolsa}/creditos/{cobradorId}": {
       "get": {
         "tags": [
           "Bolsas"
@@ -116,6 +134,15 @@
         "parameters": [
           {
             "name": "codBolsa",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "cobradorId",
             "in": "path",
             "required": true,
             "schema": {
@@ -451,7 +478,7 @@
         }
       }
     },
-    "/api/Bolsas/{codBolsa}/pagos": {
+    "/api/Bolsas/{codBolsa}/pagos/{cobradorId}": {
       "get": {
         "tags": [
           "Bolsas"
@@ -459,6 +486,15 @@
         "parameters": [
           {
             "name": "codBolsa",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "cobradorId",
             "in": "path",
             "required": true,
             "schema": {

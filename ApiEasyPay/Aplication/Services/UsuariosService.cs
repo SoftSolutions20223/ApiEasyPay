@@ -10,12 +10,14 @@ namespace ApiEasyPay.Aplication.Services
     public class UsuariosService
     {
         private readonly ConexionSql _conexionSql;
+        private readonly ConexionMongo _conexionMongo;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
 
-        public UsuariosService(ConexionSql conexionSql, IHttpContextAccessor httpContextAccessor)
+        public UsuariosService(ConexionSql conexionSql, IHttpContextAccessor httpContextAccessor, ConexionMongo conexionMongo)
         {
             _conexionSql = conexionSql;
+            _conexionMongo = conexionMongo;
             _httpContextAccessor = httpContextAccessor;
 
             // Configurar cadena de conexión principal
@@ -159,6 +161,36 @@ namespace ApiEasyPay.Aplication.Services
                 if (resultado["MensajeError"] != null)
                     return (false, resultado["MensajeError"].ToString(), null);
 
+
+                try
+                {
+                    // Verificar si hay un token en el resultado
+                    string token = resultado["Token"]?.ToString();
+
+                    if (!string.IsNullOrEmpty(token))
+                    {
+                        // Buscar la sesión por token
+                        var sesionActual = await _conexionMongo.GetSessionByTokenAsync(token);
+
+                        if (sesionActual != null)
+                        {
+                            // Actualizar los campos relevantes
+                            sesionActual["Nombres"] = request.Nombres;
+                            sesionActual["Usuario"] = request.Usuario;
+                            sesionActual["Contraseña"] = request.Contraseña;
+
+                            // Actualizar en MongoDB sin alterar el token
+                            await _conexionMongo.UpdateSessionAsync(token, sesionActual);
+
+                            // Log opcional
+                           // Console.WriteLine($"Sesión actualizada para el usuario {request.Usuario} con token {token}");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+
+                }
                 // Si no hay error, retornar los datos actualizados
                 return (true, "Usuario modificado correctamente", resultado);
             }

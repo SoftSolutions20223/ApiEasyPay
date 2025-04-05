@@ -93,16 +93,17 @@ namespace ApiEasyPay.Controllers
         }
 
         /// <summary>
-        /// Obtiene las entregas de una bolsa específica
+        /// Obtiene las entregas de una bolsa específica para un cobrador
         /// </summary>
         /// <param name="codBolsa">Código de la bolsa</param>
+        /// <param name="cobradorId">Código del cobrador</param>
         /// <returns>Lista de entregas en formato JSON</returns>
-        [HttpGet("{codBolsa}/entregas")]
-        public IActionResult GetEntregasBolsa(int codBolsa)
+        [HttpGet("{codBolsa}/entregas/{cobradorId}")]
+        public IActionResult GetEntregasBolsa(int codBolsa, int cobradorId)
         {
             try
             {
-                var resultado = _bolsaService.ObtenerEntregasBolsa(codBolsa);
+                var resultado = _bolsaService.ObtenerEntregasBolsa(codBolsa, cobradorId);
                 return new JsonResult(resultado);
             }
             catch (UnauthorizedAccessException ex)
@@ -116,16 +117,17 @@ namespace ApiEasyPay.Controllers
         }
 
         /// <summary>
-        /// Obtiene los gastos de una bolsa específica
+        /// Obtiene los gastos de una bolsa específica para un cobrador
         /// </summary>
         /// <param name="codBolsa">Código de la bolsa</param>
+        /// <param name="cobradorId">Código del cobrador</param>
         /// <returns>Lista de gastos en formato JSON</returns>
-        [HttpGet("{codBolsa}/gastos")]
-        public IActionResult GetGastosBolsa(int codBolsa)
+        [HttpGet("{codBolsa}/gastos/{cobradorId}")]
+        public IActionResult GetGastosBolsa(int codBolsa, int cobradorId)
         {
             try
             {
-                var resultado = _bolsaService.ObtenerGastosBolsa(codBolsa);
+                var resultado = _bolsaService.ObtenerGastosBolsa(codBolsa, cobradorId);
                 return new JsonResult(resultado);
             }
             catch (UnauthorizedAccessException ex)
@@ -143,12 +145,12 @@ namespace ApiEasyPay.Controllers
         /// </summary>
         /// <param name="codBolsa">Código de la bolsa</param>
         /// <returns>Lista de créditos en formato JSON</returns>
-        [HttpGet("{codBolsa}/creditos")]
-        public IActionResult GetCreditosBolsa(int codBolsa)
+        [HttpGet("{codBolsa}/creditos/{cobradorId}")]
+        public IActionResult GetCreditosBolsa(int codBolsa, int cobradorId)
         {
             try
             {
-                var resultado = _bolsaService.ObtenerCreditosBolsa(codBolsa);
+                var resultado = _bolsaService.ObtenerCreditosBolsa(codBolsa, cobradorId);
                 return new JsonResult(resultado);
             }
             catch (UnauthorizedAccessException ex)
@@ -160,6 +162,7 @@ namespace ApiEasyPay.Controllers
                 return BadRequest(new { mensaje = $"Error al obtener créditos de bolsa: {ex.Message}" });
             }
         }
+
 
         /// <summary>
         /// Obtiene un resumen de las bolsas abiertas de los cobradores asignados a un delegado específico
@@ -454,16 +457,17 @@ namespace ApiEasyPay.Controllers
         }
 
         /// <summary>
-        /// Obtiene los pagos realizados en una bolsa específica
+        /// Obtiene los pagos de una bolsa específica para un cobrador
         /// </summary>
         /// <param name="codBolsa">Código de la bolsa</param>
+        /// <param name="cobradorId">Código del cobrador</param>
         /// <returns>Lista de pagos en formato JSON</returns>
-        [HttpGet("{codBolsa}/pagos")]
-        public IActionResult GetPagosBolsa(int codBolsa)
+        [HttpGet("{codBolsa}/pagos/{cobradorId}")]
+        public IActionResult GetPagosBolsa(int codBolsa, int cobradorId)
         {
             try
             {
-                var resultado = _bolsaService.ObtenerPagosBolsa(codBolsa);
+                var resultado = _bolsaService.ObtenerPagosBolsa(codBolsa, cobradorId);
                 return new JsonResult(resultado);
             }
             catch (UnauthorizedAccessException ex)

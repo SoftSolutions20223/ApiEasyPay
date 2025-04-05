@@ -1,4 +1,5 @@
 ﻿using ApiEasyPay.Databases.Connections;
+using ApiEasyPay.Domain.Model;
 using ApiEasyPay.Seguridad.Helpers;
 using Microsoft.Data.SqlClient;
 using Newtonsoft.Json.Linq;
@@ -649,20 +650,21 @@ namespace ApiEasyPay.Aplication.Services
         /// <summary>
         /// Obtiene las entregas de una bolsa específica
         /// </summary>
-        public JArray ObtenerEntregasBolsa(int codBolsa)
+        public JArray ObtenerEntregasBolsa(int codBolsa, int cobradorId)
         {
             // Verificar que la bolsa pertenezca a un cobrador del jefe actual
             /// ValidarBolsaPerteneciente(codBolsa);
 
             var comando = new SqlCommand(@"
-                SELECT 
-                    Entregas AS Descripcion,
-                    Cod,
-                    Valor,
-                    CONVERT(VARCHAR(12), Fecha, 103) AS Fecha
-                FROM ValoresBolsa 
-                WHERE Entregas is Not Null And Entregas <> ''
-                  AND Bolsa =" + codBolsa.ToString() + " for json path");
+        SELECT 
+            Entregas AS Descripcion,
+            Cod,
+            Valor,
+            CONVERT(VARCHAR(12), Fecha, 103) AS Fecha
+        FROM ValoresBolsa 
+        WHERE Entregas is Not Null And Entregas <> ''
+          AND Bolsa = " + codBolsa.ToString() + @"
+          AND Cobrador = " + cobradorId.ToString() + @" FOR JSON PATH");
 
 
 
@@ -677,28 +679,30 @@ namespace ApiEasyPay.Aplication.Services
         /// </summary>
         /// <param name="codBolsa">Código de la bolsa</param>
         /// <returns>JArray con los créditos creados en la bolsa</returns>
-        public JArray ObtenerCreditosBolsa(int codBolsa)
+        public JArray ObtenerCreditosBolsa(int codBolsa, int cobradorId)
         {
             // Verificar que la bolsa pertenezca a un cobrador del jefe actual
             /// ValidarBolsaPerteneciente(codBolsa);
 
             var comando = new SqlCommand(@"
-        SELECT 
-    VB.Credito,
-    VB.Cod,
-    VB.Valor,
-    CONVERT(VARCHAR(12), VB.Fecha, 103) AS Fecha,
-    C.TotalPagar AS TotalPagar,
-	C.NumeroDeCuotas AS NumeroDeCuotas,
-	C.PorceInteres AS PorceInteres,
-    CL.Nombres + ' ' + CL.Apellidos AS NombreCliente,
-    CL.Documento AS DocumentoCliente
-FROM ValoresBolsa VB
-INNER JOIN Creditos C ON VB.Credito = C.Cod
-INNER JOIN Clientes CL ON C.Cliente = CL.Cod
-WHERE VB.Credito IS NOT NULL 
-  AND VB.Credito > 0
-          AND VB.Bolsa = " + codBolsa.ToString() + " FOR JSON PATH");
+    SELECT 
+        VB.Credito,
+        VB.Cod,
+        VB.Valor,
+        CONVERT(VARCHAR(12), VB.Fecha, 103) AS Fecha,
+        C.TotalPagar AS TotalPagar,
+        C.NumeroDeCuotas AS NumeroDeCuotas,
+        C.PorceInteres AS PorceInteres,
+        CL.Nombres + ' ' + CL.Apellidos AS NombreCliente,
+        CL.Documento AS DocumentoCliente
+    FROM ValoresBolsa VB
+    INNER JOIN Creditos C ON VB.Credito = C.Cod and C.Cobrador=VB.Cobrador
+    INNER JOIN Clientes CL ON C.Cliente = CL.Cod And CL.Cobrador=C.Cobrador
+    WHERE VB.Credito IS NOT NULL 
+      AND VB.Credito > 0
+      AND VB.Bolsa = "
+            + codBolsa.ToString() + @"
+      AND VB.Cobrador = " + cobradorId.ToString() + @" FOR JSON PATH");
 
             string jsonResult = _conexionSql.SqlJsonComand(false, comando);
             JArray resultado = JArray.Parse(jsonResult);
@@ -757,20 +761,21 @@ WHERE VB.Credito IS NOT NULL
         /// <summary>
         /// Obtiene los gastos de una bolsa específica
         /// </summary>
-        public JArray ObtenerGastosBolsa(int codBolsa)
+        public JArray ObtenerGastosBolsa(int codBolsa, int cobradorId)
         {
             // Verificar que la bolsa pertenezca a un cobrador del jefe actual
             ///  ValidarBolsaPerteneciente(codBolsa);
 
             var comando = new SqlCommand(@"
-                SELECT 
-                    Gasto AS Descripcion,
-                    Cod,
-                    Valor,
-                    CONVERT(VARCHAR(12), Fecha, 103) AS Fecha
-                FROM ValoresBolsa 
-                WHERE Gasto is Not Null And Gasto <> ''
-                  AND Bolsa =" + codBolsa.ToString() + " for json path");
+        SELECT 
+            Gasto AS Descripcion,
+            Cod,
+            Valor,
+            CONVERT(VARCHAR(12), Fecha, 103) AS Fecha
+        FROM ValoresBolsa 
+        WHERE Gasto is Not Null And Gasto <> ''
+          AND Bolsa = " + codBolsa.ToString() + @"
+          AND Cobrador = " + cobradorId.ToString() + @" FOR JSON PATH");
 
             string jsonResult = _conexionSql.SqlJsonComand(false, comando);
             JArray resultado = JArray.Parse(jsonResult);
@@ -1052,7 +1057,7 @@ WHERE VB.Credito IS NOT NULL
         /// </summary>
         /// <param name="codBolsa">Código de la bolsa</param>
         /// <returns>JArray con los pagos de la bolsa</returns>
-        public JArray ObtenerPagosBolsa(int codBolsa)
+        public JArray ObtenerPagosBolsa(int codBolsa, int cobradorId)
         {
 
             var comando = new SqlCommand(@"
@@ -1067,9 +1072,10 @@ WHERE VB.Credito IS NOT NULL
             C.Nombres + ' ' + C.Apellidos AS NombreCliente,
             C.Documento AS DocumentoCliente
         FROM RegDiarioCuotas RD
-        INNER JOIN Creditos CR ON RD.Credito = CR.Cod
-        INNER JOIN Clientes C ON CR.Cliente = C.Cod
+        INNER JOIN Creditos CR ON RD.Credito = CR.Cod And CR.Cobrador=RD.Cobrador
+        INNER JOIN Clientes C ON CR.Cliente = C.Cod And C.Cobrador= CR.Cobrador
         WHERE RD.Bolsa = " + codBolsa.ToString() + @"
+        AND RD.Cobrador = " + cobradorId.ToString() + @"
         ORDER BY RD.Fecha DESC FOR JSON PATH");
 
             string jsonResult = _conexionSql.SqlJsonComand(false, comando);
