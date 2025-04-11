@@ -144,44 +144,106 @@ namespace ApiEasyPay.Aplication.Services
                 fechaFin = DateTime.Now.ToString("yyyy-MM-dd"); // Por defecto, hoy
             }
 
-            // Consulta para obtener resumen de bolsas por delegado con una sola consulta eficiente
             var comando = new SqlCommand(@"
+WITH CajasInfo AS (
+    SELECT 
+        B.Cod, 
+        B.Cobrador, 
+        B.FechaInicio, 
+        B.SaldoActual, 
+        B.TotalGastos, 
+        B.TotalCobrado, 
+        B.TotalCobradoCUO, 
+        B.TotalCobradoEXT, 
+        B.TotalCobradoDEU, 
+        B.TotalPrestado,
+        ROW_NUMBER() OVER (PARTITION BY B.Cobrador ORDER BY B.FechaInicio ASC) AS PrimeraFila,
+        ROW_NUMBER() OVER (PARTITION BY B.Cobrador ORDER BY B.FechaInicio DESC) AS UltimaFila
+    FROM Bolsa B
+    INNER JOIN Cobrador C ON B.Cobrador = C.Cod
+    INNER JOIN Delegados_Cobradores DC ON C.Cod = DC.Cobrador
+    WHERE DC.Delegado = " + delegadoId + @"
+      AND CONVERT(DATE, B.FechaInicio) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
+),
+PrimerApertura AS (
+    SELECT 
+        A.Cobrador,
+        A.Valor AS ValorApertura,
+        A.Fecha AS FechaApertura
+    FROM (
         SELECT 
-            CONVERT(VARCHAR(12), '" + fechaInicio + @"', 103) + ' al ' + 
-            CONVERT(VARCHAR(12), '" + fechaFin + @"', 103) AS RangoFechas,
-            COUNT(DISTINCT B.Cod) AS CantidadBolsasActivas,
-            SUM(ISNULL(B.SaldoActual, 0)) AS TotalSaldoActual,
-            SUM(ISNULL(B.TotalEntregas, 0)) AS TotalEntregas,
-            SUM(ISNULL(B.TotalGastos, 0)) AS TotalGastos,
-            SUM(ISNULL(B.TotalCobrado, 0)) AS TotalCobrado,
-            SUM(ISNULL(B.TotalCobradoCUO, 0)) AS TotalCobradoCuotas,
-            SUM(ISNULL(B.TotalCobradoEXT, 0)) AS TotalCobradoExtras,
-            SUM(ISNULL(B.TotalCobradoDEU, 0)) AS TotalCobradoDeudas,
-            SUM(ISNULL(B.TotalPrestado, 0)) AS TotalPrestado,
-            (
-                SELECT COUNT(CR.Cod) 
-                FROM Creditos CR 
-                INNER JOIN Cobrador C ON CR.Cobrador = C.Cod 
-                INNER JOIN Delegados_Cobradores DC ON C.Cod = DC.Cobrador
-                WHERE CONVERT(DATE, CR.FechaRegistro) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"' 
-                AND DC.Delegado = " + delegadoId + @"
-            ) AS CreditosCreados,
-            (
-                SELECT COUNT(CR.Cod) 
-                FROM Creditos CR 
-                INNER JOIN Cobrador C ON CR.Cobrador = C.Cod 
-                INNER JOIN Delegados_Cobradores DC ON C.Cod = DC.Cobrador
-                WHERE CONVERT(DATE, CR.FechaFin) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"' 
-                AND CR.Estado = 'T'
-                AND DC.Delegado = " + delegadoId + @"
-            ) AS CreditosTerminados
-        FROM Bolsa B 
-        INNER JOIN Cobrador C ON B.Cobrador = C.Cod 
-        INNER JOIN Delegados_Cobradores DC ON C.Cod = DC.Cobrador
-        WHERE 
-        DC.Delegado = " + delegadoId + @"
-        AND CONVERT(DATE, B.FechaInicio) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
-        FOR JSON PATH, WITHOUT_ARRAY_WRAPPER");
+            VB.Cobrador,
+            VB.Valor,
+            VB.Fecha,
+            ROW_NUMBER() OVER (PARTITION BY VB.Cobrador ORDER BY VB.Fecha ASC) AS rn
+        FROM ValoresBolsa VB
+        WHERE VB.Entregas = 'Apertura de Caja'
+          AND CONVERT(DATE, VB.Fecha) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
+    ) A
+    WHERE A.rn = 1
+),
+EntregasNoApertura AS (
+    SELECT 
+        VB.Cobrador,
+        SUM(VB.Valor) AS TotalEntregasNoApertura
+    FROM ValoresBolsa VB
+    WHERE VB.Entregas <> 'Apertura de Caja'
+      AND VB.Entregas IS NOT NULL 
+      AND VB.Entregas <> ''
+      AND CONVERT(DATE, VB.Fecha) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
+    GROUP BY VB.Cobrador
+),
+CajasAgrupadas AS (
+    SELECT 
+        Cobrador,
+        COUNT(Cod) AS CantidadBolsas,
+        SUM(CASE WHEN UltimaFila = 1 THEN SaldoActual ELSE 0 END) AS TotalSaldoActual,
+        SUM(TotalGastos) AS TotalGastos,
+        SUM(TotalCobrado) AS TotalCobrado,
+        SUM(TotalCobradoCUO) AS TotalCobradoCuotas,
+        SUM(TotalCobradoEXT) AS TotalCobradoExtras,
+        SUM(TotalCobradoDEU) AS TotalCobradoDeudas,
+        SUM(TotalPrestado) AS TotalPrestado
+    FROM CajasInfo
+    GROUP BY Cobrador
+),
+CreditosCreadosCTE AS (
+    SELECT COUNT(CR.Cod) AS CreditosCreados
+    FROM Creditos CR
+    INNER JOIN Cobrador C ON CR.Cobrador = C.Cod
+    INNER JOIN Delegados_Cobradores DC ON C.Cod = DC.Cobrador
+    WHERE CONVERT(DATE, CR.FechaRegistro) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
+      AND DC.Delegado = " + delegadoId + @"
+),
+CreditosTerminadosCTE AS (
+    SELECT COUNT(CR.Cod) AS CreditosTerminados
+    FROM Creditos CR
+    INNER JOIN Cobrador C ON CR.Cobrador = C.Cod
+    INNER JOIN Delegados_Cobradores DC ON C.Cod = DC.Cobrador
+    WHERE CONVERT(DATE, CR.FechaFin) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
+      AND CR.Estado = 'T'
+      AND DC.Delegado = " + delegadoId + @"
+)
+SELECT 
+    CONVERT(VARCHAR(12), '" + fechaInicio + @"', 103) + ' al ' + CONVERT(VARCHAR(12), '" + fechaFin + @"', 103) AS RangoFechas,
+    COUNT(CA.Cobrador) AS CantidadCobradores,
+    SUM(CA.CantidadBolsas) AS CantidadBolsas,
+    SUM(CA.TotalSaldoActual) AS TotalSaldoActual,
+    ISNULL(SUM(PA.ValorApertura), 0) + ISNULL(SUM(ENA.TotalEntregasNoApertura), 0) AS TotalEntregas,
+    SUM(CA.TotalGastos) AS TotalGastos,
+    SUM(CA.TotalCobrado) AS TotalCobrado,
+    SUM(CA.TotalCobradoCuotas) AS TotalCobradoCuotas,
+    SUM(CA.TotalCobradoExtras) AS TotalCobradoExtras,
+    SUM(CA.TotalCobradoDeudas) AS TotalCobradoDeudas,
+    SUM(CA.TotalPrestado) AS TotalPrestado,
+    MAX(CC.CreditosCreados) AS CreditosCreados,
+    MAX(CT.CreditosTerminados) AS CreditosTerminados
+FROM CajasAgrupadas CA
+LEFT JOIN PrimerApertura PA ON CA.Cobrador = PA.Cobrador
+LEFT JOIN EntregasNoApertura ENA ON CA.Cobrador = ENA.Cobrador
+CROSS JOIN CreditosCreadosCTE CC
+CROSS JOIN CreditosTerminadosCTE CT
+FOR JSON PATH, WITHOUT_ARRAY_WRAPPER");
 
             string resultado = _conexionSql.SqlJsonComand(false, comando);
             if (string.IsNullOrEmpty(resultado) || resultado == "[]")
@@ -311,7 +373,7 @@ namespace ApiEasyPay.Aplication.Services
         /// </summary>
         /// <param name="fechaInicio">Fecha inicial en formato yyyy-MM-dd</param>
         /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
-        /// <returns>JArray con las bolsas abiertas de los cobradores asignados al delegado en el rango de fechas</returns>
+        /// <returns>JArray con las bolsas abiertas en el rango de fechas, agrupadas por cobrador</returns>
         public JArray ObtenerBolsasPorDelegadoRango(string fechaInicio, string fechaFin)
         {
             // Primero verificamos que el delegado pertenezca al jefe actual (seguridad)
@@ -337,44 +399,134 @@ namespace ApiEasyPay.Aplication.Services
                 fechaFin = DateTime.Now.ToString("yyyy-MM-dd"); // Por defecto, hoy
             }
 
-            // Consulta para obtener bolsas abiertas de cobradores asignados al delegado en rango de fechas
             var comando = new SqlCommand(@"
+    WITH CajasInfo AS (
         SELECT 
-            ISNULL(B.TotalGastos, 0) AS TotalGastos,
-            ISNULL(B.TotalEntregas, 0) AS TotalEntregas,
-            ISNULL(B.TotalCobradoDEU, 0) AS TotalCobradoDEU,
-            ISNULL(B.TotalCobradoCUO, 0) AS TotalCobradoCUO,
-            ISNULL(B.TotalCobradoEXT, 0) AS TotalCobradoEXT,
-            ISNULL(B.TotalCobrado, 0) AS TotalCobrado,
-            ISNULL(B.TotalPrestado, 0) AS TotalUsado,
-            B.Cobrador AS CodCobrador,
-            B.Cod AS CodBolsa,
-            C.Nombres + ' ' + C.Apellidos AS Nombres,
-            C.Documento AS Dni,
-            B.SaldoActual AS SaldoActual,
-            CONVERT(VARCHAR(12), B.FechaInicio, 103) AS FechaInicio,
-            -- Contar créditos creados en el rango para este cobrador
-            ISNULL((
-                SELECT COUNT(CR.Cod) 
-                FROM Creditos CR 
-                WHERE CR.Cobrador = B.Cobrador 
-                AND CONVERT(DATE, CR.FechaRegistro) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
-            ), 0) AS CreditosCreados,
-            -- Contar créditos terminados en el rango para este cobrador
-            ISNULL((
-                SELECT COUNT(CR.Cod) 
-                FROM Creditos CR 
-                WHERE CR.Cobrador = B.Cobrador 
-                AND CONVERT(DATE, CR.FechaFin) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
-                AND CR.Estado = 'T'
-            ), 0) AS CreditosTerminados
-        FROM Bolsa B 
-        INNER JOIN Cobrador C ON B.Cobrador = C.Cod 
+            B.Cod, 
+            B.Cobrador, 
+            B.FechaInicio, 
+            B.SaldoActual, 
+            B.TotalGastos, 
+            B.TotalCobrado, 
+            B.TotalCobradoCUO, 
+            B.TotalCobradoEXT, 
+            B.TotalCobradoDEU, 
+            B.TotalPrestado,
+            C.Nombres,
+            C.Apellidos,
+            C.Documento,
+            ROW_NUMBER() OVER (PARTITION BY B.Cobrador ORDER BY B.FechaInicio DESC) AS RowNum
+        FROM Bolsa B
+        INNER JOIN Cobrador C ON B.Cobrador = C.Cod
         INNER JOIN Delegados_Cobradores DC ON C.Cod = DC.Cobrador
-        WHERE 
-        DC.Delegado = " + delegadoId + @"
-        AND CONVERT(DATE, B.FechaInicio) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
-        FOR JSON PATH");
+        WHERE DC.Delegado = " + delegadoId + @"
+          AND CONVERT(DATE, B.FechaInicio) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
+    ),
+    CajasSumadas AS (
+        SELECT 
+            Cobrador,
+            MAX(Nombres) AS Nombres,
+            MAX(Apellidos) AS Apellidos,
+            MAX(Documento) AS Documento,
+            SUM(TotalGastos) AS TotalGastos,
+            SUM(TotalCobrado) AS TotalCobrado,
+            SUM(TotalCobradoCUO) AS TotalCobradoCUO,
+            SUM(TotalCobradoEXT) AS TotalCobradoEXT,
+            SUM(TotalCobradoDEU) AS TotalCobradoDEU,
+            SUM(TotalPrestado) AS TotalPrestado,
+            COUNT(Cod) AS CantidadBolsas,
+            -- Para el SaldoActual tomamos el de la última caja (la más reciente)
+            MAX(CASE WHEN RowNum = 1 THEN SaldoActual ELSE 0 END) AS SaldoActual,
+            MAX(CASE WHEN RowNum = 1 THEN FechaInicio ELSE NULL END) AS UltimaFechaInicio,
+            MAX(CASE WHEN RowNum = 1 THEN Cod ELSE NULL END) AS UltimaCaja
+        FROM CajasInfo
+        GROUP BY Cobrador
+    ),
+    PrimerApertura AS (
+        SELECT 
+            A.Cobrador,
+            A.Valor AS ValorApertura,
+            A.Fecha AS FechaApertura
+        FROM (
+            SELECT 
+                VB.Cobrador,
+                VB.Valor,
+                VB.Fecha,
+                ROW_NUMBER() OVER (PARTITION BY VB.Cobrador ORDER BY VB.Fecha ASC) AS rn
+            FROM ValoresBolsa VB
+            INNER JOIN Cobrador C ON VB.Cobrador = C.Cod
+            INNER JOIN Delegados_Cobradores DC ON C.Cod = DC.Cobrador
+            WHERE VB.Entregas = 'Apertura de Caja'
+              AND DC.Delegado = " + delegadoId + @"
+              AND CONVERT(DATE, VB.Fecha) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
+        ) A
+        WHERE A.rn = 1
+    ),
+    EntregasNoApertura AS (
+        SELECT 
+            VB.Cobrador,
+            SUM(VB.Valor) AS TotalEntregasNoApertura
+        FROM ValoresBolsa VB
+        INNER JOIN Cobrador C ON VB.Cobrador = C.Cod
+        INNER JOIN Delegados_Cobradores DC ON C.Cod = DC.Cobrador
+        WHERE VB.Entregas <> 'Apertura de Caja'
+          AND VB.Entregas IS NOT NULL 
+          AND VB.Entregas <> ''
+          AND DC.Delegado = " + delegadoId + @"
+          AND CONVERT(DATE, VB.Fecha) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
+        GROUP BY VB.Cobrador
+    ),
+    CreditosPorCobrador AS (
+        SELECT 
+            CR.Cobrador,
+            COUNT(CASE WHEN CONVERT(DATE, CR.FechaRegistro) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"' THEN 1 END) AS CreditosCreados,
+            COUNT(CASE WHEN CONVERT(DATE, CR.FechaFin) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"' AND CR.Estado = 'T' THEN 1 END) AS CreditosTerminados
+        FROM Creditos CR
+        INNER JOIN Cobrador C ON CR.Cobrador = C.Cod
+        INNER JOIN Delegados_Cobradores DC ON C.Cod = DC.Cobrador
+        WHERE DC.Delegado = " + delegadoId + @"
+          AND (CONVERT(DATE, CR.FechaRegistro) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
+               OR (CONVERT(DATE, CR.FechaFin) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"' AND CR.Estado = 'T'))
+        GROUP BY CR.Cobrador
+    ),
+    DelegadoInfo AS (
+        SELECT
+            D.Nombres + ' ' + D.Apellidos AS NombreDelegado,
+            D.Documento AS DniDelegado
+        FROM Delegado D
+        WHERE D.Cod = " + delegadoId + @"
+    )
+    SELECT 
+        CS.Cobrador AS CodCobrador,
+        CS.UltimaCaja AS CodBolsa,
+        CS.Nombres + ' ' + CS.Apellidos AS Nombres,
+        CS.Documento AS Dni,
+        CS.SaldoActual,
+        CONVERT(VARCHAR(12), CS.UltimaFechaInicio, 103) AS FechaInicio,
+        ISNULL(PA.ValorApertura, 0) AS ValorApertura,
+        CONVERT(VARCHAR(12), PA.FechaApertura, 103) AS FechaApertura,
+        ISNULL(ENA.TotalEntregasNoApertura, 0) AS EntregasAdicionales,
+        ISNULL(PA.ValorApertura, 0) + ISNULL(ENA.TotalEntregasNoApertura, 0) AS TotalEntregas,
+        ISNULL(CS.TotalGastos, 0) AS TotalGastos,
+        ISNULL(CS.TotalCobradoDEU, 0) AS TotalCobradoDEU,
+        ISNULL(CS.TotalCobradoCUO, 0) AS TotalCobradoCUO,
+        ISNULL(CS.TotalCobradoEXT, 0) AS TotalCobradoEXT,
+        ISNULL(CS.TotalCobrado, 0) AS TotalCobrado,
+        ISNULL(CS.TotalPrestado, 0) AS TotalUsado,
+        ISNULL(CPC.CreditosCreados, 0) AS CreditosCreados,
+        ISNULL(CPC.CreditosTerminados, 0) AS CreditosTerminados,
+        CS.CantidadBolsas,
+        " + delegadoId + @" AS CodDelegado,
+        (SELECT NombreDelegado FROM DelegadoInfo) AS NombreDelegado,
+        (SELECT DniDelegado FROM DelegadoInfo) AS DniDelegado,
+        '" + fechaInicio + @"' AS FechaInicio_Rango,
+        '" + fechaFin + @"' AS FechaFin_Rango
+    FROM CajasSumadas CS
+    LEFT JOIN PrimerApertura PA ON CS.Cobrador = PA.Cobrador
+    LEFT JOIN EntregasNoApertura ENA ON CS.Cobrador = ENA.Cobrador
+    LEFT JOIN CreditosPorCobrador CPC ON CS.Cobrador = CPC.Cobrador
+    ORDER BY CS.Nombres
+    FOR JSON PATH");
 
             string jsonResult = _conexionSql.SqlJsonComand(false, comando);
             JArray resultado = JArray.Parse(jsonResult);
@@ -385,12 +537,15 @@ namespace ApiEasyPay.Aplication.Services
         /// <summary>
         /// Obtiene un resumen de las bolsas abiertas del jefe actual
         /// </summary>
-        public JArray ObtenerBolsasAbiertas()
+        public JArray ObtenerBolsasxFecha(string Fecha)
         {
             var _jefeId = ObtenerId();
 
-            // Obtenemos la fecha actual en formato adecuado para SQL
-            string fechaHoy = DateTime.Now.ToString("yyyy-MM-dd");
+            // Aseguramos que tengamos una fecha válida
+            if (string.IsNullOrEmpty(Fecha))
+            {
+                Fecha = DateTime.Now.ToString("yyyy-MM-dd");
+            }
 
             var comando = new SqlCommand(@"
         SELECT 
@@ -400,9 +555,10 @@ namespace ApiEasyPay.Aplication.Services
             ISNULL(B.TotalCobradoCUO, 0) AS TotalCobradoCUO,
             ISNULL(B.TotalCobradoEXT, 0) AS TotalCobradoEXT,
             ISNULL(B.TotalCobrado, 0) AS TotalCobrado,
-            ISNULL(B.TotalPrestado, 0) AS TotalUsado,
+            ISNULL(B.TotalPrestado, 0) AS TotalPrestado,
             B.Cobrador AS CodCobrador,
             B.Cod AS CodBolsa,
+            B.Estado,
             C.Nombres + ' ' + C.Apellidos AS Nombres,
             C.Documento AS Dni,
             B.SaldoActual AS SaldoActual,
@@ -412,20 +568,19 @@ namespace ApiEasyPay.Aplication.Services
                 SELECT COUNT(CR.Cod) 
                 FROM Creditos CR 
                 WHERE CR.Cobrador = B.Cobrador 
-                AND CONVERT(DATE, CR.FechaRegistro) = '" + fechaHoy + @"'
+                AND CONVERT(DATE, CR.FechaRegistro) = '" + Fecha + @"'
             ), 0) AS CreditosCreadosHoy,
             -- Contar créditos terminados hoy para este cobrador
             ISNULL((
                 SELECT COUNT(CR.Cod) 
                 FROM Creditos CR 
                 WHERE CR.Cobrador = B.Cobrador 
-                AND CONVERT(DATE, CR.FechaFin) = '" + fechaHoy + @"'
+                AND CONVERT(DATE, CR.FechaFin) = '" + Fecha + @"'
                 AND CR.Estado = 'T'
             ), 0) AS CreditosTerminadosHoy
         FROM Bolsa B 
         INNER JOIN Cobrador C ON B.Cobrador = C.Cod 
-        WHERE B.Estado = 'A' 
-          AND C.Jefe = " + _jefeId + " FOR JSON PATH");
+        WHERE B.FechaInicio='" + Fecha + @"' And C.Jefe = " + _jefeId + " FOR JSON PATH");
 
             string jsonResult = _conexionSql.SqlJsonComand(false, comando);
             JArray resultado = JArray.Parse(jsonResult);
@@ -433,12 +588,78 @@ namespace ApiEasyPay.Aplication.Services
             return resultado;
         }
 
+
         /// <summary>
-        /// Obtiene un resumen de las bolsas abiertas del jefe actual en un rango de fechas
+        /// Obtiene un resumen de las bolsas abiertas para un delegado específico
+        /// </summary>
+        public JArray ObtenerBolsasPorDelegadoxFecha(string Fecha)
+        {
+            // Verificamos que el delegado pertenezca al jefe actual (seguridad)
+            var delegadoId = ObtenerId();
+            var comandoVerificarDelegado = new SqlCommand(
+                $"SELECT COUNT(1) FROM Delegado WHERE Cod = {delegadoId}");
+
+            int delegadoValido = Convert.ToInt32(_conexionSql.TraerDato(comandoVerificarDelegado.CommandText, true));
+
+            if (delegadoValido == 0)
+            {
+                throw new UnauthorizedAccessException("El token proporcionado no pertenece a un delegado");
+            }
+
+            // Aseguramos que tengamos una fecha válida
+            if (string.IsNullOrEmpty(Fecha))
+            {
+                Fecha = DateTime.Now.ToString("yyyy-MM-dd");
+            }
+
+            var comando = new SqlCommand(@"
+        SELECT 
+            ISNULL(B.TotalGastos, 0) AS TotalGastos,
+            ISNULL(B.TotalEntregas, 0) AS TotalEntregas,
+            ISNULL(B.TotalCobradoDEU, 0) AS TotalCobradoDEU,
+            ISNULL(B.TotalCobradoCUO, 0) AS TotalCobradoCUO,
+            ISNULL(B.TotalCobradoEXT, 0) AS TotalCobradoEXT,
+            ISNULL(B.TotalCobrado, 0) AS TotalCobrado,
+            ISNULL(B.TotalPrestado, 0) AS TotalPrestado,
+            B.Cobrador AS CodCobrador,
+            B.Cod AS CodBolsa,
+            B.Estado,
+            C.Nombres + ' ' + C.Apellidos AS Nombres,
+            C.Documento AS Dni,
+            B.SaldoActual AS SaldoActual,
+            CONVERT(VARCHAR(12), B.FechaInicio, 103) AS FechaInicio,
+            -- Contar créditos creados hoy para este cobrador
+            ISNULL((
+                SELECT COUNT(CR.Cod) 
+                FROM Creditos CR 
+                WHERE CR.Cobrador = B.Cobrador 
+                AND CONVERT(DATE, CR.FechaRegistro) = '" + Fecha + @"'
+            ), 0) AS CreditosCreadosHoy,
+            -- Contar créditos terminados hoy para este cobrador
+            ISNULL((
+                SELECT COUNT(CR.Cod) 
+                FROM Creditos CR 
+                WHERE CR.Cobrador = B.Cobrador 
+                AND CONVERT(DATE, CR.FechaFin) = '" + Fecha + @"'
+                AND CR.Estado = 'T'
+            ), 0) AS CreditosTerminadosHoy
+        FROM Bolsa B 
+        INNER JOIN Cobrador C ON B.Cobrador = C.Cod 
+        INNER JOIN Delegados_Cobradores DC ON C.Cod = DC.Cobrador
+        WHERE B.FechaInicio = '" + Fecha + @"' 
+        AND DC.Delegado = " + delegadoId + " FOR JSON PATH");
+
+            string jsonResult = _conexionSql.SqlJsonComand(false, comando);
+            JArray resultado = JArray.Parse(jsonResult);
+            return resultado;
+        }
+
+        /// <summary>
+        /// Obtiene un resumen de las bolsas abiertas del jefe actual en un rango de fechas, detallado por cobrador
         /// </summary>
         /// <param name="fechaInicio">Fecha inicial en formato yyyy-MM-dd</param>
         /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
-        /// <returns>JArray con las bolsas abiertas en el rango de fechas especificado</returns>
+        /// <returns>JArray con las bolsas abiertas en el rango de fechas, agrupadas por cobrador</returns>
         public JArray ObtenerBolsasRango(string fechaInicio, string fechaFin)
         {
             var _jefeId = ObtenerId();
@@ -455,41 +676,119 @@ namespace ApiEasyPay.Aplication.Services
             }
 
             var comando = new SqlCommand(@"
+    WITH CajasInfo AS (
         SELECT 
-            ISNULL(B.TotalGastos, 0) AS TotalGastos,
-            ISNULL(B.TotalEntregas, 0) AS TotalEntregas,
-            ISNULL(B.TotalCobradoDEU, 0) AS TotalCobradoDEU,
-            ISNULL(B.TotalCobradoCUO, 0) AS TotalCobradoCUO,
-            ISNULL(B.TotalCobradoEXT, 0) AS TotalCobradoEXT,
-            ISNULL(B.TotalCobrado, 0) AS TotalCobrado,
-            ISNULL(B.TotalPrestado, 0) AS TotalUsado,
-            B.Cobrador AS CodCobrador,
-            B.Cod AS CodBolsa,
-            C.Nombres + ' ' + C.Apellidos AS Nombres,
-            C.Documento AS Dni,
-            B.SaldoActual AS SaldoActual,
-            CONVERT(VARCHAR(12), B.FechaInicio, 103) AS FechaInicio,
-            -- Contar créditos creados en el rango para este cobrador
-            ISNULL((
-                SELECT COUNT(CR.Cod) 
-                FROM Creditos CR 
-                WHERE CR.Cobrador = B.Cobrador 
-                AND CONVERT(DATE, CR.FechaRegistro) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
-            ), 0) AS CreditosCreados,
-            -- Contar créditos terminados en el rango para este cobrador
-            ISNULL((
-                SELECT COUNT(CR.Cod) 
-                FROM Creditos CR 
-                WHERE CR.Cobrador = B.Cobrador 
-                AND CONVERT(DATE, CR.FechaFin) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
-                AND CR.Estado = 'T'
-            ), 0) AS CreditosTerminados
-        FROM Bolsa B 
-        INNER JOIN Cobrador C ON B.Cobrador = C.Cod 
-        WHERE
-        C.Jefe = " + _jefeId + @"
-        AND CONVERT(DATE, B.FechaInicio) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
-        FOR JSON PATH");
+            B.Cod, 
+            B.Cobrador, 
+            B.FechaInicio, 
+            B.SaldoActual, 
+            B.TotalGastos, 
+            B.TotalCobrado, 
+            B.TotalCobradoCUO, 
+            B.TotalCobradoEXT, 
+            B.TotalCobradoDEU, 
+            B.TotalPrestado,
+            C.Nombres,
+            C.Apellidos,
+            C.Documento,
+            ROW_NUMBER() OVER (PARTITION BY B.Cobrador ORDER BY B.FechaInicio DESC) AS RowNum
+        FROM Bolsa B
+        INNER JOIN Cobrador C ON B.Cobrador = C.Cod
+        WHERE C.Jefe = " + _jefeId + @"
+          AND CONVERT(DATE, B.FechaInicio) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
+    ),
+    CajasSumadas AS (
+        SELECT 
+            Cobrador,
+            MAX(Nombres) AS Nombres,
+            MAX(Apellidos) AS Apellidos,
+            MAX(Documento) AS Documento,
+            SUM(TotalGastos) AS TotalGastos,
+            SUM(TotalCobrado) AS TotalCobrado,
+            SUM(TotalCobradoCUO) AS TotalCobradoCUO,
+            SUM(TotalCobradoEXT) AS TotalCobradoEXT,
+            SUM(TotalCobradoDEU) AS TotalCobradoDEU,
+            SUM(TotalPrestado) AS TotalPrestado,
+            COUNT(Cod) AS CantidadBolsas,
+            -- Para el SaldoActual tomamos el de la última caja (la más reciente)
+            MAX(CASE WHEN RowNum = 1 THEN SaldoActual ELSE 0 END) AS SaldoActual,
+            MAX(CASE WHEN RowNum = 1 THEN FechaInicio ELSE NULL END) AS UltimaFechaInicio,
+            MAX(CASE WHEN RowNum = 1 THEN Cod ELSE NULL END) AS UltimaCaja
+        FROM CajasInfo
+        GROUP BY Cobrador
+    ),
+    PrimerApertura AS (
+        SELECT 
+            A.Cobrador,
+            A.Valor AS ValorApertura,
+            A.Fecha AS FechaApertura
+        FROM (
+            SELECT 
+                VB.Cobrador,
+                VB.Valor,
+                VB.Fecha,
+                ROW_NUMBER() OVER (PARTITION BY VB.Cobrador ORDER BY VB.Fecha ASC) AS rn
+            FROM ValoresBolsa VB
+            INNER JOIN Cobrador C ON VB.Cobrador = C.Cod
+            WHERE VB.Entregas = 'Apertura de Caja'
+              AND C.Jefe = " + _jefeId + @"
+              AND CONVERT(DATE, VB.Fecha) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
+        ) A
+        WHERE A.rn = 1
+    ),
+    EntregasNoApertura AS (
+        SELECT 
+            VB.Cobrador,
+            SUM(VB.Valor) AS TotalEntregasNoApertura
+        FROM ValoresBolsa VB
+        INNER JOIN Cobrador C ON VB.Cobrador = C.Cod
+        WHERE VB.Entregas <> 'Apertura de Caja'
+          AND VB.Entregas IS NOT NULL 
+          AND VB.Entregas <> ''
+          AND C.Jefe = " + _jefeId + @"
+          AND CONVERT(DATE, VB.Fecha) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
+        GROUP BY VB.Cobrador
+    ),
+    CreditosPorCobrador AS (
+        SELECT 
+            CR.Cobrador,
+            COUNT(CASE WHEN CONVERT(DATE, CR.FechaRegistro) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"' THEN 1 END) AS CreditosCreados,
+            COUNT(CASE WHEN CONVERT(DATE, CR.FechaFin) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"' AND CR.Estado = 'T' THEN 1 END) AS CreditosTerminados
+        FROM Creditos CR
+        INNER JOIN Cobrador C ON CR.Cobrador = C.Cod
+        WHERE C.Jefe = " + _jefeId + @"
+          AND (CONVERT(DATE, CR.FechaRegistro) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
+               OR (CONVERT(DATE, CR.FechaFin) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"' AND CR.Estado = 'T'))
+        GROUP BY CR.Cobrador
+    )
+    SELECT 
+        CS.Cobrador AS CodCobrador,
+        CS.UltimaCaja AS CodBolsa,
+        CS.Nombres + ' ' + CS.Apellidos AS Nombres,
+        CS.Documento AS Dni,
+        CS.SaldoActual,
+        CONVERT(VARCHAR(12), CS.UltimaFechaInicio, 103) AS FechaInicio,
+        ISNULL(PA.ValorApertura, 0) AS ValorApertura,
+        CONVERT(VARCHAR(12), PA.FechaApertura, 103) AS FechaApertura,
+        ISNULL(ENA.TotalEntregasNoApertura, 0) AS EntregasAdicionales,
+        ISNULL(PA.ValorApertura, 0) + ISNULL(ENA.TotalEntregasNoApertura, 0) AS TotalEntregas,
+        ISNULL(CS.TotalGastos, 0) AS TotalGastos,
+        ISNULL(CS.TotalCobradoDEU, 0) AS TotalCobradoDEU,
+        ISNULL(CS.TotalCobradoCUO, 0) AS TotalCobradoCUO,
+        ISNULL(CS.TotalCobradoEXT, 0) AS TotalCobradoEXT,
+        ISNULL(CS.TotalCobrado, 0) AS TotalCobrado,
+        ISNULL(CS.TotalPrestado, 0) AS TotalUsado,
+        ISNULL(CPC.CreditosCreados, 0) AS CreditosCreados,
+        ISNULL(CPC.CreditosTerminados, 0) AS CreditosTerminados,
+        CS.CantidadBolsas,
+        '" + fechaInicio + @"' AS FechaInicio_Rango,
+        '" + fechaFin + @"' AS FechaFin_Rango
+    FROM CajasSumadas CS
+    LEFT JOIN PrimerApertura PA ON CS.Cobrador = PA.Cobrador
+    LEFT JOIN EntregasNoApertura ENA ON CS.Cobrador = ENA.Cobrador
+    LEFT JOIN CreditosPorCobrador CPC ON CS.Cobrador = CPC.Cobrador
+    ORDER BY CS.Nombres
+    FOR JSON PATH");
 
             string jsonResult = _conexionSql.SqlJsonComand(false, comando);
             JArray resultado = JArray.Parse(jsonResult);
@@ -532,7 +831,7 @@ namespace ApiEasyPay.Aplication.Services
         /// <summary>
         /// Obtiene datos resumidos de bolsa para la fecha indicada
         /// </summary>
-        public JObject ObtenerDatosBolsa(string fecha)
+        public JObject ObtenerDatosBolsaByFecha(string fecha)
         {
             var _jefeId = ObtenerId();
 
@@ -545,7 +844,7 @@ namespace ApiEasyPay.Aplication.Services
             var comando = new SqlCommand(@"
         SELECT 
             CONVERT(VARCHAR(12), '" + fecha + @"', 103) AS Fecha,
-            COUNT(B.Cod) AS CantidadBolsasActivas,
+            COUNT(B.Cod) AS CantidadBolsas,
             SUM(ISNULL(B.SaldoActual, 0)) AS TotalSaldoActual,
             SUM(ISNULL(B.TotalEntregas, 0)) AS TotalEntregas,
             SUM(ISNULL(B.TotalGastos, 0)) AS TotalGastos,
@@ -554,7 +853,6 @@ namespace ApiEasyPay.Aplication.Services
             SUM(ISNULL(B.TotalCobradoEXT, 0)) AS TotalCobradoExtras,
             SUM(ISNULL(B.TotalCobradoDEU, 0)) AS TotalCobradoDeudas,
             SUM(ISNULL(B.TotalPrestado, 0)) AS TotalPrestado,
-            (SELECT ISNULL(Monto, 0) FROM FondoInversion WHERE Jefe = " + _jefeId + @") AS TotalBolsaC,
             (
                 SELECT COUNT(CR.Cod) 
                 FROM Creditos CR 
@@ -572,8 +870,72 @@ namespace ApiEasyPay.Aplication.Services
             ) AS CreditosTerminadosHoy
         FROM Bolsa B 
         INNER JOIN Cobrador C ON B.Cobrador = C.Cod 
-        WHERE B.Estado = 'A' 
-        AND C.Jefe = " + _jefeId + @"
+        WHERE C.Jefe = " + _jefeId + @" And B.FechaInicio ='" + fecha + @"'
+        FOR JSON PATH, WITHOUT_ARRAY_WRAPPER");
+
+            string resultado = _conexionSql.SqlJsonComand(false, comando);
+            if (string.IsNullOrEmpty(resultado) || resultado == "[]")
+                return null;
+
+            return JObject.Parse(resultado);
+        }
+
+        /// <summary>
+        /// Obtiene datos resumidos de bolsa para la fecha indicada por delegado
+        /// </summary>
+        public JObject ObtenerDatosBolsaPorDelegadoByFecha(string fecha)
+        {
+            // Verificamos que el delegado pertenezca al jefe actual (seguridad)
+            var delegadoId = ObtenerId();
+            var comandoVerificarDelegado = new SqlCommand(
+                $"SELECT COUNT(1) FROM Delegado WHERE Cod = {delegadoId}");
+
+            int delegadoValido = Convert.ToInt32(_conexionSql.TraerDato(comandoVerificarDelegado.CommandText, true));
+
+            if (delegadoValido == 0)
+            {
+                throw new UnauthorizedAccessException("El token proporcionado no pertenece a un delegado");
+            }
+
+            // Aseguramos que tengamos una fecha válida
+            if (string.IsNullOrEmpty(fecha))
+            {
+                fecha = DateTime.Now.ToString("yyyy-MM-dd");
+            }
+
+            var comando = new SqlCommand(@"
+        SELECT 
+            CONVERT(VARCHAR(12), '" + fecha + @"', 103) AS Fecha, 
+            COUNT(B.Cod) AS CantidadBolsas,
+            SUM(ISNULL(B.SaldoActual, 0)) AS TotalSaldoActual,
+            SUM(ISNULL(B.TotalEntregas, 0)) AS TotalEntregas,
+            SUM(ISNULL(B.TotalGastos, 0)) AS TotalGastos,
+            SUM(ISNULL(B.TotalCobrado, 0)) AS TotalCobrado,
+            SUM(ISNULL(B.TotalCobradoCUO, 0)) AS TotalCobradoCuotas,
+            SUM(ISNULL(B.TotalCobradoEXT, 0)) AS TotalCobradoExtras,
+            SUM(ISNULL(B.TotalCobradoDEU, 0)) AS TotalCobradoDeudas,
+            SUM(ISNULL(B.TotalPrestado, 0)) AS TotalPrestado,
+            (
+                SELECT COUNT(CR.Cod) 
+                FROM Creditos CR 
+                INNER JOIN Cobrador C ON CR.Cobrador = C.Cod 
+                INNER JOIN Delegados_Cobradores DC ON C.Cod = DC.Cobrador
+                WHERE CONVERT(DATE, CR.FechaRegistro) = '" + fecha + @"' 
+                AND DC.Delegado = " + delegadoId + @"
+            ) AS CreditosCreadosHoy,
+            (
+                SELECT COUNT(CR.Cod) 
+                FROM Creditos CR 
+                INNER JOIN Cobrador C ON CR.Cobrador = C.Cod 
+                INNER JOIN Delegados_Cobradores DC ON C.Cod = DC.Cobrador
+                WHERE CONVERT(DATE, CR.FechaFin) = '" + fecha + @"' 
+                AND CR.Estado = 'T'
+                AND DC.Delegado = " + delegadoId + @"
+            ) AS CreditosTerminadosHoy
+        FROM Bolsa B 
+        INNER JOIN Cobrador C ON B.Cobrador = C.Cod 
+        INNER JOIN Delegados_Cobradores DC ON C.Cod = DC.Cobrador
+        WHERE DC.Delegado = " + delegadoId + @" AND B.FechaInicio = '" + fecha + @"'
         FOR JSON PATH, WITHOUT_ARRAY_WRAPPER");
 
             string resultado = _conexionSql.SqlJsonComand(false, comando);
@@ -605,40 +967,106 @@ namespace ApiEasyPay.Aplication.Services
             }
 
             var comando = new SqlCommand(@"
+        WITH CajasInfo AS (
+    SELECT 
+        B.Cod, 
+        B.Cobrador, 
+        B.FechaInicio, 
+        B.SaldoActual, 
+        B.TotalGastos, 
+        B.TotalCobrado, 
+        B.TotalCobradoCUO, 
+        B.TotalCobradoEXT, 
+        B.TotalCobradoDEU, 
+        B.TotalPrestado,
+        ROW_NUMBER() OVER (PARTITION BY B.Cobrador ORDER BY B.FechaInicio ASC) AS PrimeraFila,
+        ROW_NUMBER() OVER (PARTITION BY B.Cobrador ORDER BY B.FechaInicio DESC) AS UltimaFila
+    FROM Bolsa B
+    INNER JOIN Cobrador C ON B.Cobrador = C.Cod
+    WHERE C.Jefe = " + _jefeId + @"
+      AND CONVERT(DATE, B.FechaInicio) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
+),
+PrimerApertura AS (
+    SELECT 
+        A.Cobrador,
+        A.Valor AS ValorApertura,
+        A.Fecha AS FechaApertura
+    FROM (
         SELECT 
-            CONVERT(VARCHAR(12), '" + fechaInicio + @"', 103) + ' al ' + 
-            CONVERT(VARCHAR(12), '" + fechaFin + @"', 103) AS RangoFechas,
-            COUNT(DISTINCT B.Cod) AS CantidadBolsasActivas,
-            SUM(ISNULL(B.SaldoActual, 0)) AS TotalSaldoActual,
-            SUM(ISNULL(B.TotalEntregas, 0)) AS TotalEntregas,
-            SUM(ISNULL(B.TotalGastos, 0)) AS TotalGastos,
-            SUM(ISNULL(B.TotalCobrado, 0)) AS TotalCobrado,
-            SUM(ISNULL(B.TotalCobradoCUO, 0)) AS TotalCobradoCuotas,
-            SUM(ISNULL(B.TotalCobradoEXT, 0)) AS TotalCobradoExtras,
-            SUM(ISNULL(B.TotalCobradoDEU, 0)) AS TotalCobradoDeudas,
-            SUM(ISNULL(B.TotalPrestado, 0)) AS TotalPrestado,
-            (SELECT ISNULL(Monto, 0) FROM FondoInversion WHERE Jefe = " + _jefeId + @") AS TotalBolsaC,
-            (
-                SELECT COUNT(CR.Cod) 
-                FROM Creditos CR 
-                INNER JOIN Cobrador C ON CR.Cobrador = C.Cod 
-                WHERE CONVERT(DATE, CR.FechaRegistro) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"' 
-                AND C.Jefe = " + _jefeId + @"
-            ) AS CreditosCreados,
-            (
-                SELECT COUNT(CR.Cod) 
-                FROM Creditos CR 
-                INNER JOIN Cobrador C ON CR.Cobrador = C.Cod 
-                WHERE CONVERT(DATE, CR.FechaFin) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"' 
-                AND CR.Estado = 'T'
-                AND C.Jefe = " + _jefeId + @"
-            ) AS CreditosTerminados
-        FROM Bolsa B 
-        INNER JOIN Cobrador C ON B.Cobrador = C.Cod 
-        WHERE
-        C.Jefe = " + _jefeId + @"
-        AND CONVERT(DATE, B.FechaInicio) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
-        FOR JSON PATH, WITHOUT_ARRAY_WRAPPER");
+            VB.Cobrador,
+            VB.Valor,
+            VB.Fecha,
+            ROW_NUMBER() OVER (PARTITION BY VB.Cobrador ORDER BY VB.Fecha ASC) AS rn
+        FROM ValoresBolsa VB
+        INNER JOIN Cobrador C ON VB.Cobrador = C.Cod
+        WHERE VB.Entregas = 'Apertura de Caja'
+          AND C.Jefe = " + _jefeId + @"
+          AND CONVERT(DATE, VB.Fecha) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
+    ) A
+    WHERE A.rn = 1
+),
+EntregasNoApertura AS (
+    SELECT 
+        VB.Cobrador,
+        SUM(VB.Valor) AS TotalEntregasNoApertura
+    FROM ValoresBolsa VB
+    INNER JOIN Cobrador C ON VB.Cobrador = C.Cod
+    WHERE VB.Entregas <> 'Apertura de Caja'
+      AND VB.Entregas IS NOT NULL 
+      AND VB.Entregas <> ''
+      AND C.Jefe = " + _jefeId + @"
+      AND CONVERT(DATE, VB.Fecha) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
+    GROUP BY VB.Cobrador
+),
+CajasAgrupadas AS (
+    SELECT 
+        Cobrador,
+        COUNT(Cod) AS CantidadBolsas,
+        SUM(CASE WHEN UltimaFila = 1 THEN SaldoActual ELSE 0 END) AS TotalSaldoActual,
+        SUM(TotalGastos) AS TotalGastos,
+        SUM(TotalCobrado) AS TotalCobrado,
+        SUM(TotalCobradoCUO) AS TotalCobradoCuotas,
+        SUM(TotalCobradoEXT) AS TotalCobradoExtras,
+        SUM(TotalCobradoDEU) AS TotalCobradoDeudas,
+        SUM(TotalPrestado) AS TotalPrestado
+    FROM CajasInfo
+    GROUP BY Cobrador
+),
+CreditosCreadosCTE AS (
+    SELECT COUNT(CR.Cod) AS CreditosCreados
+    FROM Creditos CR
+    INNER JOIN Cobrador C ON CR.Cobrador = C.Cod
+    WHERE CONVERT(DATE, CR.FechaRegistro) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
+      AND C.Jefe = " + _jefeId + @"
+),
+CreditosTerminadosCTE AS (
+    SELECT COUNT(CR.Cod) AS CreditosTerminados
+    FROM Creditos CR
+    INNER JOIN Cobrador C ON CR.Cobrador = C.Cod
+    WHERE CONVERT(DATE, CR.FechaFin) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
+      AND CR.Estado = 'T'
+      AND C.Jefe = " + _jefeId + @"
+)
+SELECT 
+    CONVERT(VARCHAR(12), '" + fechaInicio + @"', 103) + ' al ' + CONVERT(VARCHAR(12), '" + fechaFin + @"', 103) AS RangoFechas,
+    COUNT(CA.Cobrador) AS CantidadCobradores,
+    SUM(CA.CantidadBolsas) AS CantidadBolsas,
+    SUM(CA.TotalSaldoActual) AS TotalSaldoActual,
+    ISNULL(SUM(PA.ValorApertura), 0) + ISNULL(SUM(ENA.TotalEntregasNoApertura), 0) AS TotalEntregas,
+    SUM(CA.TotalGastos) AS TotalGastos,
+    SUM(CA.TotalCobrado) AS TotalCobrado,
+    SUM(CA.TotalCobradoCuotas) AS TotalCobradoCuotas,
+    SUM(CA.TotalCobradoExtras) AS TotalCobradoExtras,
+    SUM(CA.TotalCobradoDeudas) AS TotalCobradoDeudas,
+    SUM(CA.TotalPrestado) AS TotalPrestado,
+    MAX(CC.CreditosCreados) AS CreditosCreados,
+    MAX(CT.CreditosTerminados) AS CreditosTerminados
+FROM CajasAgrupadas CA
+LEFT JOIN PrimerApertura PA ON CA.Cobrador = PA.Cobrador
+LEFT JOIN EntregasNoApertura ENA ON CA.Cobrador = ENA.Cobrador
+CROSS JOIN CreditosCreadosCTE CC
+CROSS JOIN CreditosTerminadosCTE CT
+FOR JSON PATH, WITHOUT_ARRAY_WRAPPER");
 
             string resultado = _conexionSql.SqlJsonComand(false, comando);
             if (string.IsNullOrEmpty(resultado) || resultado == "[]")
@@ -711,13 +1139,13 @@ namespace ApiEasyPay.Aplication.Services
         }
 
         /// <summary>
-        /// Obtiene los créditos creados en una bolsa específica en un rango de fechas
+        /// Obtiene los créditos creados en un rango de fechas, opcionalmente filtrados por cobrador
         /// </summary>
-        /// <param name="codBolsa">Código de la bolsa</param>
         /// <param name="fechaInicio">Fecha inicial en formato yyyy-MM-dd</param>
         /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
-        /// <returns>JArray con los créditos creados en la bolsa en el rango de fechas</returns>
-        public JArray ObtenerCreditosBolsaRango( string fechaInicio, string fechaFin)
+        /// <param name="cobradorId">Código del cobrador (opcional)</param>
+        /// <returns>JArray con los créditos creados en el rango de fechas</returns>
+        public JArray ObtenerCreditosBolsaRango(string fechaInicio, string fechaFin, int? cobradorId = null)
         {
             var _jefeId = ObtenerId();
             // Aseguramos que tengamos fechas válidas
@@ -731,7 +1159,7 @@ namespace ApiEasyPay.Aplication.Services
                 fechaFin = DateTime.Now.ToString("yyyy-MM-dd"); // Por defecto, hoy
             }
 
-            var comando = new SqlCommand(@"
+            var sqlQuery = @"
         SELECT 
             VB.Credito,
             VB.Cod,
@@ -741,20 +1169,46 @@ namespace ApiEasyPay.Aplication.Services
             C.NumeroDeCuotas AS NumeroDeCuotas,
             C.PorceInteres AS PorceInteres,
             CL.Nombres + ' ' + CL.Apellidos AS NombreCliente,
-            CL.Documento AS DocumentoCliente
+            CL.Documento AS DocumentoCliente,
+            CO.Nombres + ' ' + CO.Apellidos AS NombreCobrador,
+            CO.Cod AS CodCobrador
         FROM ValoresBolsa VB
-        INNER JOIN Creditos C ON VB.Credito = C.Cod
-        INNER JOIN Clientes CL ON C.Cliente = CL.Cod
+        INNER JOIN Creditos C ON VB.Credito = C.Cod AND VB.Cobrador = C.Cobrador
+        INNER JOIN Clientes CL ON C.Cliente = CL.Cod AND C.Cobrador = CL.Cobrador
         INNER JOIN Cobrador CO ON VB.Cobrador = CO.Cod
         WHERE VB.Credito IS NOT NULL 
           AND VB.Credito > 0
           AND CONVERT(DATE, VB.Fecha) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
-          AND C.Jefe = " + _jefeId + @" 
-        FOR JSON PATH");
+          AND CO.Jefe = " + _jefeId;
 
+            // Agregar filtro por cobrador si se proporciona
+            if (cobradorId.HasValue && cobradorId.Value > 0)
+            {
+                // Verificamos que el cobrador pertenezca a este jefe
+                var comandoVerificarCobrador = new SqlCommand(
+                    $"SELECT COUNT(1) FROM Cobrador WHERE Cod = {cobradorId.Value} AND Jefe = {_jefeId}");
+
+                int cobradorValido = Convert.ToInt32(_conexionSql.TraerDato(comandoVerificarCobrador.CommandText, true));
+
+                if (cobradorValido == 0)
+                {
+                    throw new UnauthorizedAccessException("El cobrador especificado no pertenece a este jefe");
+                }
+
+                sqlQuery += @" AND CO.Cod = " + cobradorId.Value;
+            }
+
+            sqlQuery += @" ORDER BY VB.Fecha DESC
+        FOR JSON PATH";
+
+            var comando = new SqlCommand(sqlQuery);
             string jsonResult = _conexionSql.SqlJsonComand(false, comando);
-            JArray resultado = JArray.Parse(jsonResult);
 
+            // Si no hay resultados, devolver un array vacío
+            if (string.IsNullOrEmpty(jsonResult) || jsonResult == "[]")
+                return new JArray();
+
+            JArray resultado = JArray.Parse(jsonResult);
             return resultado;
         }
 
@@ -784,68 +1238,16 @@ namespace ApiEasyPay.Aplication.Services
         }
 
         /// <summary>
-        /// Obtiene los gastos de una bolsa específica en un rango de fechas
+        /// Obtiene los gastos de una bolsa específica en un rango de fechas, opcionalmente filtrados por cobrador
         /// </summary>
-        /// <param name="codBolsa">Código de la bolsa</param>
         /// <param name="fechaInicio">Fecha inicial en formato yyyy-MM-dd</param>
         /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
+        /// <param name="cobradorId">Código del cobrador (opcional)</param>
         /// <returns>JArray con los gastos de la bolsa en el rango de fechas</returns>
-        public JArray ObtenerGastosBolsaRango( string fechaInicio, string fechaFin)
+        public JArray ObtenerGastosBolsaRango(string fechaInicio, string fechaFin, int? cobradorId = null)
         {
             // Obtener el ID del jefe actual desde el contexto
             var _jefeId = ObtenerId();
-            // Aseguramos que tengamos fechas válidas
-            if (string.IsNullOrEmpty(fechaInicio))
-            {
-                fechaInicio = DateTime.Now.AddDays(-30).ToString("yyyy-MM-dd"); // Por defecto, 30 días atrás
-            }
-
-            if (string.IsNullOrEmpty(fechaFin))
-            {
-                fechaFin = DateTime.Now.ToString("yyyy-MM-dd"); // Por defecto, hoy
-            } 
-
-            var comando = new SqlCommand(@"
-        SELECT 
-            VB.Gasto AS Descripcion,
-            VB.Cod,
-            VB.Valor,
-            CONVERT(VARCHAR(12), VB.Fecha, 103) AS Fecha
-       FROM ValoresBolsa VB
-        INNER JOIN Bolsa B ON VB.Bolsa = B.Cod
-        INNER JOIN Cobrador C ON B.Cobrador = C.Cod
-        WHERE VB.Gasto IS NOT NULL 
-          AND VB.Gasto <> ''
-          AND CONVERT(DATE, VB.Fecha) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
-          AND C.Jefe = " + _jefeId + @"
-        ORDER BY VB.Fecha DESC
-        FOR JSON PATH");
-
-            string jsonResult = _conexionSql.SqlJsonComand(false, comando);
-            JArray resultado = JArray.Parse(jsonResult);
-
-            return resultado;
-        }
-
-        /// <summary>
-        /// Obtiene los créditos creados para los cobradores asignados a un delegado específico en un rango de fechas
-        /// </summary>
-        /// <param name="fechaInicio">Fecha inicial en formato yyyy-MM-dd</param>
-        /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
-        /// <returns>JArray con los créditos creados en el rango de fechas</returns>
-        public JArray ObtenerCreditosPorDelegadoRango(string fechaInicio, string fechaFin)
-        {
-            // Primero verificamos que el delegado pertenezca al jefe actual (seguridad)
-            var delegadoId = ObtenerId();
-            var comandoVerificarDelegado = new SqlCommand(
-                $"SELECT COUNT(1) FROM Delegado WHERE Cod = {delegadoId}");
-
-            int delegadoValido = Convert.ToInt32(_conexionSql.TraerDato(comandoVerificarDelegado.CommandText, true));
-
-            if (delegadoValido == 0)
-            {
-                throw new UnauthorizedAccessException("El token proporcionado no pertenece a un delegado");
-            }
 
             // Aseguramos que tengamos fechas válidas
             if (string.IsNullOrEmpty(fechaInicio))
@@ -858,142 +1260,44 @@ namespace ApiEasyPay.Aplication.Services
                 fechaFin = DateTime.Now.ToString("yyyy-MM-dd"); // Por defecto, hoy
             }
 
-            var comando = new SqlCommand(@"
-        SELECT 
-            VB.Credito,
-            VB.Cod,
-            VB.Valor,
-            CONVERT(VARCHAR(12), VB.Fecha, 103) AS Fecha,
-            C.TotalPagar AS TotalPagar,
-            C.NumeroDeCuotas AS NumeroDeCuotas,
-            C.PorceInteres AS PorceInteres,
-            CL.Nombres + ' ' + CL.Apellidos AS NombreCliente,
-            CL.Documento AS DocumentoCliente,
-            CB.Nombres + ' ' + CB.Apellidos AS NombreCobrador
-        FROM ValoresBolsa VB
-        INNER JOIN Creditos C ON VB.Credito = C.Cod
-        INNER JOIN Clientes CL ON C.Cliente = CL.Cod
-        INNER JOIN Cobrador CB ON VB.Cobrador = CB.Cod
-        INNER JOIN Delegados_Cobradores DC ON CB.Cod = DC.Cobrador
-        WHERE VB.Credito IS NOT NULL 
-          AND VB.Credito > 0
-          AND CONVERT(DATE, VB.Fecha) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
-          AND DC.Delegado = " + delegadoId + @" 
-        ORDER BY VB.Fecha DESC
-        FOR JSON PATH");
-
-            string jsonResult = _conexionSql.SqlJsonComand(false, comando);
-            JArray resultado = JArray.Parse(jsonResult);
-
-            return resultado;
-        }
-
-        /// <summary>
-        /// Obtiene los gastos de los cobradores asignados a un delegado específico en un rango de fechas
-        /// </summary>
-        /// <param name="fechaInicio">Fecha inicial en formato yyyy-MM-dd</param>
-        /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
-        /// <returns>JArray con los gastos en el rango de fechas</returns>
-        public JArray ObtenerGastosPorDelegadoRango(string fechaInicio, string fechaFin)
-        {
-            // Primero verificamos que el delegado pertenezca al jefe actual (seguridad)
-            var delegadoId = ObtenerId();
-            var comandoVerificarDelegado = new SqlCommand(
-                $"SELECT COUNT(1) FROM Delegado WHERE Cod = {delegadoId}");
-
-            int delegadoValido = Convert.ToInt32(_conexionSql.TraerDato(comandoVerificarDelegado.CommandText, true));
-
-            if (delegadoValido == 0)
-            {
-                throw new UnauthorizedAccessException("El token proporcionado no pertenece a un delegado");
-            }
-
-            // Aseguramos que tengamos fechas válidas
-            if (string.IsNullOrEmpty(fechaInicio))
-            {
-                fechaInicio = DateTime.Now.AddDays(-30).ToString("yyyy-MM-dd"); // Por defecto, 30 días atrás
-            }
-
-            if (string.IsNullOrEmpty(fechaFin))
-            {
-                fechaFin = DateTime.Now.ToString("yyyy-MM-dd"); // Por defecto, hoy
-            }
-
-            var comando = new SqlCommand(@"
+            var sqlQuery = @"
         SELECT 
             VB.Gasto AS Descripcion,
             VB.Cod,
             VB.Valor,
             CONVERT(VARCHAR(12), VB.Fecha, 103) AS Fecha,
             B.Cod AS CodBolsa,
+            CB.Cod AS CodCobrador,
             CB.Nombres + ' ' + CB.Apellidos AS NombreCobrador
         FROM ValoresBolsa VB
-        INNER JOIN Bolsa B ON VB.Bolsa = B.Cod
+        INNER JOIN Bolsa B ON VB.Bolsa = B.Cod AND VB.Cobrador = B.Cobrador
         INNER JOIN Cobrador CB ON B.Cobrador = CB.Cod
-        INNER JOIN Delegados_Cobradores DC ON CB.Cod = DC.Cobrador
         WHERE VB.Gasto IS NOT NULL 
           AND VB.Gasto <> ''
           AND CONVERT(DATE, VB.Fecha) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
-          AND DC.Delegado = " + delegadoId + @"
-        ORDER BY VB.Fecha DESC
-        FOR JSON PATH");
+          AND CB.Jefe = " + _jefeId;
 
-            string jsonResult = _conexionSql.SqlJsonComand(false, comando);
-            JArray resultado = JArray.Parse(jsonResult);
-
-            return resultado;
-        }
-
-        /// <summary>
-        /// Obtiene las entregas de los cobradores asignados a un delegado específico en un rango de fechas
-        /// </summary>
-        /// <param name="fechaInicio">Fecha inicial en formato yyyy-MM-dd</param>
-        /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
-        /// <returns>JArray con las entregas en el rango de fechas</returns>
-        public JArray ObtenerEntregasPorDelegadoRango(string fechaInicio, string fechaFin)
-        {
-            // Primero verificamos que el delegado pertenezca al jefe actual (seguridad)
-            var delegadoId = ObtenerId();
-            var comandoVerificarDelegado = new SqlCommand(
-                $"SELECT COUNT(1) FROM Delegado WHERE Cod = {delegadoId}");
-
-            int delegadoValido = Convert.ToInt32(_conexionSql.TraerDato(comandoVerificarDelegado.CommandText, true));
-
-            if (delegadoValido == 0)
+            // Agregar filtro por cobrador si se proporciona
+            if (cobradorId.HasValue && cobradorId.Value > 0)
             {
-                throw new UnauthorizedAccessException("El token proporcionado no pertenece a un delegado");
+                // Verificamos que el cobrador pertenezca a este jefe
+                var comandoVerificarCobrador = new SqlCommand(
+                    $"SELECT COUNT(1) FROM Cobrador WHERE Cod = {cobradorId.Value} AND Jefe = {_jefeId}");
+
+                int cobradorValido = Convert.ToInt32(_conexionSql.TraerDato(comandoVerificarCobrador.CommandText, true));
+
+                if (cobradorValido == 0)
+                {
+                    throw new UnauthorizedAccessException("El cobrador especificado no pertenece a este jefe");
+                }
+
+                sqlQuery += @" AND CB.Cod = " + cobradorId.Value;
             }
 
-            // Aseguramos que tengamos fechas válidas
-            if (string.IsNullOrEmpty(fechaInicio))
-            {
-                fechaInicio = DateTime.Now.AddDays(-30).ToString("yyyy-MM-dd"); // Por defecto, 30 días atrás
-            }
+            sqlQuery += @" ORDER BY VB.Fecha DESC
+        FOR JSON PATH";
 
-            if (string.IsNullOrEmpty(fechaFin))
-            {
-                fechaFin = DateTime.Now.ToString("yyyy-MM-dd"); // Por defecto, hoy
-            }
-
-            var comando = new SqlCommand(@"
-        SELECT 
-            VB.Entregas AS Descripcion,
-            VB.Cod,
-            VB.Valor,
-            CONVERT(VARCHAR(12), VB.Fecha, 103) AS Fecha,
-            B.Cod AS CodBolsa,
-            CB.Nombres + ' ' + CB.Apellidos AS NombreCobrador
-        FROM ValoresBolsa VB
-        INNER JOIN Bolsa B ON VB.Bolsa = B.Cod
-        INNER JOIN Cobrador CB ON B.Cobrador = CB.Cod
-        INNER JOIN Delegados_Cobradores DC ON CB.Cod = DC.Cobrador
-        WHERE VB.Entregas IS NOT NULL 
-          AND VB.Entregas <> ''
-          AND CONVERT(DATE, VB.Fecha) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
-          AND DC.Delegado = " + delegadoId + @"
-        ORDER BY VB.Fecha DESC
-        FOR JSON PATH");
-
+            var comando = new SqlCommand(sqlQuery);
             string jsonResult = _conexionSql.SqlJsonComand(false, comando);
 
             // Si no hay resultados, devolver un array vacío
@@ -1005,13 +1309,26 @@ namespace ApiEasyPay.Aplication.Services
         }
 
         /// <summary>
-        /// Obtiene las entregas de todas las bolsas del jefe actual entre dos fechas
+        /// Obtiene los créditos creados para los cobradores asignados a un delegado específico en un rango de fechas,
+        /// opcionalmente filtrados por cobrador
         /// </summary>
-        /// <param name="fechaInicio">Fecha de inicio en formato yyyy-MM-dd</param>
-        /// <param name="fechaFin">Fecha de fin en formato yyyy-MM-dd</param>
-        /// <returns>Lista de entregas en formato JSON</returns>
-        public JArray ObtenerEntregasRango(string fechaInicio, string fechaFin)
+        /// <param name="fechaInicio">Fecha inicial en formato yyyy-MM-dd</param>
+        /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
+        /// <param name="cobradorId">Código del cobrador (opcional)</param>
+        /// <returns>JArray con los créditos en el rango de fechas</returns>
+        public JArray ObtenerCreditosPorDelegadoRango(string fechaInicio, string fechaFin, int? cobradorId = null)
         {
+            // Primero verificamos que el delegado pertenezca al jefe actual (seguridad)
+            var delegadoId = ObtenerId();
+            var comandoVerificarDelegado = new SqlCommand(
+                $"SELECT COUNT(1) FROM Delegado WHERE Cod = {delegadoId}");
+
+            int delegadoValido = Convert.ToInt32(_conexionSql.TraerDato(comandoVerificarDelegado.CommandText, true));
+
+            if (delegadoValido == 0)
+            {
+                throw new UnauthorizedAccessException("El token proporcionado no pertenece a un delegado");
+            }
 
             // Aseguramos que tengamos fechas válidas
             if (string.IsNullOrEmpty(fechaInicio))
@@ -1023,25 +1340,276 @@ namespace ApiEasyPay.Aplication.Services
             {
                 fechaFin = DateTime.Now.ToString("yyyy-MM-dd"); // Por defecto, hoy
             }
-            // Obtener el ID del jefe actual desde el contexto
-            var _jefeId = ObtenerId();
 
-            var comando = new SqlCommand(@"
+            var sqlQuery = @"
+        SELECT 
+            VB.Credito,
+            VB.Cod,
+            VB.Valor,
+            CONVERT(VARCHAR(12), VB.Fecha, 103) AS Fecha,
+            C.TotalPagar AS TotalPagar,
+            C.NumeroDeCuotas AS NumeroDeCuotas,
+            C.PorceInteres AS PorceInteres,
+            CL.Nombres + ' ' + CL.Apellidos AS NombreCliente,
+            CL.Documento AS DocumentoCliente,
+            CB.Nombres + ' ' + CB.Apellidos AS NombreCobrador,
+            CB.Cod AS CodCobrador
+        FROM ValoresBolsa VB
+        INNER JOIN Creditos C ON VB.Credito = C.Cod AND VB.Cobrador = C.Cobrador
+        INNER JOIN Clientes CL ON C.Cliente = CL.Cod AND C.Cobrador = CL.Cobrador
+        INNER JOIN Cobrador CB ON VB.Cobrador = CB.Cod
+        INNER JOIN Delegados_Cobradores DC ON CB.Cod = DC.Cobrador
+        WHERE VB.Credito IS NOT NULL 
+          AND VB.Credito > 0
+          AND CONVERT(DATE, VB.Fecha) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
+          AND DC.Delegado = " + delegadoId;
+
+            // Agregar filtro por cobrador si se proporciona
+            if (cobradorId.HasValue && cobradorId.Value > 0)
+            {
+                // Verificamos que el cobrador esté asignado a este delegado
+                var comandoVerificarCobrador = new SqlCommand(
+                    $"SELECT COUNT(1) FROM Delegados_Cobradores WHERE Delegado = {delegadoId} AND Cobrador = {cobradorId.Value}");
+
+                int cobradorValido = Convert.ToInt32(_conexionSql.TraerDato(comandoVerificarCobrador.CommandText, false));
+
+                if (cobradorValido == 0)
+                {
+                    throw new UnauthorizedAccessException("El cobrador especificado no está asignado a este delegado");
+                }
+
+                sqlQuery += @" AND CB.Cod = " + cobradorId.Value;
+            }
+
+            sqlQuery += @" ORDER BY VB.Fecha DESC
+        FOR JSON PATH";
+
+            var comando = new SqlCommand(sqlQuery);
+            string jsonResult = _conexionSql.SqlJsonComand(false, comando);
+
+            // Si no hay resultados, devolver un array vacío
+            if (string.IsNullOrEmpty(jsonResult) || jsonResult == "[]")
+                return new JArray();
+
+            JArray resultado = JArray.Parse(jsonResult);
+            return resultado;
+        }
+
+
+        /// <summary>
+        /// Obtiene los gastos de los cobradores asignados a un delegado específico en un rango de fechas,
+        /// opcionalmente filtrados por cobrador
+        /// </summary>
+        /// <param name="fechaInicio">Fecha inicial en formato yyyy-MM-dd</param>
+        /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
+        /// <param name="cobradorId">Código del cobrador (opcional)</param>
+        /// <returns>JArray con los gastos en el rango de fechas</returns>
+        public JArray ObtenerGastosPorDelegadoRango(string fechaInicio, string fechaFin, int? cobradorId = null)
+        {
+            // Primero verificamos que el delegado pertenezca al jefe actual (seguridad)
+            var delegadoId = ObtenerId();
+            var comandoVerificarDelegado = new SqlCommand(
+                $"SELECT COUNT(1) FROM Delegado WHERE Cod = {delegadoId}");
+
+            int delegadoValido = Convert.ToInt32(_conexionSql.TraerDato(comandoVerificarDelegado.CommandText, true));
+
+            if (delegadoValido == 0)
+            {
+                throw new UnauthorizedAccessException("El token proporcionado no pertenece a un delegado");
+            }
+
+            // Aseguramos que tengamos fechas válidas
+            if (string.IsNullOrEmpty(fechaInicio))
+            {
+                fechaInicio = DateTime.Now.AddDays(-30).ToString("yyyy-MM-dd"); // Por defecto, 30 días atrás
+            }
+
+            if (string.IsNullOrEmpty(fechaFin))
+            {
+                fechaFin = DateTime.Now.ToString("yyyy-MM-dd"); // Por defecto, hoy
+            }
+
+            var sqlQuery = @"
+        SELECT 
+            VB.Gasto AS Descripcion,
+            VB.Cod,
+            VB.Valor,
+            CONVERT(VARCHAR(12), VB.Fecha, 103) AS Fecha,
+            B.Cod AS CodBolsa,
+            CB.Cod AS CodCobrador,
+            CB.Nombres + ' ' + CB.Apellidos AS NombreCobrador
+        FROM ValoresBolsa VB
+        INNER JOIN Bolsa B ON VB.Bolsa = B.Cod AND VB.Cobrador = B.Cobrador
+        INNER JOIN Cobrador CB ON B.Cobrador = CB.Cod
+        INNER JOIN Delegados_Cobradores DC ON CB.Cod = DC.Cobrador
+        WHERE VB.Gasto IS NOT NULL 
+          AND VB.Gasto <> ''
+          AND CONVERT(DATE, VB.Fecha) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
+          AND DC.Delegado = " + delegadoId;
+
+            // Agregar filtro por cobrador si se proporciona
+            if (cobradorId.HasValue && cobradorId.Value > 0)
+            {
+                // Verificamos que el cobrador esté asignado a este delegado
+                var comandoVerificarCobrador = new SqlCommand(
+                    $"SELECT COUNT(1) FROM Delegados_Cobradores WHERE Delegado = {delegadoId} AND Cobrador = {cobradorId.Value}");
+
+                int cobradorValido = Convert.ToInt32(_conexionSql.TraerDato(comandoVerificarCobrador.CommandText, false));
+
+                if (cobradorValido == 0)
+                {
+                    throw new UnauthorizedAccessException("El cobrador especificado no está asignado a este delegado");
+                }
+
+                sqlQuery += @" AND CB.Cod = " + cobradorId.Value;
+            }
+
+            sqlQuery += @" ORDER BY VB.Fecha DESC
+        FOR JSON PATH";
+
+            var comando = new SqlCommand(sqlQuery);
+            string jsonResult = _conexionSql.SqlJsonComand(false, comando);
+
+            // Si no hay resultados, devolver un array vacío
+            if (string.IsNullOrEmpty(jsonResult) || jsonResult == "[]")
+                return new JArray();
+
+            JArray resultado = JArray.Parse(jsonResult);
+            return resultado;
+        }
+
+        /// <summary>
+        /// Obtiene las entregas de los cobradores asignados a un delegado específico en un rango de fechas,
+        /// opcionalmente filtradas por cobrador
+        /// </summary>
+        /// <param name="fechaInicio">Fecha inicial en formato yyyy-MM-dd</param>
+        /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
+        /// <param name="cobradorId">Código del cobrador (opcional)</param>
+        /// <returns>JArray con las entregas en el rango de fechas</returns>
+        public JArray ObtenerEntregasPorDelegadoRango(string fechaInicio, string fechaFin, int? cobradorId = null)
+        {
+            // Primero verificamos que el delegado pertenezca al jefe actual (seguridad)
+            var delegadoId = ObtenerId();
+            var comandoVerificarDelegado = new SqlCommand(
+                $"SELECT COUNT(1) FROM Delegado WHERE Cod = {delegadoId}");
+
+            int delegadoValido = Convert.ToInt32(_conexionSql.TraerDato(comandoVerificarDelegado.CommandText, true));
+
+            if (delegadoValido == 0)
+            {
+                throw new UnauthorizedAccessException("El token proporcionado no pertenece a un delegado");
+            }
+
+            // Aseguramos que tengamos fechas válidas
+            if (string.IsNullOrEmpty(fechaInicio))
+            {
+                fechaInicio = DateTime.Now.AddDays(-30).ToString("yyyy-MM-dd"); // Por defecto, 30 días atrás
+            }
+
+            if (string.IsNullOrEmpty(fechaFin))
+            {
+                fechaFin = DateTime.Now.ToString("yyyy-MM-dd"); // Por defecto, hoy
+            }
+
+            var sqlQuery = @"
         SELECT 
             VB.Entregas AS Descripcion,
             VB.Cod,
             VB.Valor,
-            CONVERT(VARCHAR(12), VB.Fecha, 103) AS Fecha
+            CONVERT(VARCHAR(12), VB.Fecha, 103) AS Fecha,
+            B.Cod AS CodBolsa,
+            CB.Nombres + ' ' + CB.Apellidos AS NombreCobrador,
+            CB.Cod AS CodCobrador
         FROM ValoresBolsa VB
-        INNER JOIN Bolsa B ON VB.Bolsa = B.Cod
-        INNER JOIN Cobrador C ON B.Cobrador = C.Cod
+        INNER JOIN Bolsa B ON VB.Bolsa = B.Cod AND VB.Cobrador = B.Cobrador
+        INNER JOIN Cobrador CB ON B.Cobrador = CB.Cod
+        INNER JOIN Delegados_Cobradores DC ON CB.Cod = DC.Cobrador
         WHERE VB.Entregas IS NOT NULL 
           AND VB.Entregas <> ''
           AND CONVERT(DATE, VB.Fecha) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
-          AND C.Jefe = " + _jefeId + @"
-        ORDER BY VB.Fecha DESC
-        FOR JSON PATH");
+          AND DC.Delegado = " + delegadoId;
 
+            // Agregar filtro por cobrador si se proporciona
+            if (cobradorId.HasValue && cobradorId.Value > 0)
+            {
+                // Primero verificamos que el cobrador esté asignado a este delegado
+                var comandoVerificarCobrador = new SqlCommand(
+                    $"SELECT COUNT(1) FROM Delegados_Cobradores WHERE Delegado = {delegadoId} AND Cobrador = {cobradorId.Value}");
+
+                int cobradorValido = Convert.ToInt32(_conexionSql.TraerDato(comandoVerificarCobrador.CommandText, false));
+
+                if (cobradorValido == 0)
+                {
+                    throw new UnauthorizedAccessException("El cobrador especificado no está asignado a este delegado");
+                }
+
+                sqlQuery += @" AND CB.Cod = " + cobradorId.Value;
+            }
+
+            sqlQuery += @" ORDER BY VB.Fecha DESC
+        FOR JSON PATH";
+
+            var comando = new SqlCommand(sqlQuery);
+            string jsonResult = _conexionSql.SqlJsonComand(false, comando);
+
+            // Si no hay resultados, devolver un array vacío
+            if (string.IsNullOrEmpty(jsonResult) || jsonResult == "[]")
+                return new JArray();
+
+            JArray resultado = JArray.Parse(jsonResult);
+            return resultado;
+        }
+
+        /// <summary>
+        /// Obtiene las entregas de todas las bolsas del jefe actual entre dos fechas, opcionalmente filtradas por cobrador
+        /// </summary>
+        /// <param name="fechaInicio">Fecha de inicio en formato yyyy-MM-dd</param>
+        /// <param name="fechaFin">Fecha de fin en formato yyyy-MM-dd</param>
+        /// <param name="cobradorId">Código del cobrador (opcional)</param>
+        /// <returns>Lista de entregas en formato JSON</returns>
+        public JArray ObtenerEntregasRango(string fechaInicio, string fechaFin, int? cobradorId = null)
+        {
+            // Aseguramos que tengamos fechas válidas
+            if (string.IsNullOrEmpty(fechaInicio))
+            {
+                fechaInicio = DateTime.Now.AddDays(-30).ToString("yyyy-MM-dd"); // Por defecto, 30 días atrás
+            }
+
+            if (string.IsNullOrEmpty(fechaFin))
+            {
+                fechaFin = DateTime.Now.ToString("yyyy-MM-dd"); // Por defecto, hoy
+            }
+
+            // Obtener el ID del jefe actual desde el contexto
+            var _jefeId = ObtenerId();
+
+            // Construcción de la consulta base con validación doble en los JOINs
+            var sqlQuery = @"
+        SELECT 
+            VB.Entregas AS Descripcion,
+            VB.Cod,
+            VB.Valor,
+            CONVERT(VARCHAR(12), VB.Fecha, 103) AS Fecha,
+            B.Cobrador AS CodCobrador,
+            CB.Nombres + ' ' + CB.Apellidos AS NombreCobrador
+        FROM ValoresBolsa VB
+        INNER JOIN Bolsa B ON VB.Bolsa = B.Cod AND VB.Cobrador = B.Cobrador
+        INNER JOIN Cobrador CB ON B.Cobrador = CB.Cod
+        WHERE VB.Entregas IS NOT NULL 
+          AND VB.Entregas <> ''
+          AND CONVERT(DATE, VB.Fecha) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
+          AND CB.Jefe = " + _jefeId;
+
+            // Agregar filtro por cobrador si se proporciona
+            if (cobradorId.HasValue && cobradorId.Value > 0)
+            {
+                sqlQuery += @" AND B.Cobrador = " + cobradorId.Value;
+            }
+
+            sqlQuery += @" ORDER BY VB.Fecha DESC
+        FOR JSON PATH";
+
+            var comando = new SqlCommand(sqlQuery);
             string jsonResult = _conexionSql.SqlJsonComand(false, comando);
 
             // Si no hay resultados, devolver un array vacío
@@ -1068,6 +1636,8 @@ namespace ApiEasyPay.Aplication.Services
             RD.Visitado,
             RD.Valor,
             RD.Descripcion,
+            RD.Lat,
+            RD.Long,
             CONVERT(VARCHAR(12), RD.Fecha, 103) AS FechaFormateada,
             C.Nombres + ' ' + C.Apellidos AS NombreCliente,
             C.Documento AS DocumentoCliente
@@ -1085,12 +1655,14 @@ namespace ApiEasyPay.Aplication.Services
         }
 
         /// <summary>
-        /// Obtiene los pagos realizados en un rango de fechas para el jefe actual
+        /// Obtiene los pagos realizados en un rango de fechas para el jefe actual,
+        /// opcionalmente filtrados por cobrador
         /// </summary>
         /// <param name="fechaInicio">Fecha inicial en formato yyyy-MM-dd</param>
         /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
+        /// <param name="cobradorId">Código del cobrador (opcional)</param>
         /// <returns>JArray con los pagos en el rango de fechas</returns>
-        public JArray ObtenerPagosRango(string fechaInicio, string fechaFin)
+        public JArray ObtenerPagosRango(string fechaInicio, string fechaFin, int? cobradorId = null)
         {
             // Aseguramos que tengamos fechas válidas
             if (string.IsNullOrEmpty(fechaInicio))
@@ -1106,7 +1678,7 @@ namespace ApiEasyPay.Aplication.Services
             // Obtener el ID del jefe actual desde el contexto
             var _jefeId = ObtenerId();
 
-            var comando = new SqlCommand(@"
+            var sqlQuery = @"
         SELECT 
             RD.Cod,
             RD.Credito,
@@ -1118,17 +1690,37 @@ namespace ApiEasyPay.Aplication.Services
             C.Nombres + ' ' + C.Apellidos AS NombreCliente,
             C.Documento AS DocumentoCliente,
             CB.Nombres + ' ' + CB.Apellidos AS NombreCobrador,
+            CB.Cod AS CodCobrador,
             B.Cod AS CodBolsa
         FROM RegDiarioCuotas RD
-        INNER JOIN Bolsa B ON RD.Bolsa = B.Cod
+        INNER JOIN Bolsa B ON RD.Bolsa = B.Cod AND RD.Cobrador = B.Cobrador
         INNER JOIN Cobrador CB ON B.Cobrador = CB.Cod
-        INNER JOIN Creditos CR ON RD.Credito = CR.Cod
-        INNER JOIN Clientes C ON CR.Cliente = C.Cod
+        INNER JOIN Creditos CR ON RD.Credito = CR.Cod AND RD.Cobrador = CR.Cobrador
+        INNER JOIN Clientes C ON CR.Cliente = C.Cod AND CR.Cobrador = C.Cobrador
         WHERE CONVERT(DATE, RD.Fecha) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
-          AND CB.Jefe = " + _jefeId + @"
-        ORDER BY RD.Fecha DESC
-        FOR JSON PATH");
+          AND CB.Jefe = " + _jefeId;
 
+            // Agregar filtro por cobrador si se proporciona
+            if (cobradorId.HasValue && cobradorId.Value > 0)
+            {
+                // Verificamos que el cobrador pertenezca a este jefe
+                var comandoVerificarCobrador = new SqlCommand(
+                    $"SELECT COUNT(1) FROM Cobrador WHERE Cod = {cobradorId.Value} AND Jefe = {_jefeId}");
+
+                int cobradorValido = Convert.ToInt32(_conexionSql.TraerDato(comandoVerificarCobrador.CommandText, true));
+
+                if (cobradorValido == 0)
+                {
+                    throw new UnauthorizedAccessException("El cobrador especificado no pertenece a este jefe");
+                }
+
+                sqlQuery += @" AND CB.Cod = " + cobradorId.Value;
+            }
+
+            sqlQuery += @" ORDER BY RD.Fecha DESC
+        FOR JSON PATH";
+
+            var comando = new SqlCommand(sqlQuery);
             string jsonResult = _conexionSql.SqlJsonComand(false, comando);
 
             // Si no hay resultados, devolver un array vacío
@@ -1140,12 +1732,14 @@ namespace ApiEasyPay.Aplication.Services
         }
 
         /// <summary>
-        /// Obtiene los pagos realizados en un rango de fechas para los cobradores asignados a un delegado específico
+        /// Obtiene los pagos realizados en un rango de fechas para los cobradores asignados a un delegado específico,
+        /// opcionalmente filtrados por cobrador
         /// </summary>
         /// <param name="fechaInicio">Fecha inicial en formato yyyy-MM-dd</param>
         /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
+        /// <param name="cobradorId">Código del cobrador (opcional)</param>
         /// <returns>JArray con los pagos en el rango de fechas</returns>
-        public JArray ObtenerPagosPorDelegadoRango(string fechaInicio, string fechaFin)
+        public JArray ObtenerPagosPorDelegadoRango(string fechaInicio, string fechaFin, int? cobradorId = null)
         {
             // Primero verificamos que el delegado pertenezca al jefe actual (seguridad)
             var delegadoId = ObtenerId();
@@ -1170,7 +1764,7 @@ namespace ApiEasyPay.Aplication.Services
                 fechaFin = DateTime.Now.ToString("yyyy-MM-dd"); // Por defecto, hoy
             }
 
-            var comando = new SqlCommand(@"
+            var sqlQuery = @"
         SELECT 
             RD.Cod,
             RD.Credito,
@@ -1182,18 +1776,38 @@ namespace ApiEasyPay.Aplication.Services
             C.Nombres + ' ' + C.Apellidos AS NombreCliente,
             C.Documento AS DocumentoCliente,
             CB.Nombres + ' ' + CB.Apellidos AS NombreCobrador,
+            CB.Cod AS CodCobrador,
             B.Cod AS CodBolsa
         FROM RegDiarioCuotas RD
-        INNER JOIN Bolsa B ON RD.Bolsa = B.Cod
+        INNER JOIN Bolsa B ON RD.Bolsa = B.Cod AND RD.Cobrador = B.Cobrador
         INNER JOIN Cobrador CB ON B.Cobrador = CB.Cod
-        INNER JOIN Creditos CR ON RD.Credito = CR.Cod
-        INNER JOIN Clientes C ON CR.Cliente = C.Cod
+        INNER JOIN Creditos CR ON RD.Credito = CR.Cod AND RD.Cobrador = CR.Cobrador
+        INNER JOIN Clientes C ON CR.Cliente = C.Cod AND CR.Cobrador = C.Cobrador
         INNER JOIN Delegados_Cobradores DC ON CB.Cod = DC.Cobrador
         WHERE CONVERT(DATE, RD.Fecha) BETWEEN '" + fechaInicio + @"' AND '" + fechaFin + @"'
-          AND DC.Delegado = " + delegadoId + @"
-        ORDER BY RD.Fecha DESC
-        FOR JSON PATH");
+          AND DC.Delegado = " + delegadoId;
 
+            // Agregar filtro por cobrador si se proporciona
+            if (cobradorId.HasValue && cobradorId.Value > 0)
+            {
+                // Verificamos que el cobrador esté asignado a este delegado
+                var comandoVerificarCobrador = new SqlCommand(
+                    $"SELECT COUNT(1) FROM Delegados_Cobradores WHERE Delegado = {delegadoId} AND Cobrador = {cobradorId.Value}");
+
+                int cobradorValido = Convert.ToInt32(_conexionSql.TraerDato(comandoVerificarCobrador.CommandText, false));
+
+                if (cobradorValido == 0)
+                {
+                    throw new UnauthorizedAccessException("El cobrador especificado no está asignado a este delegado");
+                }
+
+                sqlQuery += @" AND CB.Cod = " + cobradorId.Value;
+            }
+
+            sqlQuery += @" ORDER BY RD.Fecha DESC
+        FOR JSON PATH";
+
+            var comando = new SqlCommand(sqlQuery);
             string jsonResult = _conexionSql.SqlJsonComand(false, comando);
 
             // Si no hay resultados, devolver un array vacío
@@ -1203,6 +1817,8 @@ namespace ApiEasyPay.Aplication.Services
             JArray resultado = JArray.Parse(jsonResult);
             return resultado;
         }
+
+
 
         /// <summary>
         /// Valida que la bolsa pertenezca a un cobrador del jefe actual

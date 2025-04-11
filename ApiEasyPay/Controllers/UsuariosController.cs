@@ -82,6 +82,22 @@ namespace ApiEasyPay.Controllers
         }
 
         /// <summary>
+        /// Obtiene los datos del usuario autenticado por su token
+        /// </summary>
+        /// <returns>Datos del usuario en formato JSON</returns>
+        [HttpGet("perfil")]
+        public async Task<IActionResult> ObtenerUsuarioActual()
+        {
+            var (success, message, data) = await _usuariosService.ObtenerUsuarioByTokenAsync();
+
+            if (!success)
+                return BadRequest(new { mensaje = message });
+
+            // Retornar directamente el objeto JSON
+            return new JsonResult(data);
+        }
+
+        /// <summary>
         /// Asigna un cobrador a un delegado específico
         /// </summary>
         /// <param name="delegadoId">ID del delegado</param>

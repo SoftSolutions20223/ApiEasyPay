@@ -26,5 +26,7 @@ namespace ApiEasyPay.Domain.Model
         public int Cobrador { get; set; }
         [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy HH:mm:ss}", ApplyFormatInEditMode = true)]
         public DateTime? FechaActualizacion { get; set; }
+        public string Lat { get; set; }
+        public string Long { get; set; }
     }
 }

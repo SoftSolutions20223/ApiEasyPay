@@ -17,30 +17,6 @@
         }
       }
     },
-    "/api/Bolsas/abiertas": {
-      "get": {
-        "tags": [
-          "Bolsas"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/Bolsas/cerradas": {
-      "get": {
-        "tags": [
-          "Bolsas"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
     "/api/Bolsas/datos": {
       "get": {
         "tags": [
@@ -62,118 +38,19 @@
         }
       }
     },
-    "/api/Bolsas/{codBolsa}/entregas/{cobradorId}": {
+    "/api/Bolsas/delegado/datos": {
       "get": {
         "tags": [
           "Bolsas"
         ],
         "parameters": [
           {
-            "name": "codBolsa",
-            "in": "path",
-            "required": true,
+            "name": "fecha",
+            "in": "query",
             "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "cobradorId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
+              "type": "string"
             }
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/Bolsas/{codBolsa}/gastos/{cobradorId}": {
-      "get": {
-        "tags": [
-          "Bolsas"
-        ],
-        "parameters": [
-          {
-            "name": "codBolsa",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "cobradorId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/Bolsas/{codBolsa}/creditos/{cobradorId}": {
-      "get": {
-        "tags": [
-          "Bolsas"
-        ],
-        "parameters": [
-          {
-            "name": "codBolsa",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "cobradorId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/Bolsas/delegado/abiertas": {
-      "get": {
-        "tags": [
-          "Bolsas"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/Bolsas/delegado/cerradas": {
-      "get": {
-        "tags": [
-          "Bolsas"
         ],
         "responses": {
           "200": {
@@ -238,21 +115,35 @@
         }
       }
     },
-    "/api/Bolsas/delegado/bolsas-rango": {
+    "/api/Bolsas/ByFecha": {
       "get": {
         "tags": [
           "Bolsas"
         ],
         "parameters": [
           {
-            "name": "fechaInicio",
+            "name": "fecha",
             "in": "query",
             "schema": {
               "type": "string"
             }
-          },
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Bolsas/delegado/ByFecha": {
+      "get": {
+        "tags": [
+          "Bolsas"
+        ],
+        "parameters": [
           {
-            "name": "fechaFin",
+            "name": "fecha",
             "in": "query",
             "schema": {
               "type": "string"
@@ -294,7 +185,7 @@
         }
       }
     },
-    "/api/Bolsas/{codBolsa}/creditos-rango": {
+    "/api/Bolsas/delegado/bolsas-rango": {
       "get": {
         "tags": [
           "Bolsas"
@@ -310,14 +201,6 @@
           {
             "name": "fechaFin",
             "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "codBolsa",
-            "in": "path",
-            "required": true,
             "schema": {
               "type": "string"
             }
@@ -330,32 +213,28 @@
         }
       }
     },
-    "/api/Bolsas/{codBolsa}/gastos-rango": {
+    "/api/Bolsas/{codBolsa}/entregas/{cobradorId}": {
       "get": {
         "tags": [
           "Bolsas"
         ],
         "parameters": [
           {
-            "name": "fechaInicio",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "fechaFin",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
             "name": "codBolsa",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "cobradorId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -385,6 +264,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "cobradorId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
           }
         ],
         "responses": {
@@ -394,7 +281,7 @@
         }
       }
     },
-    "/api/Bolsas/delegado/creditos-rango": {
+    "/api/Bolsas/delegado/entregas-rango": {
       "get": {
         "tags": [
           "Bolsas"
@@ -412,6 +299,82 @@
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "cobradorId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Bolsas/{codBolsa}/gastos/{cobradorId}": {
+      "get": {
+        "tags": [
+          "Bolsas"
+        ],
+        "parameters": [
+          {
+            "name": "codBolsa",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "cobradorId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Bolsas/gastos-rango": {
+      "get": {
+        "tags": [
+          "Bolsas"
+        ],
+        "parameters": [
+          {
+            "name": "fechaInicio",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fechaFin",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cobradorId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -441,6 +404,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "cobradorId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
           }
         ],
         "responses": {
@@ -450,7 +421,39 @@
         }
       }
     },
-    "/api/Bolsas/delegado/entregas-rango": {
+    "/api/Bolsas/{codBolsa}/creditos/{cobradorId}": {
+      "get": {
+        "tags": [
+          "Bolsas"
+        ],
+        "parameters": [
+          {
+            "name": "codBolsa",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "cobradorId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Bolsas/creditos-rango": {
       "get": {
         "tags": [
           "Bolsas"
@@ -468,6 +471,50 @@
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "cobradorId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Bolsas/delegado/creditos-rango": {
+      "get": {
+        "tags": [
+          "Bolsas"
+        ],
+        "parameters": [
+          {
+            "name": "fechaInicio",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fechaFin",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cobradorId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -529,6 +576,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "cobradorId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
           }
         ],
         "responses": {
@@ -557,26 +612,13 @@
             "schema": {
               "type": "string"
             }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/Bolsas/delegado/datos": {
-      "get": {
-        "tags": [
-          "Bolsas"
-        ],
-        "parameters": [
+          },
           {
-            "name": "fecha",
+            "name": "cobradorId",
             "in": "query",
             "schema": {
-              "type": "string"
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -1108,6 +1150,18 @@
               "default": "C"
             }
           }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Usuarios/perfil": {
+      "get": {
+        "tags": [
+          "Usuarios"
         ],
         "responses": {
           "200": {

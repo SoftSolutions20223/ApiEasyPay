@@ -49,12 +49,18 @@ builder.Services.AddScoped<CreditosService>();
 builder.Services.AddScoped<BolsasService>();
 
 
+
 builder.Services.AddControllers()
     .AddNewtonsoftJson(options =>
     {
         options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
     });
 builder.Services.AddHttpContextAccessor();
+
+// Registrar el servicio inicializador como singleton
+builder.Services.AddSingleton<SesionInicializadorService>();
+// Registrar el servicio hosteado directamente
+builder.Services.AddHostedService<SesionHostedService>();
 
 
 var app = builder.Build();

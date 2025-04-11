@@ -18,56 +18,12 @@ namespace ApiEasyPay.Controllers
         }
 
         /// <summary>
-        /// Obtiene un resumen de las bolsas abiertas del jefe actual
-        /// </summary>
-        /// <returns>Lista de bolsas abiertas en formato JSON</returns>
-        [HttpGet("abiertas")]
-        public IActionResult GetBolsasAbiertas()
-        {
-            try
-            {
-                var resultado = _bolsaService.ObtenerBolsasAbiertas();
-                return new JsonResult(resultado);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { mensaje = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { mensaje = $"Error al obtener bolsas abiertas: {ex.Message}" });
-            }
-        }
-
-        /// <summary>
-        /// Obtiene un resumen de las bolsas cerradas del jefe actual
-        /// </summary>
-        /// <returns>Lista de bolsas cerradas en formato JSON</returns>
-        [HttpGet("cerradas")]
-        public IActionResult GetBolsasCerradas()
-        {
-            try
-            {
-                var resultado = _bolsaService.ObtenerBolsasCerradas();
-                return new JsonResult(resultado);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { mensaje = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { mensaje = $"Error al obtener bolsas cerradas: {ex.Message}" });
-            }
-        }
-
-        /// <summary>
         /// Obtiene datos resumidos de bolsa para la fecha indicada
         /// </summary>
         /// <param name="fecha">Fecha en formato yyyy-MM-dd</param>
         /// <returns>Datos de la bolsa en formato JSON</returns>
         [HttpGet("datos")]
-        public IActionResult GetDatosBolsa([FromQuery] string fecha)
+        public IActionResult GetDatosBolsaByFecha([FromQuery] string fecha)
         {
             try
             {
@@ -76,7 +32,7 @@ namespace ApiEasyPay.Controllers
                     fecha = DateTime.Now.ToString("yyyy-MM-dd");
                 }
 
-                var resultado = _bolsaService.ObtenerDatosBolsa(fecha);
+                var resultado = _bolsaService.ObtenerDatosBolsaByFecha(fecha);
                 if (resultado == null)
                     return NotFound(new { mensaje = "No se encontraron datos para la fecha especificada" });
 
@@ -93,17 +49,19 @@ namespace ApiEasyPay.Controllers
         }
 
         /// <summary>
-        /// Obtiene las entregas de una bolsa específica para un cobrador
+        /// Obtiene datos resumidos de bolsa para los cobradores de un delegado específico en la fecha indicada
         /// </summary>
-        /// <param name="codBolsa">Código de la bolsa</param>
-        /// <param name="cobradorId">Código del cobrador</param>
-        /// <returns>Lista de entregas en formato JSON</returns>
-        [HttpGet("{codBolsa}/entregas/{cobradorId}")]
-        public IActionResult GetEntregasBolsa(int codBolsa, int cobradorId)
+        /// <param name="fecha">Fecha en formato yyyy-MM-dd (opcional)</param>
+        /// <returns>Datos de las bolsas en formato JSON</returns>
+        [HttpGet("delegado/datos")]
+        public IActionResult GetDatosBolsaByFechaPorDelegado([FromQuery] string fecha)
         {
             try
             {
-                var resultado = _bolsaService.ObtenerEntregasBolsa(codBolsa, cobradorId);
+                var resultado = _bolsaService.ObtenerDatosBolsaPorDelegado(fecha);
+                if (resultado == null)
+                    return NotFound(new { mensaje = "No se encontraron datos para el delegado y fecha especificados" });
+
                 return new JsonResult(resultado);
             }
             catch (UnauthorizedAccessException ex)
@@ -112,99 +70,7 @@ namespace ApiEasyPay.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { mensaje = $"Error al obtener entregas de bolsa: {ex.Message}" });
-            }
-        }
-
-        /// <summary>
-        /// Obtiene los gastos de una bolsa específica para un cobrador
-        /// </summary>
-        /// <param name="codBolsa">Código de la bolsa</param>
-        /// <param name="cobradorId">Código del cobrador</param>
-        /// <returns>Lista de gastos en formato JSON</returns>
-        [HttpGet("{codBolsa}/gastos/{cobradorId}")]
-        public IActionResult GetGastosBolsa(int codBolsa, int cobradorId)
-        {
-            try
-            {
-                var resultado = _bolsaService.ObtenerGastosBolsa(codBolsa, cobradorId);
-                return new JsonResult(resultado);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { mensaje = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { mensaje = $"Error al obtener gastos de bolsa: {ex.Message}" });
-            }
-        }
-
-        /// <summary>
-        /// Obtiene los créditos creados en una bolsa específica
-        /// </summary>
-        /// <param name="codBolsa">Código de la bolsa</param>
-        /// <returns>Lista de créditos en formato JSON</returns>
-        [HttpGet("{codBolsa}/creditos/{cobradorId}")]
-        public IActionResult GetCreditosBolsa(int codBolsa, int cobradorId)
-        {
-            try
-            {
-                var resultado = _bolsaService.ObtenerCreditosBolsa(codBolsa, cobradorId);
-                return new JsonResult(resultado);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { mensaje = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { mensaje = $"Error al obtener créditos de bolsa: {ex.Message}" });
-            }
-        }
-
-
-        /// <summary>
-        /// Obtiene un resumen de las bolsas abiertas de los cobradores asignados a un delegado específico
-        /// </summary>
-        /// <returns>Lista de bolsas abiertas en formato JSON</returns>
-        [HttpGet("delegado/abiertas")]
-        public IActionResult GetBolsasAbiertasPorDelegado()
-        {
-            try
-            {
-                var resultado = _bolsaService.ObtenerBolsasAbiertasPorDelegado();
-                return new JsonResult(resultado);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { mensaje = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { mensaje = $"Error al obtener bolsas abiertas por delegado: {ex.Message}" });
-            }
-        }
-
-        /// <summary>
-        /// Obtiene un resumen de las bolsas cerradas de los cobradores asignados a un delegado específico
-        /// </summary>
-        /// <returns>Lista de bolsas cerradas en formato JSON</returns>
-        [HttpGet("delegado/cerradas")]
-        public IActionResult GetBolsasCerradasPorDelegado()
-        {
-            try
-            {
-                var resultado = _bolsaService.ObtenerBolsasCerradasPorDelegado();
-                return new JsonResult(resultado);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { mensaje = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { mensaje = $"Error al obtener bolsas cerradas por delegado: {ex.Message}" });
+                return BadRequest(new { mensaje = $"Error al obtener datos de bolsa por delegado: {ex.Message}" });
             }
         }
 
@@ -263,17 +129,19 @@ namespace ApiEasyPay.Controllers
         }
 
         /// <summary>
-        /// Obtiene un resumen de las bolsas abiertas de los cobradores asignados a un delegado específico en un rango de fechas
+        /// Obtiene un resumen de las bolsas abiertas del jefe actual
         /// </summary>
-        /// <param name="fechaInicio">Fecha inicial en formato yyyy-MM-dd</param>
-        /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
-        /// <returns>Lista de bolsas abiertas en el rango de fechas en formato JSON</returns>
-        [HttpGet("delegado/bolsas-rango")]
-        public IActionResult GetBolsasPorDelegadoRango([FromQuery] string fechaInicio, [FromQuery] string fechaFin)
+        /// <returns>Lista de bolsas abiertas en formato JSON</returns>
+        [HttpGet("ByFecha")]
+        public IActionResult GetBolsasByFecha([FromQuery] string fecha)
         {
             try
             {
-                var resultado = _bolsaService.ObtenerBolsasPorDelegadoRango(fechaInicio, fechaFin);
+                if (string.IsNullOrEmpty(fecha))
+                {
+                    fecha = DateTime.Now.ToString("yyyy-MM-dd");
+                }
+                var resultado = _bolsaService.ObtenerBolsasxFecha(fecha);
                 return new JsonResult(resultado);
             }
             catch (UnauthorizedAccessException ex)
@@ -282,7 +150,33 @@ namespace ApiEasyPay.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { mensaje = $"Error al obtener bolsas abiertas por delegado en rango de fechas: {ex.Message}" });
+                return BadRequest(new { mensaje = $"Error al obtener bolsas abiertas: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
+        /// Obtiene un resumen de las bolsas abiertas del delegado actual
+        /// </summary>
+        /// <returns>Lista de bolsas abiertas en formato JSON</returns>
+        [HttpGet("delegado/ByFecha")]
+        public IActionResult GetBolsasByFechaDelegado([FromQuery] string fecha)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(fecha))
+                {
+                    fecha = DateTime.Now.ToString("yyyy-MM-dd");
+                }
+                var resultado = _bolsaService.ObtenerBolsasPorDelegadoxFecha(fecha);
+                return new JsonResult(resultado);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { mensaje = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = $"Error al obtener bolsas abiertas: {ex.Message}" });
             }
         }
 
@@ -311,18 +205,17 @@ namespace ApiEasyPay.Controllers
         }
 
         /// <summary>
-        /// Obtiene los créditos creados en una bolsa específica en un rango de fechas
+        /// Obtiene un resumen de las bolsas abiertas de los cobradores asignados a un delegado específico en un rango de fechas
         /// </summary>
-        /// <param name="codBolsa">Código de la bolsa</param>
         /// <param name="fechaInicio">Fecha inicial en formato yyyy-MM-dd</param>
         /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
-        /// <returns>Lista de créditos en formato JSON</returns>
-        [HttpGet("{codBolsa}/creditos-rango")]
-        public IActionResult GetCreditosBolsaRango( [FromQuery] string fechaInicio, [FromQuery] string fechaFin)
+        /// <returns>Lista de bolsas abiertas en el rango de fechas en formato JSON</returns>
+        [HttpGet("delegado/bolsas-rango")]
+        public IActionResult GetBolsasPorDelegadoRango([FromQuery] string fechaInicio, [FromQuery] string fechaFin)
         {
             try
             {
-                var resultado = _bolsaService.ObtenerCreditosBolsaRango( fechaInicio, fechaFin);
+                var resultado = _bolsaService.ObtenerBolsasPorDelegadoRango(fechaInicio, fechaFin);
                 return new JsonResult(resultado);
             }
             catch (UnauthorizedAccessException ex)
@@ -331,23 +224,22 @@ namespace ApiEasyPay.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { mensaje = $"Error al obtener créditos de bolsa en rango de fechas: {ex.Message}" });
+                return BadRequest(new { mensaje = $"Error al obtener bolsas abiertas por delegado en rango de fechas: {ex.Message}" });
             }
         }
 
         /// <summary>
-        /// Obtiene los gastos de una bolsa específica en un rango de fechas
+        /// Obtiene las entregas de una bolsa específica para un cobrador
         /// </summary>
         /// <param name="codBolsa">Código de la bolsa</param>
-        /// <param name="fechaInicio">Fecha inicial en formato yyyy-MM-dd</param>
-        /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
-        /// <returns>Lista de gastos en formato JSON</returns>
-        [HttpGet("{codBolsa}/gastos-rango")]
-        public IActionResult GetGastosBolsaRango( [FromQuery] string fechaInicio, [FromQuery] string fechaFin)
+        /// <param name="cobradorId">Código del cobrador</param>
+        /// <returns>Lista de entregas en formato JSON</returns>
+        [HttpGet("{codBolsa}/entregas/{cobradorId}")]
+        public IActionResult GetEntregasBolsa(int codBolsa, int cobradorId)
         {
             try
             {
-                var resultado = _bolsaService.ObtenerGastosBolsaRango( fechaInicio, fechaFin);
+                var resultado = _bolsaService.ObtenerEntregasBolsa(codBolsa, cobradorId);
                 return new JsonResult(resultado);
             }
             catch (UnauthorizedAccessException ex)
@@ -356,22 +248,26 @@ namespace ApiEasyPay.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { mensaje = $"Error al obtener gastos de bolsa en rango de fechas: {ex.Message}" });
+                return BadRequest(new { mensaje = $"Error al obtener entregas de bolsa: {ex.Message}" });
             }
         }
 
         /// <summary>
-        /// Obtiene las entregas de todas las bolsas del jefe actual entre dos fechas
+        /// Obtiene las entregas de todas las bolsas del jefe actual entre dos fechas, opcionalmente filtradas por cobrador
         /// </summary>
         /// <param name="fechaInicio">Fecha inicial en formato yyyy-MM-dd</param>
         /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
+        /// <param name="cobradorId">Código del cobrador (opcional)</param>
         /// <returns>Lista de entregas en formato JSON</returns>
         [HttpGet("entregas-rango")]
-        public IActionResult GetEntregasRango([FromQuery] string fechaInicio, [FromQuery] string fechaFin)
+        public IActionResult GetEntregasRango(
+            [FromQuery] string fechaInicio,
+            [FromQuery] string fechaFin,
+            [FromQuery] int? cobradorId = null)
         {
             try
             {
-                var resultado = _bolsaService.ObtenerEntregasRango(fechaInicio, fechaFin);
+                var resultado = _bolsaService.ObtenerEntregasRango(fechaInicio, fechaFin, cobradorId);
                 return new JsonResult(resultado);
             }
             catch (UnauthorizedAccessException ex)
@@ -385,17 +281,22 @@ namespace ApiEasyPay.Controllers
         }
 
         /// <summary>
-        /// Obtiene los créditos creados para los cobradores asignados a un delegado específico en un rango de fechas
+        /// Obtiene las entregas de todas las bolsas de los cobradores asignados a un delegado entre dos fechas, 
+        /// opcionalmente filtradas por cobrador
         /// </summary>
         /// <param name="fechaInicio">Fecha inicial en formato yyyy-MM-dd</param>
         /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
-        /// <returns>Lista de créditos en formato JSON</returns>
-        [HttpGet("delegado/creditos-rango")]
-        public IActionResult GetCreditosPorDelegadoRango([FromQuery] string fechaInicio, [FromQuery] string fechaFin)
+        /// <param name="cobradorId">Código del cobrador (opcional)</param>
+        /// <returns>Lista de entregas en formato JSON</returns>
+        [HttpGet("delegado/entregas-rango")]
+        public IActionResult GetEntregasPorDelegadoRango(
+            [FromQuery] string fechaInicio,
+            [FromQuery] string fechaFin,
+            [FromQuery] int? cobradorId = null)
         {
             try
             {
-                var resultado = _bolsaService.ObtenerCreditosPorDelegadoRango(fechaInicio, fechaFin);
+                var resultado = _bolsaService.ObtenerEntregasPorDelegadoRango(fechaInicio, fechaFin, cobradorId);
                 return new JsonResult(resultado);
             }
             catch (UnauthorizedAccessException ex)
@@ -404,22 +305,79 @@ namespace ApiEasyPay.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { mensaje = $"Error al obtener créditos por delegado en rango de fechas: {ex.Message}" });
+                return BadRequest(new { mensaje = $"Error al obtener entregas por delegado en rango de fechas: {ex.Message}" });
             }
         }
 
         /// <summary>
-        /// Obtiene los gastos de los cobradores asignados a un delegado específico en un rango de fechas
+        /// Obtiene los gastos de una bolsa específica para un cobrador
         /// </summary>
-        /// <param name="fechaInicio">Fecha inicial en formato yyyy-MM-dd</param>
-        /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
+        /// <param name="codBolsa">Código de la bolsa</param>
+        /// <param name="cobradorId">Código del cobrador</param>
         /// <returns>Lista de gastos en formato JSON</returns>
-        [HttpGet("delegado/gastos-rango")]
-        public IActionResult GetGastosPorDelegadoRango([FromQuery] string fechaInicio, [FromQuery] string fechaFin)
+        [HttpGet("{codBolsa}/gastos/{cobradorId}")]
+        public IActionResult GetGastosBolsa(int codBolsa, int cobradorId)
         {
             try
             {
-                var resultado = _bolsaService.ObtenerGastosPorDelegadoRango(fechaInicio, fechaFin);
+                var resultado = _bolsaService.ObtenerGastosBolsa(codBolsa, cobradorId);
+                return new JsonResult(resultado);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { mensaje = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = $"Error al obtener gastos de bolsa: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
+        /// Obtiene los gastos de una bolsa específica en un rango de fechas, opcionalmente filtrados por cobrador
+        /// </summary>
+        /// <param name="fechaInicio">Fecha inicial en formato yyyy-MM-dd</param>
+        /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
+        /// <param name="cobradorId">Código del cobrador (opcional)</param>
+        /// <returns>Lista de gastos en formato JSON</returns>
+        [HttpGet("gastos-rango")]
+        public IActionResult GetGastosBolsaRango(
+            [FromQuery] string fechaInicio,
+            [FromQuery] string fechaFin,
+            [FromQuery] int? cobradorId = null)
+        {
+            try
+            {
+                var resultado = _bolsaService.ObtenerGastosBolsaRango(fechaInicio, fechaFin, cobradorId);
+                return new JsonResult(resultado);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { mensaje = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = $"Error al obtener gastos de bolsa en rango de fechas: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
+        /// Obtiene los gastos de los cobradores asignados a un delegado específico en un rango de fechas,
+        /// opcionalmente filtrados por cobrador
+        /// </summary>
+        /// <param name="fechaInicio">Fecha inicial en formato yyyy-MM-dd</param>
+        /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
+        /// <param name="cobradorId">Código del cobrador (opcional)</param>
+        /// <returns>Lista de gastos en formato JSON</returns>
+        [HttpGet("delegado/gastos-rango")]
+        public IActionResult GetGastosPorDelegadoRango(
+            [FromQuery] string fechaInicio,
+            [FromQuery] string fechaFin,
+            [FromQuery] int? cobradorId = null)
+        {
+            try
+            {
+                var resultado = _bolsaService.ObtenerGastosPorDelegadoRango(fechaInicio, fechaFin, cobradorId);
                 return new JsonResult(resultado);
             }
             catch (UnauthorizedAccessException ex)
@@ -432,18 +390,18 @@ namespace ApiEasyPay.Controllers
             }
         }
 
+
         /// <summary>
-        /// Obtiene las entregas de los cobradores asignados a un delegado específico en un rango de fechas
+        /// Obtiene los créditos creados en una bolsa específica
         /// </summary>
-        /// <param name="fechaInicio">Fecha inicial en formato yyyy-MM-dd</param>
-        /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
-        /// <returns>Lista de entregas en formato JSON</returns>
-        [HttpGet("delegado/entregas-rango")]
-        public IActionResult GetEntregasPorDelegadoRango([FromQuery] string fechaInicio, [FromQuery] string fechaFin)
+        /// <param name="codBolsa">Código de la bolsa</param>
+        /// <returns>Lista de créditos en formato JSON</returns>
+        [HttpGet("{codBolsa}/creditos/{cobradorId}")]
+        public IActionResult GetCreditosBolsa(int codBolsa, int cobradorId)
         {
             try
             {
-                var resultado = _bolsaService.ObtenerEntregasPorDelegadoRango(fechaInicio, fechaFin);
+                var resultado = _bolsaService.ObtenerCreditosBolsa(codBolsa, cobradorId);
                 return new JsonResult(resultado);
             }
             catch (UnauthorizedAccessException ex)
@@ -452,9 +410,70 @@ namespace ApiEasyPay.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { mensaje = $"Error al obtener entregas por delegado en rango de fechas: {ex.Message}" });
+                return BadRequest(new { mensaje = $"Error al obtener créditos de bolsa: {ex.Message}" });
             }
         }
+
+        /// <summary>
+        /// Obtiene los créditos creados en un rango de fechas, opcionalmente filtrados por cobrador
+        /// </summary>
+        /// <param name="fechaInicio">Fecha inicial en formato yyyy-MM-dd</param>
+        /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
+        /// <param name="cobradorId">Código del cobrador (opcional)</param>
+        /// <returns>Lista de créditos en formato JSON</returns>
+        [HttpGet("creditos-rango")]
+        public IActionResult GetCreditosBolsaRango(
+            [FromQuery] string fechaInicio,
+            [FromQuery] string fechaFin,
+            [FromQuery] int? cobradorId = null)
+        {
+            try
+            {
+                var resultado = _bolsaService.ObtenerCreditosBolsaRango(fechaInicio, fechaFin, cobradorId);
+                return new JsonResult(resultado);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { mensaje = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = $"Error al obtener créditos en rango de fechas: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
+        /// Obtiene los créditos creados para los cobradores asignados a un delegado específico en un rango de fechas,
+        /// opcionalmente filtrados por cobrador
+        /// </summary>
+        /// <param name="fechaInicio">Fecha inicial en formato yyyy-MM-dd</param>
+        /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
+        /// <param name="cobradorId">Código del cobrador (opcional)</param>
+        /// <returns>Lista de créditos en formato JSON</returns>
+        [HttpGet("delegado/creditos-rango")]
+        public IActionResult GetCreditosPorDelegadoRango(
+            [FromQuery] string fechaInicio,
+            [FromQuery] string fechaFin,
+            [FromQuery] int? cobradorId = null)
+        {
+            try
+            {
+                var resultado = _bolsaService.ObtenerCreditosPorDelegadoRango(fechaInicio, fechaFin, cobradorId);
+                return new JsonResult(resultado);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { mensaje = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = $"Error al obtener créditos por delegado en rango de fechas: {ex.Message}" });
+            }
+        }
+
+
+
+
 
         /// <summary>
         /// Obtiene los pagos de una bolsa específica para un cobrador
@@ -481,17 +500,22 @@ namespace ApiEasyPay.Controllers
         }
 
         /// <summary>
-        /// Obtiene los pagos realizados en un rango de fechas para el jefe actual
+        /// Obtiene los pagos realizados en un rango de fechas para el jefe actual,
+        /// opcionalmente filtrados por cobrador
         /// </summary>
         /// <param name="fechaInicio">Fecha inicial en formato yyyy-MM-dd</param>
         /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
+        /// <param name="cobradorId">Código del cobrador (opcional)</param>
         /// <returns>Lista de pagos en formato JSON</returns>
         [HttpGet("pagos-rango")]
-        public IActionResult GetPagosRango([FromQuery] string fechaInicio, [FromQuery] string fechaFin)
+        public IActionResult GetPagosRango(
+            [FromQuery] string fechaInicio,
+            [FromQuery] string fechaFin,
+            [FromQuery] int? cobradorId = null)
         {
             try
             {
-                var resultado = _bolsaService.ObtenerPagosRango(fechaInicio, fechaFin);
+                var resultado = _bolsaService.ObtenerPagosRango(fechaInicio, fechaFin, cobradorId);
                 return new JsonResult(resultado);
             }
             catch (UnauthorizedAccessException ex)
@@ -504,18 +528,24 @@ namespace ApiEasyPay.Controllers
             }
         }
 
+
         /// <summary>
-        /// Obtiene los pagos realizados en un rango de fechas para los cobradores asignados a un delegado específico
+        /// Obtiene los pagos realizados en un rango de fechas para los cobradores asignados a un delegado específico,
+        /// opcionalmente filtrados por cobrador
         /// </summary>
         /// <param name="fechaInicio">Fecha inicial en formato yyyy-MM-dd</param>
         /// <param name="fechaFin">Fecha final en formato yyyy-MM-dd</param>
+        /// <param name="cobradorId">Código del cobrador (opcional)</param>
         /// <returns>Lista de pagos en formato JSON</returns>
         [HttpGet("delegado/pagos-rango")]
-        public IActionResult GetPagosPorDelegadoRango([FromQuery] string fechaInicio, [FromQuery] string fechaFin)
+        public IActionResult GetPagosPorDelegadoRango(
+            [FromQuery] string fechaInicio,
+            [FromQuery] string fechaFin,
+            [FromQuery] int? cobradorId = null)
         {
             try
             {
-                var resultado = _bolsaService.ObtenerPagosPorDelegadoRango(fechaInicio, fechaFin);
+                var resultado = _bolsaService.ObtenerPagosPorDelegadoRango(fechaInicio, fechaFin, cobradorId);
                 return new JsonResult(resultado);
             }
             catch (UnauthorizedAccessException ex)
@@ -528,30 +558,6 @@ namespace ApiEasyPay.Controllers
             }
         }
 
-        /// <summary>
-        /// Obtiene datos resumidos de bolsa para los cobradores de un delegado específico en la fecha indicada
-        /// </summary>
-        /// <param name="fecha">Fecha en formato yyyy-MM-dd (opcional)</param>
-        /// <returns>Datos de las bolsas en formato JSON</returns>
-        [HttpGet("delegado/datos")]
-        public IActionResult GetDatosBolsaPorDelegado([FromQuery] string fecha)
-        {
-            try
-            {
-                var resultado = _bolsaService.ObtenerDatosBolsaPorDelegado(fecha);
-                if (resultado == null)
-                    return NotFound(new { mensaje = "No se encontraron datos para el delegado y fecha especificados" });
 
-                return new JsonResult(resultado);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { mensaje = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { mensaje = $"Error al obtener datos de bolsa por delegado: {ex.Message}" });
-            }
-        }
     }
 }

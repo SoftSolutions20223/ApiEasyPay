@@ -176,6 +176,7 @@ namespace ApiEasyPay.Aplication.Services
                         {
                             // Actualizar los campos relevantes
                             sesionActual["Nombres"] = request.Nombres;
+                            sesionActual["Apellidos"] = request.Apellidos;
                             sesionActual["Usuario"] = request.Usuario;
                             sesionActual["Contraseña"] = request.Contraseña;
 
@@ -226,6 +227,36 @@ namespace ApiEasyPay.Aplication.Services
                 JArray resultado = JArray.Parse(jsonResult);
 
                 return (true, "Usuario encontrado", resultado);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Error al obtener usuario: {ex.Message}", null);
+            }
+        }
+
+        public async Task<(bool success, string message, JObject data)> ObtenerUsuarioByTokenAsync()
+        {
+            try
+            {
+                // Obtener la sesión del token actual
+                var sesion = ObtenerSesion();
+
+                // Crear un objeto SesionResponseDTO a partir de la sesión
+                var sesionResponse = new SesionResponseDTO
+                {
+                    Cod = sesion["Cod"]?.Value<int>() ?? 0,
+                    Nombres = sesion["Nombres"]?.ToString(),
+                    Apellidos = sesion["Apellidos"]?.ToString(),
+                    Usuario = sesion["Usuario"]?.ToString(),
+                    Contraseña = sesion["Contraseña"]?.ToString(),
+                    Token = sesion["Token"]?.ToString(),
+                    Rol = sesion["Rol"]?.ToString()
+                };
+
+                // Convertir el objeto SesionResponseDTO a JObject para devolverlo
+                var data = JObject.FromObject(sesionResponse);
+
+                return (true, "Usuario encontrado", data);
             }
             catch (Exception ex)
             {
@@ -381,6 +412,9 @@ namespace ApiEasyPay.Aplication.Services
                 if (existeCobrador == 0)
                     return (false, "El cobrador especificado no existe");
 
+                var cmdCobradorUser = new SqlCommand("SELECT Usuario FROM Cobrador WHERE Cod =" + cobradorId.ToString());
+                var Usuario = _conexionSql.TraerDato(cmdCobradorUser.CommandText, true).ToString();
+                await _conexionMongo.DeleteSessionAsyncByUsuario(Usuario);
                 // Iniciar una transacción para eliminar todas las referencias al cobrador
                 using (var connection = new SqlConnection(_conexionSql.BdCliente))
                 {

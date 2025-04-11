@@ -8,7 +8,7 @@ namespace ApiEasyPay.Domain.Model
         public string Nombres { get; set; }
         [MaxLength(200)]
         public string Apellidos { get; set; }
-        [MaxLength(20)]
+        [MaxLength(50)]
         public string Telefono { get; set; }
         [Required(AllowEmptyStrings = false)]
         [MaxLength(200)]

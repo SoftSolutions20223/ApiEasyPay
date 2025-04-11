@@ -1,32 +1,6 @@
 [
   {
     "ContainingType": "ApiEasyPay.Controllers.BolsasController",
-    "Method": "GetCreditosBolsaRango",
-    "RelativePath": "api/Bolsas/{codBolsa}/creditos-rango",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "fechaInicio",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "fechaFin",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "codBolsa",
-        "Type": "",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "ApiEasyPay.Controllers.BolsasController",
     "Method": "GetCreditosBolsa",
     "RelativePath": "api/Bolsas/{codBolsa}/creditos/{cobradorId}",
     "HttpMethod": "GET",
@@ -62,32 +36,6 @@
       {
         "Name": "cobradorId",
         "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "ApiEasyPay.Controllers.BolsasController",
-    "Method": "GetGastosBolsaRango",
-    "RelativePath": "api/Bolsas/{codBolsa}/gastos-rango",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "fechaInicio",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "fechaFin",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "codBolsa",
-        "Type": "",
         "IsRequired": true
       }
     ],
@@ -137,16 +85,6 @@
   },
   {
     "ContainingType": "ApiEasyPay.Controllers.BolsasController",
-    "Method": "GetBolsasAbiertas",
-    "RelativePath": "api/Bolsas/abiertas",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "ApiEasyPay.Controllers.BolsasController",
     "Method": "GetBolsasRango",
     "RelativePath": "api/Bolsas/bolsas-rango",
     "HttpMethod": "GET",
@@ -168,17 +106,49 @@
   },
   {
     "ContainingType": "ApiEasyPay.Controllers.BolsasController",
-    "Method": "GetBolsasCerradas",
-    "RelativePath": "api/Bolsas/cerradas",
+    "Method": "GetBolsasByFecha",
+    "RelativePath": "api/Bolsas/ByFecha",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
-    "Parameters": [],
+    "Parameters": [
+      {
+        "Name": "fecha",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
     "ReturnTypes": []
   },
   {
     "ContainingType": "ApiEasyPay.Controllers.BolsasController",
-    "Method": "GetDatosBolsa",
+    "Method": "GetCreditosBolsaRango",
+    "RelativePath": "api/Bolsas/creditos-rango",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "fechaInicio",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "fechaFin",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "cobradorId",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.BolsasController",
+    "Method": "GetDatosBolsaByFecha",
     "RelativePath": "api/Bolsas/datos",
     "HttpMethod": "GET",
     "IsController": true,
@@ -215,16 +185,6 @@
   },
   {
     "ContainingType": "ApiEasyPay.Controllers.BolsasController",
-    "Method": "GetBolsasAbiertasPorDelegado",
-    "RelativePath": "api/Bolsas/delegado/abiertas",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "ApiEasyPay.Controllers.BolsasController",
     "Method": "GetBolsasPorDelegadoRango",
     "RelativePath": "api/Bolsas/delegado/bolsas-rango",
     "HttpMethod": "GET",
@@ -246,12 +206,18 @@
   },
   {
     "ContainingType": "ApiEasyPay.Controllers.BolsasController",
-    "Method": "GetBolsasCerradasPorDelegado",
-    "RelativePath": "api/Bolsas/delegado/cerradas",
+    "Method": "GetBolsasByFechaDelegado",
+    "RelativePath": "api/Bolsas/delegado/ByFecha",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
-    "Parameters": [],
+    "Parameters": [
+      {
+        "Name": "fecha",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
     "ReturnTypes": []
   },
   {
@@ -271,13 +237,18 @@
         "Name": "fechaFin",
         "Type": "System.String",
         "IsRequired": false
+      },
+      {
+        "Name": "cobradorId",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []
   },
   {
     "ContainingType": "ApiEasyPay.Controllers.BolsasController",
-    "Method": "GetDatosBolsaPorDelegado",
+    "Method": "GetDatosBolsaByFechaPorDelegado",
     "RelativePath": "api/Bolsas/delegado/datos",
     "HttpMethod": "GET",
     "IsController": true,
@@ -329,6 +300,11 @@
         "Name": "fechaFin",
         "Type": "System.String",
         "IsRequired": false
+      },
+      {
+        "Name": "cobradorId",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []
@@ -349,6 +325,11 @@
       {
         "Name": "fechaFin",
         "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "cobradorId",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
         "IsRequired": false
       }
     ],
@@ -371,6 +352,11 @@
         "Name": "fechaFin",
         "Type": "System.String",
         "IsRequired": false
+      },
+      {
+        "Name": "cobradorId",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []
@@ -392,6 +378,37 @@
         "Name": "fechaFin",
         "Type": "System.String",
         "IsRequired": false
+      },
+      {
+        "Name": "cobradorId",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.BolsasController",
+    "Method": "GetGastosBolsaRango",
+    "RelativePath": "api/Bolsas/gastos-rango",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "fechaInicio",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "fechaFin",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "cobradorId",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []
@@ -412,6 +429,11 @@
       {
         "Name": "fechaFin",
         "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "cobradorId",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
         "IsRequired": false
       }
     ],
@@ -820,6 +842,16 @@
         "IsRequired": true
       }
     ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.UsuariosController",
+    "Method": "ObtenerUsuarioActual",
+    "RelativePath": "api/Usuarios/perfil",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
     "ReturnTypes": []
   },
   {

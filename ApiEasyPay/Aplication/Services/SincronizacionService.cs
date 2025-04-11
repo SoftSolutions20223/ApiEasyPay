@@ -84,11 +84,17 @@ namespace ApiEasyPay.Aplication.Services
         /// </summary>
         public async Task<(bool success, string message, JArray data)> SincronizarDatosMasivoAsync(SincronizacionMasivaRequestDTO request)
         {
+            string datosJson = null;
             try
             {
+                // Guardar los datos originales para registro
+                datosJson = request.DatosMasivos?.ToString(Newtonsoft.Json.Formatting.None);
+
                 // Validar entrada
                 if (string.IsNullOrEmpty(request.Tabla) || request.DatosMasivos == null || request.DatosMasivos.Count == 0)
                 {
+                    // Registrar sincronización fallida
+                    RegistrarSincronizacion(request.Tabla, datosJson, "Error", "No Sincronizado", "Validación fallida: Debe proporcionar el nombre de la tabla y al menos un registro a sincronizar");
                     return (false, "Debe proporcionar el nombre de la tabla y al menos un registro a sincronizar", null);
                 }
 
@@ -154,6 +160,7 @@ namespace ApiEasyPay.Aplication.Services
                 // Continuar solo si hay registros para el upsert
                 if (registrosParaUpsert.Count == 0)
                 {
+                    RegistrarSincronizacion(request.Tabla, datosJson, "Éxito", "Sincronizado", "Solo eliminaciones");
                     return (true, $"Datos procesados correctamente. Se eliminaron {eliminados.Count} registros. No hay registros para actualizar.", new JArray());
                 }
 
@@ -161,6 +168,7 @@ namespace ApiEasyPay.Aplication.Services
                 Type modelType = GetModelTypeForTable(request.Tabla);
                 if (modelType == null)
                 {
+                    RegistrarSincronizacion(request.Tabla, datosJson, "Error", "No Sincronizado", "Modelo no encontrado");
                     return (false, $"No se encontró un modelo que corresponda a la tabla {request.Tabla}", null);
                 }
 
@@ -170,6 +178,7 @@ namespace ApiEasyPay.Aplication.Services
                 // Verificamos si hay errores de validación
                 if (_jsonDeserializer.Errors.Count > 0)
                 {
+                    RegistrarSincronizacion(request.Tabla, datosJson, "Error", "No Sincronizado", "Validación de datos :"+_jsonDeserializer.Errors.ToString() );
                     return (false, $"Error de validación en los datos: {_jsonDeserializer.Errors.ToString()}", null);
                 }
 
@@ -184,6 +193,7 @@ namespace ApiEasyPay.Aplication.Services
 
                     // Si todo está correcto, llamamos al procedimiento DynamicUpsertJson
                     var comando = new SqlCommand("DynamicUpsertJson");
+                    var strcomand = datosSerializados.ToString();
                     comando.CommandType = CommandType.StoredProcedure;
                     comando.Parameters.AddWithValue("@json", datosSerializados.ToString());
                     comando.Parameters.AddWithValue("@tabla", request.Tabla);
@@ -196,8 +206,18 @@ namespace ApiEasyPay.Aplication.Services
 
                     JArray resultado = _conexionSql.SqlJsonCommandArray(false, comando);
 
-                    // Agregar información sobre los registros eliminados a la respuesta
-                    var respuesta = new JObject();
+                    // Registrar el resultado de la sincronización
+                    if(resultado.ToString().Contains("MensajeError")) {
+                        RegistrarSincronizacion(request.Tabla, datosJson, "Error", "No Sincronizado", resultado.ToString());
+                    }
+                    else
+                    {
+                        RegistrarSincronizacion(request.Tabla, datosJson, "Completa", "Sincronizado", resultado.ToString());
+                    }
+
+
+                        // Agregar información sobre los registros eliminados a la respuesta
+                        var respuesta = new JObject();
                     respuesta["Resultado"] = resultado;
                     respuesta["EliminadosCount"] = eliminados.Count;
 
@@ -206,12 +226,56 @@ namespace ApiEasyPay.Aplication.Services
                 }
                 else
                 {
+                    RegistrarSincronizacion(request.Tabla, datosJson, "Error", "No Sincronizado", "Tipo de lista incompatible");
                     return (false, "Error al procesar la lista de objetos", null);
                 }
             }
             catch (Exception ex)
             {
+                // Registrar la excepción
+                RegistrarSincronizacion(request.Tabla, datosJson, "Error","No Sincronizado", "Excepción: " + ex.Message);
                 return (false, $"Error al sincronizar datos masivos: {ex.Message}", null);
+            }
+        }
+
+        /// <summary>
+        /// Registra una operación de sincronización en la tabla Sincronizaciones
+        /// </summary>
+        /// <param name="tabla">Nombre de la tabla sincronizada</param>
+        /// <param name="datos">Datos JSON enviados en la sincronización</param>
+        /// <param name="respuesta">Resultado de la sincronización (Éxito/Error)</param>
+        /// <param name="estado">Estado detallado de la sincronización</param>
+        private void RegistrarSincronizacion(string tabla, string datos, string respuesta, string estado,string Mensaje)
+        {
+            try
+            {
+                // Limitar el tamaño de los datos a guardar si es demasiado grande
+                const int maxLongitudDatos = 8000; // Ajustar según sea necesario
+                string datosLimitados = datos;
+                if (!string.IsNullOrEmpty(datos) && datos.Length > maxLongitudDatos)
+                {
+                    datosLimitados = datos.Substring(0, maxLongitudDatos) + "...";
+                }
+
+                // Escapar comillas simples en los datos y otros campos
+                datosLimitados = datosLimitados?.Replace("'", "''");
+                string tablaEscapada = (tabla ?? "Desconocida").Replace("'", "''");
+                string respuestaEscapada = respuesta?.Replace("'", "''");
+                string estadoEscapado = estado?.Replace("'", "''");
+
+                // Crear el comando SQL concatenando los valores directamente
+                string sqlQuery = $@"
+            INSERT INTO Sincronizaciones (Tabla, Datos, Respuesta, Sincronizado, Fecha,Mensaje)
+            VALUES ('{tablaEscapada}', '{datosLimitados}', '{respuestaEscapada}', '{estadoEscapado}', GETDATE(),'{Mensaje}')";
+
+                // Ejecutar el comando SQL
+                _conexionSql.SqlQueryGestion(sqlQuery, false);
+            }
+            catch (Exception ex)
+            {
+                // Solo registrar el error, no queremos que un fallo en el registro
+                // afecte el flujo principal de la sincronización
+                Console.WriteLine($"Error al registrar sincronización: {ex.Message}");
             }
         }
 

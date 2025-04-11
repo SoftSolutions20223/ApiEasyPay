@@ -128,6 +128,16 @@ namespace ApiEasyPay.Databases.Connections
         }
 
         /// <summary>
+        /// Elimina una sesión a partir del usuario.
+        /// </summary>
+        /// <param name="usuario">El usuario de la sesión a eliminar.</param>
+        public async Task DeleteSessionAsyncByUsuario(string usuario)
+        {
+            var filter = Builders<BsonDocument>.Filter.Eq("Usuario", usuario);
+            await _sessionCollection.DeleteOneAsync(filter);
+        }
+
+        /// <summary>
         /// Recupera todas las sesiones almacenadas, devolviéndolas como una lista de JObject.
         /// </summary>
         public async Task<List<JObject>> GetAllSessionsAsync()
