@@ -138,6 +138,8 @@ namespace ApiEasyPay.Aplication.Services
             SUM(CASE WHEN CR.Estado = 'T' THEN CR.Total ELSE 0 END) AS TotalPrestadoT,
             SUM(CASE WHEN CR.Estado = 'T' THEN CR.TotalPagado ELSE 0 END) AS TotalPagadoT,
             SUM(CASE WHEN CR.Estado = 'T' THEN CR.TotalPagar ELSE 0 END) AS TotalPagarT,
+            0 AS CarteraEsperada,
+            0 AS Cartera,
             SUM(CASE WHEN CR.Estado = 'T' THEN CR.TotalPagar - CR.TotalPagado ELSE 0 END) AS SaldoPrestadoT
         FROM Cobrador C
         INNER JOIN Delegados_Cobradores DC ON C.Cod = DC.Cobrador
@@ -171,10 +173,12 @@ namespace ApiEasyPay.Aplication.Services
                     SUM(CASE WHEN CR.Estado = 'T' THEN CR.Total ELSE 0 END) AS TotalPrestadoT,
                     SUM(CASE WHEN CR.Estado = 'T' THEN CR.TotalPagado ELSE 0 END) AS TotalPagadoT,
                     SUM(CASE WHEN CR.Estado = 'T' THEN CR.TotalPagar ELSE 0 END) AS TotalPagarT,
+                    0 AS CarteraEsperada,
+                    0 AS Cartera,
                     SUM(CASE WHEN CR.Estado = 'T' THEN CR.TotalPagar - CR.TotalPagado ELSE 0 END) AS SaldoPrestadoT
                 FROM Cobrador C
                 LEFT JOIN Creditos CR ON C.Cod = CR.Cobrador
-                WHERE C.Jefe = "+_jefeId+@"
+                WHERE C.Jefe = " + _jefeId+@"
                 GROUP BY C.Cod, C.Nombres, C.Apellidos for json path");
             string jsonResult = _conexionSql.SqlJsonComand(false, comando);
             JArray resultado = JArray.Parse(jsonResult);
@@ -347,14 +351,14 @@ namespace ApiEasyPay.Aplication.Services
             ValidarCobradorPerteneciente(cobradorId);
 
             var comando = new SqlCommand(@"
-                SELECT 
-                    RD.*,
-                    B.Estado AS EstadoBolsa,
-                    CONVERT(VARCHAR(10), RD.Fecha, 103) AS FechaFormateada
-                FROM RegDiarioCuotas RD
-                INNER JOIN Bolsa B ON RD.Bolsa = B.Cod
-                WHERE RD.Credito = "+creditoId.ToString()+" AND RD.Cobrador = "+cobradorId.ToString()+@"
-                ORDER BY RD.Fecha DESC for json path");
+    SELECT 
+        RD.*,
+        B.Estado AS EstadoBolsa,
+        CONVERT(VARCHAR(10), RD.Fecha, 103) AS FechaFormateada
+    FROM RegDiarioCuotas RD
+    INNER JOIN Bolsa B ON RD.Bolsa = B.Cod AND RD.Cobrador = B.Cobrador
+    WHERE RD.Credito = " + creditoId.ToString() + " AND RD.Cobrador = " + cobradorId.ToString() + @"
+    ORDER BY RD.Fecha DESC for json path");
 
 
             string jsonResult = _conexionSql.SqlJsonComand(false, comando);
