@@ -1,0 +1,1618 @@
+﻿USE [SysEasyPayV4]
+GO
+/****** Object:  Table [dbo].[Amortizaciones]    Script Date: 4/12/2025 5:30:49 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Amortizaciones](
+	[Cod] [numeric](18, 0) NOT NULL,
+	[Fecha] [date] NULL,
+	[ValorCuota] [money] NULL,
+	[Credito] [numeric](18, 0) NOT NULL,
+	[Bolsa] [numeric](18, 0) NOT NULL,
+	[FechaCuota] [date] NULL,
+	[TotalPagar] [money] NULL,
+	[NumCuotas] [numeric](18, 0) NULL,
+	[Cobrador] [numeric](18, 0) NOT NULL,
+	[FechaActualizacion] [datetime] NULL,
+ CONSTRAINT [PK_Amortizaciones] PRIMARY KEY CLUSTERED 
+(
+	[Cobrador] ASC,
+	[Bolsa] DESC,
+	[Credito] DESC,
+	[Cod] DESC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+ CONSTRAINT [UQ_Amortizaciones_Cod_Cobrador] UNIQUE NONCLUSTERED 
+(
+	[Cod] ASC,
+	[Cobrador] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Bolsa]    Script Date: 4/12/2025 5:30:49 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Bolsa](
+	[Cod] [numeric](18, 0) NOT NULL,
+	[SaldoActual] [money] NULL,
+	[Estado] [varchar](10) NULL,
+	[FechaInicio] [date] NOT NULL,
+	[FechaFin] [date] NULL,
+	[Cobrador] [numeric](18, 0) NOT NULL,
+	[TotalCobrado] [money] NULL,
+	[TotalGastos] [money] NULL,
+	[TotalPrestado] [money] NULL,
+	[TotalEntregas] [money] NULL,
+	[TotalCobradoCUO] [money] NULL,
+	[TotalCobradoEXT] [money] NULL,
+	[TotalCobradoDEU] [money] NULL,
+	[FechaActualizacion] [datetime] NULL,
+ CONSTRAINT [PK_Bolsa] PRIMARY KEY CLUSTERED 
+(
+	[Cobrador] ASC,
+	[FechaInicio] DESC,
+	[Cod] DESC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+ CONSTRAINT [UQ_Bolsa_Cod_Cobrador] UNIQUE NONCLUSTERED 
+(
+	[Cod] ASC,
+	[Cobrador] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Clientes]    Script Date: 4/12/2025 5:30:49 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Clientes](
+	[Nombres] [varchar](200) NULL,
+	[Apellidos] [varchar](200) NULL,
+	[Telefono] [varchar](50) NULL,
+	[Documento] [varchar](200) NOT NULL,
+	[Direccion] [varchar](200) NULL,
+	[Cod] [numeric](18, 0) NOT NULL,
+	[Estado] [bit] NULL,
+	[Correo] [varchar](200) NULL,
+	[Estatus] [smallint] NULL,
+	[Cobrador] [numeric](18, 0) NOT NULL,
+	[FechaActualizacion] [datetime] NULL,
+	[Lat] [varchar](max) NULL,
+	[Long] [varchar](max) NULL,
+ CONSTRAINT [PK_Clientes] PRIMARY KEY CLUSTERED 
+(
+	[Cobrador] ASC,
+	[Cod] DESC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+ CONSTRAINT [IX_Clientes] UNIQUE NONCLUSTERED 
+(
+	[Cobrador] ASC,
+	[Documento] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+ CONSTRAINT [UQ_Clientes_Cod_Cobrador] UNIQUE NONCLUSTERED 
+(
+	[Cod] ASC,
+	[Cobrador] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Cobrador]    Script Date: 4/12/2025 5:30:49 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Cobrador](
+	[Nombres] [varchar](200) NULL,
+	[Apellidos] [varchar](200) NULL,
+	[Telefono] [varchar](20) NULL,
+	[Documento] [varchar](20) NULL,
+	[Direccion] [varchar](20) NULL,
+	[Contraseña] [varchar](200) NULL,
+	[Cod] [numeric](18, 0) NOT NULL,
+	[Usuario] [varchar](200) NULL,
+	[Estado] [bit] NULL,
+	[Jefe] [numeric](18, 0) NOT NULL,
+	[FechaActualizacion] [datetime] NULL,
+ CONSTRAINT [PK_Cobrador] PRIMARY KEY CLUSTERED 
+(
+	[Jefe] ASC,
+	[Cod] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Creditos]    Script Date: 4/12/2025 5:30:49 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Creditos](
+	[Cod] [numeric](18, 0) NOT NULL,
+	[FechaInicio] [date] NOT NULL,
+	[PorceInteres] [money] NULL,
+	[Total] [money] NULL,
+	[TotalPagar] [money] NULL,
+	[TotalPagado] [money] NULL,
+	[ValorCuota] [money] NULL,
+	[NumeroDeCuotas] [numeric](18, 0) NULL,
+	[CuotaActual] [numeric](18, 0) NULL,
+	[Cliente] [numeric](18, 0) NOT NULL,
+	[Estado] [varchar](10) NOT NULL,
+	[Cobrador] [numeric](18, 0) NOT NULL,
+	[FechaRegistro] [date] NULL,
+	[DebeTerminar] [bit] NULL,
+	[FechaFin] [date] NULL,
+	[Descripcion] [varchar](1000) NULL,
+	[TipoCredito] [varchar](10) NULL,
+	[TotalPagExtOfi] [money] NULL,
+	[ProximoPago] [date] NULL,
+	[FrecuenciaPago] [numeric](18, 0) NULL,
+	[OrdenRuta] [numeric](18, 0) NULL,
+	[Amortizacion] [date] NULL,
+	[SaldoCuotas] [money] NULL,
+	[FechaActualizacion] [datetime] NULL,
+ CONSTRAINT [PK_Creditos] PRIMARY KEY NONCLUSTERED 
+(
+	[Cobrador] ASC,
+	[FechaInicio] DESC,
+	[Estado] DESC,
+	[Cod] DESC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+ CONSTRAINT [UQ_Creditos_Cod_Cobrador] UNIQUE NONCLUSTERED 
+(
+	[Cod] ASC,
+	[Cobrador] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Cuotas]    Script Date: 4/12/2025 5:30:49 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Cuotas](
+	[Cod] [numeric](18, 0) NOT NULL,
+	[Fecha] [date] NULL,
+	[Valor] [money] NULL,
+	[ValorPagado] [money] NULL,
+	[Debe] [money] NULL,
+	[NomCuota] [varchar](100) NULL,
+	[NumCuota] [numeric](18, 0) NOT NULL,
+	[Estado] [varchar](10) NULL,
+	[Credito] [numeric](18, 0) NOT NULL,
+	[Visitado] [bit] NULL,
+	[Cobrador] [numeric](18, 0) NOT NULL,
+	[FechaActualizacion] [datetime] NULL,
+ CONSTRAINT [PK_Cuotas] PRIMARY KEY CLUSTERED 
+(
+	[Cobrador] ASC,
+	[Credito] DESC,
+	[NumCuota] ASC,
+	[Cod] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+ CONSTRAINT [UQ_Cuotas_Cod_Cobrador] UNIQUE NONCLUSTERED 
+(
+	[Cod] ASC,
+	[Cobrador] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Delegado]    Script Date: 4/12/2025 5:30:49 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Delegado](
+	[Nombres] [varchar](200) NULL,
+	[Apellidos] [varchar](200) NULL,
+	[Telefono] [varchar](20) NULL,
+	[Documento] [varchar](20) NULL,
+	[Direccion] [varchar](20) NULL,
+	[Contraseña] [varchar](200) NULL,
+	[Cod] [numeric](18, 0) NOT NULL,
+	[Usuario] [varchar](200) NULL,
+	[Estado] [bit] NULL,
+	[Jefe] [numeric](18, 0) NOT NULL,
+	[FechaActualizacion] [datetime] NULL,
+ CONSTRAINT [PK_Delegado] PRIMARY KEY CLUSTERED 
+(
+	[Jefe] ASC,
+	[Cod] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Delegados_Cobradores]    Script Date: 4/12/2025 5:30:49 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Delegados_Cobradores](
+	[Cod] [numeric](18, 0) NULL,
+	[Cobrador] [numeric](18, 0) NOT NULL,
+	[Delegado] [numeric](18, 0) NOT NULL,
+ CONSTRAINT [PK_Delegados_Cobradores] PRIMARY KEY CLUSTERED 
+(
+	[Delegado] ASC,
+	[Cobrador] DESC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[FondoInversion]    Script Date: 4/12/2025 5:30:49 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[FondoInversion](
+	[Cod] [numeric](18, 0) NOT NULL,
+	[Monto] [money] NULL,
+	[Jefe] [numeric](18, 0) NOT NULL,
+	[FechaActualizacion] [datetime] NULL,
+ CONSTRAINT [PK_FondoInversion] PRIMARY KEY CLUSTERED 
+(
+	[Cod] DESC,
+	[Jefe] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[HistorialSaldos]    Script Date: 4/12/2025 5:30:49 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[HistorialSaldos](
+	[Cod] [numeric](18, 0) NOT NULL,
+	[Descripcion] [varchar](2000) NULL,
+	[Cobrador] [numeric](18, 0) NOT NULL,
+	[Fecha] [datetime] NULL,
+	[FechaActualizacion] [datetime] NULL,
+ CONSTRAINT [PK_HistorialSaldos] PRIMARY KEY CLUSTERED 
+(
+	[Cobrador] ASC,
+	[Cod] DESC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+ CONSTRAINT [UQ_HistorialSaldos_Cod_Cobrador] UNIQUE NONCLUSTERED 
+(
+	[Cod] ASC,
+	[Cobrador] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Jefes]    Script Date: 4/12/2025 5:30:49 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Jefes](
+	[Nombres] [varchar](200) NULL,
+	[Apellidos] [varchar](200) NULL,
+	[Telefono] [varchar](20) NULL,
+	[Documento] [varchar](20) NULL,
+	[Direccion] [varchar](20) NULL,
+	[Contraseña] [varchar](200) NULL,
+	[Cod] [numeric](18, 0) NOT NULL,
+	[Correo] [varchar](200) NULL,
+	[Usuario] [varchar](200) NULL,
+	[DiasRestantes] [numeric](18, 0) NULL,
+	[FechaLimite] [date] NULL,
+	[NumeroCobradores] [numeric](18, 0) NULL,
+	[Domingos] [bit] NULL,
+	[FechaActualizacion] [datetime] NULL,
+ CONSTRAINT [PK_Jefes] PRIMARY KEY CLUSTERED 
+(
+	[Cod] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[MovFondos]    Script Date: 4/12/2025 5:30:49 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[MovFondos](
+	[Cod] [numeric](18, 0) NOT NULL,
+	[FondoInversion] [numeric](18, 0) NOT NULL,
+	[Valor] [money] NULL,
+	[Tipo] [bit] NULL,
+	[Descripcion] [varchar](1000) NULL,
+	[Fecha] [date] NOT NULL,
+	[FechaActualizacion] [datetime] NULL,
+ CONSTRAINT [PK_MovFondos] PRIMARY KEY CLUSTERED 
+(
+	[FondoInversion] ASC,
+	[Fecha] DESC,
+	[Cod] DESC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[RegDiarioCuotas]    Script Date: 4/12/2025 5:30:49 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[RegDiarioCuotas](
+	[Fecha] [date] NOT NULL,
+	[Credito] [numeric](18, 0) NOT NULL,
+	[Cod] [numeric](18, 0) NOT NULL,
+	[Visitado] [bit] NULL,
+	[Valor] [money] NULL,
+	[Bolsa] [numeric](18, 0) NOT NULL,
+	[Descripcion] [varchar](50) NOT NULL,
+	[Cobrador] [numeric](18, 0) NOT NULL,
+	[FechaActualizacion] [datetime] NULL,
+	[Lat] [varchar](max) NULL,
+	[Long] [varchar](max) NULL,
+ CONSTRAINT [PK_RegDiarioCuotas_1] PRIMARY KEY CLUSTERED 
+(
+	[Cobrador] ASC,
+	[Fecha] DESC,
+	[Credito] DESC,
+	[Bolsa] DESC,
+	[Cod] DESC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+ CONSTRAINT [UQ_RegDiarioCuotas_Cod_Cobrador] UNIQUE NONCLUSTERED 
+(
+	[Cod] ASC,
+	[Cobrador] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Sincronizaciones]    Script Date: 4/12/2025 5:30:49 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Sincronizaciones](
+	[Tabla] [varchar](50) NULL,
+	[Datos] [nvarchar](max) NULL,
+	[Respuesta] [nvarchar](20) NULL,
+	[Sincronizado] [varchar](50) NULL,
+	[Fecha] [datetime] NULL,
+	[Mensaje] [nvarchar](max) NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Statuss]    Script Date: 4/12/2025 5:30:49 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Statuss](
+	[Puntuacion] [numeric](18, 0) NULL,
+	[Credito] [numeric](18, 0) NULL,
+	[Cliente] [numeric](18, 0) NULL,
+	[Cod] [numeric](18, 0) NOT NULL,
+	[FechaActualizacion] [datetime] NULL
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[ValoresBolsa]    Script Date: 4/12/2025 5:30:49 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[ValoresBolsa](
+	[Credito] [numeric](18, 0) NULL,
+	[Entregas] [varchar](2000) NULL,
+	[Valor] [money] NULL,
+	[Bolsa] [numeric](18, 0) NOT NULL,
+	[Cod] [numeric](18, 0) NOT NULL,
+	[Gasto] [varchar](2000) NULL,
+	[Fecha] [date] NOT NULL,
+	[Cobrador] [numeric](18, 0) NOT NULL,
+	[FechaActualizacion] [datetime] NULL,
+ CONSTRAINT [PK_ValoresBolsa] PRIMARY KEY CLUSTERED 
+(
+	[Cobrador] ASC,
+	[Bolsa] DESC,
+	[Fecha] DESC,
+	[Cod] DESC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+ CONSTRAINT [UQ_ValoresBolsa_Cod_Cobrador] UNIQUE NONCLUSTERED 
+(
+	[Cod] ASC,
+	[Cobrador] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[ViewCobros]    Script Date: 4/12/2025 5:30:49 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[ViewCobros](
+	[Cod] [numeric](18, 0) NOT NULL,
+	[Credito] [numeric](18, 0) NOT NULL,
+	[ValorPagadoCuotas] [money] NULL,
+	[ValorPagadoDeduda] [money] NULL,
+	[ValorPagadoExtra] [money] NULL,
+	[Visitado] [bit] NULL,
+	[Fecha] [date] NOT NULL,
+	[Cobrador] [numeric](18, 0) NOT NULL,
+	[FechaActualizacion] [datetime] NULL,
+ CONSTRAINT [PK_ViewCobros] PRIMARY KEY CLUSTERED 
+(
+	[Cobrador] ASC,
+	[Fecha] DESC,
+	[Credito] DESC,
+	[Cod] DESC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+ CONSTRAINT [UQ_ViewCobros_Cod_Cobrador] UNIQUE NONCLUSTERED 
+(
+	[Cod] ASC,
+	[Cobrador] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+ALTER TABLE [dbo].[Creditos] ADD  CONSTRAINT [DF_Creditos_OrdenRuta]  DEFAULT ((1)) FOR [OrdenRuta]
+GO
+ALTER TABLE [dbo].[Jefes] ADD  CONSTRAINT [DF_Jefes_Domingos]  DEFAULT ((0)) FOR [Domingos]
+GO
+/****** Object:  StoredProcedure [dbo].[DynamicUpsertJson]    Script Date: 4/12/2025 5:30:49 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE   PROCEDURE [dbo].[DynamicUpsertJson]
+    @json NVARCHAR(MAX),
+    @tabla NVARCHAR(128),
+    @modoEstricto BIT = 1,
+    @procesarPorLotes BIT = 1,
+    @tamanoLote INT = 100,
+    @timeoutSeconds INT = 300,
+    @maxReintentos INT = 3,
+    @registrarLog BIT = 0
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+    SET DEADLOCK_PRIORITY LOW;
+    
+    -- Variables de control
+    DECLARE @RequestID UNIQUEIDENTIFIER = NEWID();
+    DECLARE @StartTime DATETIME2 = SYSUTCDATETIME();
+    DECLARE @ProcessedCount INT = 0;
+    DECLARE @TableName NVARCHAR(128);
+    DECLARE @SQL NVARCHAR(MAX);
+    DECLARE @ParmDefinition NVARCHAR(MAX);
+    DECLARE @ErrorMsg NVARCHAR(4000);
+    DECLARE @ErrorSeverity INT;
+    DECLARE @ErrorState INT;
+    DECLARE @ErrorNumber INT;
+    DECLARE @intentos INT = 0;
+    DECLARE @ExternalTran BIT = (CASE WHEN @@TRANCOUNT > 0 THEN 1 ELSE 0 END);
+    declare @filasjson as varchar(max)
+	declare @filasnew as varchar(max)
+	declare @filas#Errors as varchar(max)
+	declare @filas#Existing as varchar(max)
+	declare @columnas as varchar(max)
+	set dateformat dmy
+
+    -- Configurar timeout para bloqueos con protección contra desbordamiento
+    DECLARE @LockTimeoutMs INT;
+    IF @timeoutSeconds <= 214 -- Máximo seguro para evitar desbordamiento
+        SET @LockTimeoutMs = @timeoutSeconds * 1000;
+    ELSE
+        SET @LockTimeoutMs = 214748364; -- Valor máximo permitido
+
+    SET @SQL = N'SET LOCK_TIMEOUT ' + CAST(@LockTimeoutMs AS VARCHAR(20));
+    EXEC sp_executesql @SQL;
+    
+    -- Validación y ajuste de parámetros
+    SET @tamanoLote = CASE 
+        WHEN @tamanoLote < 10 THEN 10
+        WHEN @tamanoLote > 5000 THEN 5000
+        ELSE @tamanoLote
+    END;
+    
+    SET @timeoutSeconds = CASE WHEN @timeoutSeconds <= 0 THEN 300 ELSE @timeoutSeconds END;
+    SET @maxReintentos = CASE WHEN @maxReintentos <= 0 THEN 3 ELSE @maxReintentos END;
+    
+    -- Tabla para errores
+    CREATE TABLE #Errors (
+        ErrorId INT IDENTITY(1,1),
+        RowId INT, 
+        ErrorCode INT, 
+        Field NVARCHAR(128), 
+        ErrorMessage NVARCHAR(MAX),
+        JsonData NVARCHAR(MAX)
+    );
+    
+    -- Índice para mejorar rendimiento en validaciones
+    CREATE NONCLUSTERED INDEX IX_Errors_RowId ON #Errors(RowId);
+    
+    -- Tabla para resultados
+    CREATE TABLE #Results (
+        ResultId INT IDENTITY(1,1),
+        RowId INT, 
+        Operation NVARCHAR(10), 
+        Success BIT, 
+        Cod NUMERIC(18,0),
+        Cobrador NUMERIC(18,0),
+        RequestTimeUTC DATETIME2,
+        Data NVARCHAR(MAX)
+    );
+    
+    -- Validar JSON y tabla usando funciones y parámetros para evitar inyección SQL
+    IF @json IS NULL OR LEN(@json) = 0 
+    BEGIN
+        INSERT INTO #Errors(RowId, ErrorCode, Field, ErrorMessage)
+        VALUES(NULL, 1000, NULL, 'JSON vacío o NULL');
+        GOTO ReturnResults;
+    END
+    
+    IF ISJSON(@json) = 0
+    BEGIN
+        INSERT INTO #Errors(RowId, ErrorCode, Field, ErrorMessage)
+        VALUES(NULL, 1001, NULL, 'Formato JSON inválido');
+        GOTO ReturnResults;
+    END
+    
+    -- Validación de seguridad para el nombre de tabla
+    IF @tabla IS NULL OR LEN(@tabla) = 0 
+       OR PATINDEX('%[^a-zA-Z0-9_]%', @tabla COLLATE DATABASE_DEFAULT) > 0 
+       OR EXISTS (
+          SELECT 1 FROM sys.objects 
+          WHERE name = @tabla COLLATE DATABASE_DEFAULT AND type IN ('S', 'IT', 'SQ', 'U')
+            AND SCHEMA_NAME(schema_id) NOT IN ('dbo', 'app')
+       )
+    BEGIN
+        INSERT INTO #Errors(RowId, ErrorCode, Field, ErrorMessage)
+        VALUES(NULL, 1002, NULL, 'Nombre de tabla inválido o no permitido');
+        GOTO ReturnResults;
+    END
+    
+    -- Usar sp_executesql para proteger contra inyección SQL
+    SET @TableName = QUOTENAME(@tabla);
+    
+    -- Verificar existencia de tabla
+    SET @SQL = N'SELECT @ExistsOut = CASE WHEN OBJECT_ID(@TableParam) IS NULL THEN 0 ELSE 1 END';
+    DECLARE @TableExists BIT;
+    EXEC sp_executesql @SQL, 
+         N'@TableParam NVARCHAR(128), @ExistsOut BIT OUTPUT', 
+         @tabla, @TableExists OUTPUT;
+         
+    IF @TableExists = 0
+    BEGIN
+        INSERT INTO #Errors(RowId, ErrorCode, Field, ErrorMessage)
+        VALUES(NULL, 1003, NULL, 'La tabla especificada no existe');
+        GOTO ReturnResults;
+    END
+    
+    -- Verificar estructura de tabla requerida
+    BEGIN TRY
+        DECLARE @RequeridosCheck TABLE (ColumnCount INT, RequiredCount INT);
+        
+        SET @SQL = N'
+        SELECT COUNT(*) AS ColumnCount,
+               SUM(CASE WHEN c.name IN (''Cod'', ''Cobrador'', ''FechaActualizacion'') THEN 1 ELSE 0 END) AS RequiredCount
+        FROM sys.columns c
+        WHERE c.object_id = OBJECT_ID(@tabla)';
+        
+        SET @ParmDefinition = N'@tabla NVARCHAR(128)';
+        
+        INSERT INTO @RequeridosCheck
+        EXEC sp_executesql @SQL, @ParmDefinition, @tabla;
+        
+        IF NOT EXISTS (SELECT 1 FROM @RequeridosCheck WHERE RequiredCount = 3)
+        BEGIN
+            INSERT INTO #Errors(RowId, ErrorCode, Field, ErrorMessage)
+            VALUES(NULL, 1004, NULL, 'La tabla debe tener columnas Cod, Cobrador y FechaActualizacion');
+            GOTO ReturnResults;
+        END
+    END TRY
+    BEGIN CATCH
+        INSERT INTO #Errors(RowId, ErrorCode, Field, ErrorMessage)
+        VALUES(NULL, 1005, NULL, 'Error al verificar estructura: ' + ERROR_MESSAGE());
+        GOTO ReturnResults;
+    END CATCH
+    
+-- 1. Crear la tabla #Columns con todos los campos necesarios
+CREATE TABLE #Columns (
+    ColumnId INT IDENTITY(1,1),
+    ColumnName SYSNAME,
+    DataType SYSNAME,
+    IsNullable BIT,
+    MaxLength INT,
+    Precision INT,
+    Scale INT,
+    DefaultValue NVARCHAR(MAX),
+    TypeCategory VARCHAR(20),
+    IsIdentity BIT,
+    IsComputed BIT, 
+    IsPrimaryKey BIT, 
+    ColumnNameUpper SYSNAME NULL  -- Asegúrate que esté definido como NULL
+);
+
+-- 2. Ejecutar el INSERT inicial
+SET @SQL = N'
+INSERT INTO #Columns (ColumnName, DataType, IsNullable, MaxLength, Precision, Scale, DefaultValue, IsIdentity, IsComputed, IsPrimaryKey)
+SELECT 
+    c.name,
+    t.name,
+    c.is_nullable,
+    c.max_length,
+    c.precision,
+    c.scale,
+    ISNULL(dc.definition, N''''),
+    c.is_identity,
+    c.is_computed,
+    CASE WHEN i.is_primary_key = 1 THEN 1 ELSE 0 END
+FROM sys.columns c
+JOIN sys.types t ON c.user_type_id = t.user_type_id
+LEFT JOIN sys.default_constraints dc ON c.default_object_id = dc.object_id
+LEFT JOIN sys.index_columns ic ON ic.object_id = c.object_id AND ic.column_id = c.column_id
+LEFT JOIN sys.indexes i ON i.object_id = ic.object_id AND i.index_id = ic.index_id
+WHERE c.object_id = OBJECT_ID(@tabla)';
+
+EXEC sp_executesql @SQL, N'@tabla NVARCHAR(128)', @tabla;
+
+WITH cteDuplicados AS (
+    SELECT 
+        ColumnId,
+        ColumnName,
+        ROW_NUMBER() OVER (PARTITION BY ColumnName ORDER BY ColumnId) AS rn
+    FROM #Columns
+)
+DELETE FROM cteDuplicados
+WHERE rn > 1;
+set @columnas = (select * from #Columns for json path)
+
+-- 3. Actualizar ColumnNameUpper inmediatamente después
+UPDATE #Columns
+SET ColumnNameUpper = UPPER(ColumnName);
+    
+    -- Categorizar tipos para optimizar validación
+    UPDATE #Columns
+SET TypeCategory = 
+    CASE 
+        WHEN DataType = 'bit' THEN 'BOOLEAN'
+        WHEN DataType IN ('tinyint', 'smallint', 'int', 'bigint') THEN 'INTEGER'
+        WHEN DataType IN ('decimal', 'numeric', 'money', 'smallmoney', 'float', 'real') THEN 'DECIMAL'
+        WHEN DataType = 'date' THEN 'DATE'
+        WHEN DataType IN ('datetime', 'datetime2', 'smalldatetime', 'datetimeoffset') THEN 'DATETIME'
+        WHEN DataType IN ('char', 'varchar', 'nchar', 'nvarchar', 'text', 'ntext') THEN 'STRING'
+        WHEN DataType IN ('uniqueidentifier') THEN 'GUID'
+        ELSE 'OTHER'
+    END;
+    
+    CREATE NONCLUSTERED INDEX IX_Columns_Name ON #Columns(ColumnName);
+    CREATE NONCLUSTERED INDEX IX_Columns_NameUpper ON #Columns(ColumnNameUpper);
+
+	set @columnas = (select * from #Columns for json path)
+    
+    -- Procesar datos JSON en tabla temporal
+    CREATE TABLE #JsonTable (
+        RowId INT IDENTITY(1,1), 
+        JsonData NVARCHAR(MAX),
+        Cod NUMERIC(18,0) NULL,
+        Cobrador NUMERIC(18,0) NULL,
+        IsValid BIT DEFAULT 1
+    );
+    
+    CREATE NONCLUSTERED INDEX IX_JsonTable_RowId ON #JsonTable(RowId);
+    CREATE NONCLUSTERED INDEX IX_JsonTable_Keys ON #JsonTable(Cod, Cobrador) WHERE IsValid = 1;
+    
+    -- Verificar si es un array o un objeto único
+    DECLARE @IsArray BIT = 1;
+    IF LEFT(LTRIM(@json), 1) = '{' SET @IsArray = 0;
+    
+    -- Insertar JSON en tabla temporal manteniendo sensibilidad a mayúsculas/minúsculas
+    IF @IsArray = 1
+    BEGIN
+        INSERT INTO #JsonTable (JsonData, Cod, Cobrador)
+        SELECT 
+            value,
+            TRY_CAST(JSON_VALUE(value, '$.Cod') AS NUMERIC(18,0)),
+            TRY_CAST(JSON_VALUE(value, '$.Cobrador') AS NUMERIC(18,0))
+        FROM OPENJSON(@json);
+    END
+    ELSE
+    BEGIN
+        INSERT INTO #JsonTable (JsonData, Cod, Cobrador)
+        VALUES(
+            @json,
+            TRY_CAST(JSON_VALUE(@json, '$.Cod') AS NUMERIC(18,0)),
+            TRY_CAST(JSON_VALUE(@json, '$.Cobrador') AS NUMERIC(18,0))
+        );
+    END
+    
+    -- Validar campos clave
+    UPDATE #JsonTable 
+    SET IsValid = 0
+    WHERE Cod IS NULL OR Cobrador IS NULL;
+    
+    INSERT INTO #Errors (RowId, ErrorCode, Field, ErrorMessage, JsonData)
+    SELECT 
+        RowId, 
+        1006, 
+        CASE WHEN Cod IS NULL THEN 'Cod' ELSE 'Cobrador' END,
+        'Campos Cod y Cobrador son obligatorios y numéricos', 
+        JsonData
+    FROM #JsonTable
+    WHERE IsValid = 0;
+    
+    -- Verificar si hay valores duplicados en el JSON de entrada (misma combinación Cod+Cobrador)
+    INSERT INTO #Errors (RowId, ErrorCode, Field, ErrorMessage, JsonData)
+    SELECT 
+        j1.RowId,
+        1007,
+        'Cod+Cobrador',
+        'Registro duplicado en el JSON de entrada: Cod=' + CAST(j1.Cod AS VARCHAR) + 
+        ', Cobrador=' + CAST(j1.Cobrador AS VARCHAR),
+        j1.JsonData
+    FROM #JsonTable j1
+    INNER JOIN (
+        SELECT Cod, Cobrador, MIN(RowId) AS FirstRowId, COUNT(*) AS DuplicateCount
+        FROM #JsonTable
+        WHERE IsValid = 1
+        GROUP BY Cod, Cobrador
+        HAVING COUNT(*) > 1
+    ) j2 ON j1.Cod = j2.Cod AND j1.Cobrador = j2.Cobrador AND j1.RowId > j2.FirstRowId;
+    
+    -- Clasificar registros
+    CREATE TABLE #Existing (RowId INT, Cod NUMERIC(18,0), Cobrador NUMERIC(18,0));
+    CREATE NONCLUSTERED INDEX IX_Existing_RowId ON #Existing(RowId);
+    CREATE NONCLUSTERED INDEX IX_Existing_Keys ON #Existing(Cod, Cobrador);
+    
+    CREATE TABLE #New (RowId INT PRIMARY KEY);
+    
+    -- Usar READ COMMITTED para compatibilidad con entornos de alta disponibilidad
+    SET @SQL = N'
+    INSERT INTO #Existing (RowId, Cod, Cobrador)
+    SELECT jt.RowId, jt.Cod, jt.Cobrador
+    FROM #JsonTable jt
+    INNER JOIN ' + @TableName + ' t WITH (READCOMMITTED)
+    ON t.Cod = jt.Cod AND t.Cobrador = jt.Cobrador
+    WHERE jt.IsValid = 1
+    AND jt.RowId NOT IN (SELECT RowId FROM #Errors)';
+    
+    BEGIN TRY
+        EXEC sp_executesql @SQL;
+    END TRY
+    BEGIN CATCH
+        INSERT INTO #Errors (RowId, ErrorCode, Field, ErrorMessage, JsonData)
+        VALUES (NULL, 1008, NULL, 'Error verificando registros existentes: ' + ERROR_MESSAGE(), NULL);
+        GOTO ReturnResults;
+    END CATCH
+    
+    -- Identificar registros nuevos
+	set @filasjson= (Select * FROM #JsonTable for json path)
+    INSERT INTO #New (RowId)
+    SELECT RowId FROM #JsonTable
+    WHERE IsValid = 1
+      AND RowId NOT IN (SELECT RowId FROM #Errors)
+      AND RowId NOT IN (SELECT RowId FROM #Existing);
+
+	  	set @filasnew= (Select * FROM #New for json path)
+		set @filas#Errors= (Select * FROM #Errors for json path)
+		set @filas#Existing= (Select * FROM #Existing for json path)
+    
+    -- Validar campos requeridos para registros nuevos
+INSERT INTO #Errors (RowId, ErrorCode, Field, ErrorMessage, JsonData)
+SELECT 
+    jt.RowId, 1009, c.ColumnName,
+    'Campo requerido ausente: ' + c.ColumnName, jt.JsonData
+FROM #JsonTable jt
+CROSS JOIN (
+    SELECT ColumnName, ColumnNameUpper
+    FROM #Columns 
+    WHERE IsNullable = 0 
+      AND DefaultValue = ''
+      AND ColumnName NOT IN ('Cod', 'Cobrador', 'FechaActualizacion')
+      AND IsIdentity = 0
+      AND IsComputed = 0
+) c
+WHERE jt.RowId IN (SELECT RowId FROM #New)
+  AND jt.IsValid = 1
+  AND NOT EXISTS (
+      SELECT 1 
+      FROM OPENJSON(jt.JsonData)
+      WHERE UPPER([key]) COLLATE DATABASE_DEFAULT = c.ColumnNameUpper COLLATE DATABASE_DEFAULT
+        AND [value] IS NOT NULL
+        AND [value] <> 'null'
+        AND [value] <> ''
+  );
+    
+    -- Validaciones de tipo y rango - corregidas para case-insensitive
+    -- Numéricos
+    INSERT INTO #Errors (RowId, ErrorCode, Field, ErrorMessage, JsonData)
+    SELECT 
+        jt.RowId, 1010, j.[key],
+        'Valor numérico inválido: ' + ISNULL(j.[value], 'NULL'), jt.JsonData
+    FROM #JsonTable jt
+    CROSS APPLY OPENJSON(jt.JsonData) j
+    JOIN #Columns c ON UPPER(j.[key]) COLLATE DATABASE_DEFAULT = c.ColumnNameUpper COLLATE DATABASE_DEFAULT
+    WHERE jt.IsValid = 1
+      AND jt.RowId NOT IN (SELECT RowId FROM #Errors)
+      AND c.TypeCategory IN ('INTEGER', 'DECIMAL')
+      AND j.[value] IS NOT NULL
+      AND j.[value] NOT IN ('null', '')
+      AND TRY_CAST(j.[value] AS FLOAT) IS NULL;
+    
+    -- Validación de rango para tipos específicos
+    INSERT INTO #Errors (RowId, ErrorCode, Field, ErrorMessage, JsonData)
+    SELECT 
+        jt.RowId, 1011, j.[key],
+        'Valor fuera de rango permitido para ' + c.DataType + ': ' + j.[value], jt.JsonData
+    FROM #JsonTable jt
+    CROSS APPLY OPENJSON(jt.JsonData) j
+    JOIN #Columns c ON UPPER(j.[key]) COLLATE DATABASE_DEFAULT = c.ColumnNameUpper COLLATE DATABASE_DEFAULT
+    WHERE jt.IsValid = 1
+      AND jt.RowId NOT IN (SELECT RowId FROM #Errors)
+      AND c.TypeCategory = 'INTEGER'
+      AND j.[value] IS NOT NULL
+      AND j.[value] NOT IN ('null', '')
+      AND TRY_CAST(j.[value] AS FLOAT) IS NOT NULL
+      AND (
+          (c.DataType = 'tinyint' AND (TRY_CAST(j.[value] AS FLOAT) < 0 OR TRY_CAST(j.[value] AS FLOAT) > 255)) OR
+          (c.DataType = 'smallint' AND (TRY_CAST(j.[value] AS FLOAT) < -32768 OR TRY_CAST(j.[value] AS FLOAT) > 32767)) OR
+          (c.DataType = 'int' AND (TRY_CAST(j.[value] AS FLOAT) < -2147483648 OR TRY_CAST(j.[value] AS FLOAT) > 2147483647))
+      );
+    
+  INSERT INTO #Errors (RowId, ErrorCode, Field, ErrorMessage, JsonData)
+SELECT 
+    jt.RowId, 1012, j.[key],
+    'Valor decimal fuera de rango: ' + j.[value], jt.JsonData
+FROM #JsonTable jt
+CROSS APPLY OPENJSON(jt.JsonData) j
+JOIN #Columns c ON UPPER(j.[key]) COLLATE DATABASE_DEFAULT = c.ColumnNameUpper COLLATE DATABASE_DEFAULT
+WHERE jt.IsValid = 1
+  AND jt.RowId NOT IN (SELECT RowId FROM #Errors)
+  AND c.TypeCategory = 'DECIMAL'
+  AND j.[value] IS NOT NULL
+  AND j.[value] NOT IN ('null', '')
+  AND TRY_CAST(j.[value] AS FLOAT) IS NOT NULL
+  AND c.Precision > 0
+  AND (
+      (c.Precision - c.Scale <= 9 AND ABS(CAST(j.[value] AS FLOAT)) > POWER(CONVERT(FLOAT, 10), c.Precision - c.Scale))
+      OR
+      (c.Precision - c.Scale > 9 AND ABS(CAST(j.[value] AS FLOAT)) > 1000000000)
+  );
+    
+    -- Fechas
+    INSERT INTO #Errors (RowId, ErrorCode, Field, ErrorMessage, JsonData)
+    SELECT 
+        jt.RowId, 1013, j.[key],
+        'Formato de fecha inválido: ' + ISNULL(j.[value], 'NULL'), jt.JsonData
+    FROM #JsonTable jt
+    CROSS APPLY OPENJSON(jt.JsonData) j
+    JOIN #Columns c ON UPPER(j.[key]) COLLATE DATABASE_DEFAULT = c.ColumnNameUpper COLLATE DATABASE_DEFAULT
+    WHERE jt.IsValid = 1
+      AND jt.RowId NOT IN (SELECT RowId FROM #Errors)
+      AND c.TypeCategory = 'DATETIME'
+      AND j.[value] IS NOT NULL
+      AND j.[value] NOT IN ('null', '')
+      AND TRY_CONVERT(DATETIME2, j.[value]) IS NULL;
+    
+    -- Valores booleanos
+    INSERT INTO #Errors (RowId, ErrorCode, Field, ErrorMessage, JsonData)
+    SELECT 
+        jt.RowId, 1014, j.[key],
+        'Valor booleano inválido: ' + ISNULL(j.[value], 'NULL'), jt.JsonData
+    FROM #JsonTable jt
+    CROSS APPLY OPENJSON(jt.JsonData) j
+    JOIN #Columns c ON UPPER(j.[key]) COLLATE DATABASE_DEFAULT = c.ColumnNameUpper COLLATE DATABASE_DEFAULT
+    WHERE jt.IsValid = 1
+      AND jt.RowId NOT IN (SELECT RowId FROM #Errors)
+      AND c.TypeCategory = 'BOOLEAN'
+      AND j.[value] IS NOT NULL
+      AND j.[value] NOT IN ('null', '')
+      AND LOWER(j.[value]) NOT IN ('0', '1', 'true', 'false');
+    
+    -- Longitud de texto - Corrección para nchar/nvarchar
+    INSERT INTO #Errors (RowId, ErrorCode, Field, ErrorMessage, JsonData)
+    SELECT 
+        jt.RowId, 1015, j.[key],
+        'Texto excede longitud (' + CAST(CASE WHEN c.DataType IN ('nchar', 'nvarchar') THEN c.MaxLength / 2 ELSE c.MaxLength END AS VARCHAR) + '): ' + 
+        LEFT(j.[value], 30) + CASE WHEN LEN(j.[value]) > 30 THEN '...' ELSE '' END, 
+        jt.JsonData
+    FROM #JsonTable jt
+    CROSS APPLY OPENJSON(jt.JsonData) j
+    JOIN #Columns c ON UPPER(j.[key]) COLLATE DATABASE_DEFAULT = c.ColumnNameUpper COLLATE DATABASE_DEFAULT
+    WHERE jt.IsValid = 1
+      AND jt.RowId NOT IN (SELECT RowId FROM #Errors)
+      AND c.TypeCategory = 'STRING'
+      AND c.MaxLength > 0 AND c.MaxLength != -1
+      AND j.[value] IS NOT NULL
+      AND j.[value] NOT IN ('null', '')
+      AND (
+          (c.DataType IN ('nchar', 'nvarchar') AND LEN(j.[value]) > c.MaxLength / 2) OR
+          (c.DataType IN ('char', 'varchar') AND LEN(j.[value]) > c.MaxLength)
+      );
+    
+    -- Si hay errores en modo estricto, detener
+    IF @modoEstricto = 1 AND EXISTS (SELECT 1 FROM #Errors)
+    BEGIN
+        GOTO ReturnResults;
+    END
+    
+		  	set @filasnew= (Select * FROM #New for json path)
+		set @filas#Errors= (Select * FROM #Errors for json path)
+		set @filas#Existing= (Select * FROM #Existing for json path)
+
+    -- PROCESAR ACTUALIZACIONES
+    IF EXISTS (SELECT 1 FROM #Existing WHERE RowId NOT IN (SELECT RowId FROM #Errors union SELECT RowId From #Results))
+    BEGIN        
+        
+        WHILE EXISTS (
+            SELECT 1 FROM #Existing e
+            WHERE e.RowId NOT IN (SELECT RowId FROM #Errors union SELECT RowId From #Results)
+        )
+        BEGIN                                
+            
+            SET @intentos = 0;
+            
+            WHILE @intentos < @maxReintentos
+            BEGIN
+                BEGIN TRY
+                    IF @ExternalTran = 0
+
+                    
+                    CREATE TABLE #UpdatedRows (
+                        Cod NUMERIC(18,0), 
+                        Cobrador NUMERIC(18,0), 
+                        RowId INT
+                    );
+                    
+                    -- Construir update más seguros - procesando columnas en bloques para evitar desbordamiento
+                    DECLARE @UpdateColumns NVARCHAR(MAX) = N'';
+                    DECLARE @ColumnsSql NVARCHAR(MAX);
+                    DECLARE @CurrentColumnCount INT = 0;
+                    DECLARE @MaxColumnsPerBatch INT = 50; -- Ajustar según la complejidad de columnas
+                    
+                    -- Procesar columnas en lotes para prevenir desbordamiento de SQL
+DECLARE @ColumnToProcess TABLE (
+    Id INT IDENTITY(1,1),
+    ColumnName SYSNAME,
+    DataType SYSNAME,
+    TypeCategory VARCHAR(20),
+    Precision INT,
+    Scale INT,
+    IsNullable BIT,
+    DefaultValue NVARCHAR(MAX)
+);
+
+-- Tabla para rastrear columnas ya procesadas
+-- Agregar tabla para rastrear columnas procesadas
+-- Agregar tabla para rastrear columnas procesadas
+DECLARE @ProcessedColumns TABLE (
+    ColumnName SYSNAME PRIMARY KEY
+);
+
+-- Variables necesarias para el procesamiento
+DECLARE @TotalColumns INT;
+DECLARE @CurrentIndex INT;
+
+
+-- Reutilizar la tabla @ColumnToProcess ya existente
+DELETE FROM @ColumnToProcess;
+INSERT INTO @ColumnToProcess (ColumnName, DataType, TypeCategory, Precision, Scale, IsNullable, DefaultValue)
+SELECT ColumnName, DataType, TypeCategory, Precision, Scale, IsNullable, DefaultValue
+FROM #Columns
+WHERE ColumnName NOT IN ('Cod', 'Cobrador', 'FechaActualizacion')
+  AND IsIdentity = 0
+  AND IsComputed = 0
+ORDER BY ColumnId;
+
+-- Inicializar variables
+SET @TotalColumns = (SELECT COUNT(*) FROM @ColumnToProcess);
+SET @CurrentIndex = 1;
+SET @UpdateColumns = N'';
+
+WHILE @CurrentIndex <= @TotalColumns
+BEGIN
+    SET @ColumnsSql = N'';
+    
+    -- Procesar columnas no duplicadas
+    SELECT @ColumnsSql = @ColumnsSql + 
+        CASE 
+            WHEN EXISTS (SELECT 1 FROM @ProcessedColumns WHERE ColumnName = cp.ColumnName) 
+            THEN N'' -- Omitir columna ya procesada
+            ELSE 
+                N', ' + QUOTENAME(cp.ColumnName) + N' = CASE 
+                    WHEN JSON_VALUE(jt.JsonData, ''$.' + QUOTENAME(cp.ColumnName, '"') + N''') IS NULL THEN t.' + QUOTENAME(cp.ColumnName) + N'
+                    ELSE ' + 
+                        CASE 
+                            WHEN cp.TypeCategory = 'BOOLEAN' THEN 
+                                'CASE WHEN LOWER(LTRIM(RTRIM(JSON_VALUE(jt.JsonData, ''$.' + QUOTENAME(cp.ColumnName, '"') + N''')))) IN (''1'', ''true'') THEN 1 ' +
+                                'WHEN LOWER(LTRIM(RTRIM(JSON_VALUE(jt.JsonData, ''$.' + QUOTENAME(cp.ColumnName, '"') + N''')))) IN (''0'', ''false'') THEN 0 ' +
+                                'ELSE t.' + QUOTENAME(cp.ColumnName) + ' END'
+                            WHEN cp.TypeCategory = 'INTEGER' THEN 
+                                'TRY_CAST(JSON_VALUE(jt.JsonData, ''$.' + QUOTENAME(cp.ColumnName, '"') + ''') AS ' + cp.DataType + ')'
+                            WHEN cp.TypeCategory = 'DECIMAL' THEN 
+    'CAST(JSON_VALUE(jt.JsonData, ''$.' + QUOTENAME(cp.ColumnName, '"') + ''') AS ' + 
+    cp.DataType + ')'
+                            WHEN cp.TypeCategory = 'DATE' THEN 
+                                'TRY_CONVERT(DATE, JSON_VALUE(jt.JsonData, ''$.' + QUOTENAME(cp.ColumnName, '"') + '''), 103)'
+                            WHEN cp.TypeCategory = 'DATETIME' THEN 
+                                'TRY_CONVERT(DATETIME, JSON_VALUE(jt.JsonData, ''$.' + QUOTENAME(cp.ColumnName, '"') + '''), 103)'
+                            WHEN cp.TypeCategory = 'STRING' THEN 
+                                'JSON_VALUE(jt.JsonData, ''$.' + QUOTENAME(cp.ColumnName, '"') + ''')'
+                            WHEN cp.TypeCategory = 'GUID' THEN 
+                                'TRY_CONVERT(UNIQUEIDENTIFIER, JSON_VALUE(jt.JsonData, ''$.' + QUOTENAME(cp.ColumnName, '"') + '''))'
+                            ELSE 
+                                't.' + QUOTENAME(cp.ColumnName)
+                        END + N'
+                END'
+        END
+    FROM @ColumnToProcess cp
+    WHERE Id BETWEEN @CurrentIndex AND @CurrentIndex + @MaxColumnsPerBatch - 1;
+    
+    -- Registrar columnas procesadas
+    INSERT INTO @ProcessedColumns (ColumnName)
+    SELECT ColumnName FROM @ColumnToProcess cp
+    WHERE Id BETWEEN @CurrentIndex AND @CurrentIndex + @MaxColumnsPerBatch - 1
+      AND NOT EXISTS (SELECT 1 FROM @ProcessedColumns WHERE ColumnName = cp.ColumnName);
+    
+    -- Acumular SQL
+    SET @UpdateColumns = @UpdateColumns + @ColumnsSql;
+    SET @CurrentIndex = @CurrentIndex + @MaxColumnsPerBatch;
+END
+
+IF LEN(@UpdateColumns) > 0
+BEGIN
+    -- Si comienza con coma, quitarla
+    IF LEFT(@UpdateColumns, 1) = ',' 
+        SET @UpdateColumns = SUBSTRING(@UpdateColumns, 2, LEN(@UpdateColumns) - 1);
+        
+    -- Si termina con coma, quitarla
+    IF RIGHT(@UpdateColumns, 1) = ','
+        SET @UpdateColumns = SUBSTRING(@UpdateColumns, 1, LEN(@UpdateColumns) - 1);
+        
+    -- Si está vacío después de las correcciones, evitar comas en UPDATE
+    IF LEN(@UpdateColumns) = 0
+        SET @SQL = N'UPDATE t SET FechaActualizacion = SYSUTCDATETIME();';
+    ELSE
+        SET @SQL = N'UPDATE t SET ' + @UpdateColumns + N', FechaActualizacion = SYSUTCDATETIME();';
+END
+ELSE
+    SET @SQL = N'UPDATE t SET FechaActualizacion = SYSUTCDATETIME();';
+
+-- Construir y ejecutar UPDATE
+SET @SQL = N'
+UPDATE t SET ' + @UpdateColumns + N', FechaActualizacion = GETDATE()
+OUTPUT inserted.Cod, inserted.Cobrador, be.RowId INTO #UpdatedRows
+FROM ' + @TableName + N' t
+INNER JOIN #Existing be ON t.Cod = be.Cod AND t.Cobrador = be.Cobrador
+INNER JOIN #JsonTable jt ON be.RowId = jt.RowId
+WHERE jt.RowId NOT IN (SELECT RowId FROM #Errors union SELECT RowId From #Results)';
+                    
+                    EXEC sp_executesql @SQL;
+					--print 'sql a ejecutar: '+@SQL;
+                    
+                    INSERT INTO #Results (RowId, Operation, Success, Cod, Cobrador, RequestTimeUTC, Data)
+                    SELECT ur.RowId, 'UPDATE', 1, ur.Cod, ur.Cobrador, SYSUTCDATETIME(), NULL
+                    FROM #UpdatedRows ur;
+                    
+                    IF @ExternalTran = 0
+
+                    
+                    SET @ProcessedCount = @ProcessedCount + (SELECT COUNT(*) FROM #UpdatedRows);
+                    
+                    IF OBJECT_ID('tempdb..#UpdatedRows') IS NOT NULL 
+                        DROP TABLE #UpdatedRows;
+                        
+                    BREAK; -- Éxito, salir del ciclo de reintentos
+                END TRY
+                BEGIN CATCH
+                    SET @ErrorNumber = ERROR_NUMBER();
+                    SET @ErrorMsg = ERROR_MESSAGE();
+                    SET @ErrorSeverity = ERROR_SEVERITY();
+                    SET @ErrorState = ERROR_STATE();
+                    
+                    IF OBJECT_ID('tempdb..#UpdatedRows') IS NOT NULL 
+                        DROP TABLE #UpdatedRows;
+
+                    
+                    -- Reintentar en caso de errores transitorios
+                    IF (@ErrorNumber IN (1205, 1222, -2, 701, 41302, 41305, 41325, 41839)) AND @intentos < @maxReintentos
+                    BEGIN
+                        SET @intentos = @intentos + 1;
+                        WAITFOR DELAY '00:00:00.1'; -- 100ms de espera antes de reintentar
+                        CONTINUE;
+                    END
+                    
+                    -- Para otros errores, registrar y continuar
+                    INSERT INTO #Errors (RowId, ErrorCode, Field, ErrorMessage, JsonData)
+                    SELECT 
+                        be.RowId, 
+                        1016, 
+                        NULL,
+                        'Error al actualizar registros ' + 
+                        '): ' + @ErrorMsg, 
+                        jt.JsonData
+                    FROM #Existing be
+                    JOIN #JsonTable jt ON be.RowId = jt.RowId;
+                    
+                    IF @modoEstricto = 1 GOTO ReturnResults;
+                    BREAK; -- Error no recuperable, salir del ciclo
+                END CATCH
+            END
+            
+        END       
+        
+        WHILE EXISTS (
+            SELECT 1 FROM #Results r
+            WHERE r.Operation = 'UPDATE' AND r.Data IS NULL
+        )
+        BEGIN
+            BEGIN TRY
+                CREATE TABLE #UpdateJsonData (
+                    ResultId INT,
+                    JsonData NVARCHAR(MAX)
+                );
+                
+                SET @SQL = N'
+                INSERT INTO #UpdateJsonData (ResultId, JsonData)
+                SELECT r.ResultId,
+                       (SELECT * FROM ' + @TableName + ' t 
+                        WHERE t.Cod = r.Cod AND t.Cobrador = r.Cobrador 
+                        FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS JsonData
+                FROM #Results r
+                WHERE r.Operation = ''UPDATE'' AND r.Data IS NULL';
+                
+                EXEC sp_executesql @SQL;
+                
+                UPDATE r
+                SET Data = ud.JsonData
+                FROM #Results r
+                JOIN #UpdateJsonData ud ON r.ResultId = ud.ResultId;
+                
+                DROP TABLE #UpdateJsonData;
+            END TRY
+            BEGIN CATCH
+                IF OBJECT_ID('tempdb..#UpdateJsonData') IS NOT NULL 
+                    DROP TABLE #UpdateJsonData;
+                    
+                INSERT INTO #Errors VALUES (NULL, 1017, NULL, 'Error al recuperar datos JSON actualizados: ' + ERROR_MESSAGE(), NULL);
+                
+                -- No detenemos el procesamiento por este tipo de error
+            END CATCH            
+        END
+    END
+    
+    -- PROCESAR INSERCIONES
+-- PROCESAR INSERCIONES
+IF EXISTS (SELECT 1 FROM #New WHERE RowId NOT IN (SELECT RowId FROM #Errors))
+BEGIN
+    -- Manejar cada registro individualmente
+    DECLARE @NewRowId INT;
+    DECLARE @JsonData NVARCHAR(MAX);
+    DECLARE @CodValue NUMERIC(18,0);
+    DECLARE @CobradorValue NUMERIC(18,0);
+    
+    DECLARE new_rows_cursor CURSOR FOR
+        SELECT n.RowId, jt.JsonData, jt.Cod, jt.Cobrador 
+        FROM #New n
+        JOIN #JsonTable jt ON n.RowId = jt.RowId
+        WHERE jt.RowId NOT IN (SELECT RowId FROM #Errors);
+    
+    OPEN new_rows_cursor;
+    FETCH NEXT FROM new_rows_cursor INTO @NewRowId, @JsonData, @CodValue, @CobradorValue;
+    
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        SET @intentos = 0;
+        WHILE @intentos < @maxReintentos
+        BEGIN
+            BEGIN TRY
+                
+                CREATE TABLE #InsertedRows (
+                    Cod NUMERIC(18,0), 
+                    Cobrador NUMERIC(18,0), 
+                    RowId INT
+                );
+                
+                DECLARE @DynamicSQL NVARCHAR(MAX);
+                SET @DynamicSQL = N'
+                INSERT INTO ' + @TableName + ' (';
+                
+                -- Agregar columnas
+                SELECT @DynamicSQL = @DynamicSQL + 
+                    CASE WHEN ColumnId = 1 THEN '' ELSE ', ' END + 
+                    QUOTENAME(ColumnName)
+                FROM #Columns
+                WHERE IsIdentity = 0
+                  AND IsComputed = 0
+                ORDER BY ColumnId;
+                
+                SET @DynamicSQL = @DynamicSQL + ') 
+                OUTPUT inserted.Cod, inserted.Cobrador, ' + CAST(@NewRowId AS VARCHAR(10)) + '
+                INTO #InsertedRows(Cod, Cobrador, RowId)
+                SELECT ';
+                
+                -- Agregar valores para cada columna
+                SELECT @DynamicSQL = @DynamicSQL + 
+                    CASE WHEN ColumnId = 1 THEN '' ELSE ', ' END + 
+                    CASE 
+                        WHEN ColumnName = 'Cod' THEN CAST(@CodValue AS VARCHAR(20))
+                        WHEN ColumnName = 'Cobrador' THEN CAST(@CobradorValue AS VARCHAR(20))
+                        WHEN ColumnName = 'FechaActualizacion' THEN 'SYSUTCDATETIME()'
+                        ELSE 
+                            CASE 
+                                WHEN DataType = 'money' THEN 
+                                    'CAST(JSON_VALUE(''' + REPLACE(@JsonData, '''', '''''') + ''', ''$.' + ColumnName + ''') AS money)'
+                                WHEN TypeCategory = 'STRING' THEN 
+                                    'JSON_VALUE(''' + REPLACE(@JsonData, '''', '''''') + ''', ''$.' + ColumnName + ''')'
+                                WHEN TypeCategory = 'BOOLEAN' THEN
+                                    'CAST(JSON_VALUE(''' + REPLACE(@JsonData, '''', '''''') + ''', ''$.' + ColumnName + ''') AS BIT)'
+                                WHEN TypeCategory = 'INTEGER' THEN
+                                    'CAST(JSON_VALUE(''' + REPLACE(@JsonData, '''', '''''') + ''', ''$.' + ColumnName + ''') AS ' + DataType + ')'
+                                WHEN TypeCategory = 'DECIMAL' AND DataType <> 'money' THEN
+                                    'CAST(JSON_VALUE(''' + REPLACE(@JsonData, '''', '''''') + ''', ''$.' + ColumnName + ''') AS ' + 
+                                    DataType + '(' + CAST(Precision AS VARCHAR) + ',' + CAST(Scale AS VARCHAR) + '))'
+                                WHEN TypeCategory = 'DATETIME' THEN
+                                    'CAST(JSON_VALUE(''' + REPLACE(@JsonData, '''', '''''') + ''', ''$.' + ColumnName + ''') AS ' + DataType + ')'
+                                ELSE
+                                    'JSON_VALUE(''' + REPLACE(@JsonData, '''', '''''') + ''', ''$.' + ColumnName + ''')'
+                            END
+                    END
+                FROM #Columns
+                WHERE IsIdentity = 0
+                  AND IsComputed = 0
+                ORDER BY ColumnId;
+                
+                --PRINT 'SQL para inserción:';
+                --PRINT LEFT(@DynamicSQL, 500);
+                
+                EXEC sp_executesql @DynamicSQL;
+                
+                INSERT INTO #Results (RowId, Operation, Success, Cod, Cobrador, RequestTimeUTC, Data)
+                SELECT RowId, 'INSERT', 1, Cod, Cobrador, SYSUTCDATETIME(), NULL
+                FROM #InsertedRows;
+                
+                SET @ProcessedCount = @ProcessedCount + 1;
+                
+                DROP TABLE #InsertedRows;
+                
+                
+                BREAK; -- Éxito
+            END TRY
+            BEGIN CATCH
+                SET @ErrorNumber = ERROR_NUMBER();
+                SET @ErrorMsg = ERROR_MESSAGE();
+                
+                IF OBJECT_ID('tempdb..#InsertedRows') IS NOT NULL 
+                    DROP TABLE #InsertedRows;
+                
+                
+                IF (@ErrorNumber IN (1205, 1222, -2, 701, 41302, 41305, 41325, 41839)) AND @intentos < @maxReintentos
+                BEGIN
+                    SET @intentos = @intentos + 1;
+                    WAITFOR DELAY '00:00:00.2';
+                    CONTINUE;
+                END
+                
+                INSERT INTO #Errors (RowId, ErrorCode, Field, ErrorMessage, JsonData)
+                VALUES (@NewRowId, 1018, NULL, 'Error al insertar registro: ' + @ErrorMsg, @JsonData);
+                
+                IF @modoEstricto = 1 
+                BEGIN
+                    CLOSE new_rows_cursor;
+                    DEALLOCATE new_rows_cursor;
+                    GOTO ReturnResults;
+                END
+                
+                BREAK;
+            END CATCH
+        END
+        
+        FETCH NEXT FROM new_rows_cursor INTO @NewRowId, @JsonData, @CodValue, @CobradorValue;
+    END
+    
+    CLOSE new_rows_cursor;
+    DEALLOCATE new_rows_cursor;
+    
+    -- Recuperar datos insertados
+    DECLARE @ResultsToUpdate TABLE (
+        ResultId INT,
+        Cod NUMERIC(18,0),
+        Cobrador NUMERIC(18,0)
+    );
+    
+    INSERT INTO @ResultsToUpdate (ResultId, Cod, Cobrador)
+    SELECT ResultId, Cod, Cobrador
+    FROM #Results
+    WHERE Operation = 'INSERT' AND Data IS NULL;
+    
+    DECLARE @ResultId INT, @ResultCod NUMERIC(18,0), @ResultCobrador NUMERIC(18,0);
+    DECLARE @JsonResult NVARCHAR(MAX);
+    
+    DECLARE results_cursor CURSOR FOR 
+        SELECT ResultId, Cod, Cobrador FROM @ResultsToUpdate;
+    
+    OPEN results_cursor;
+    FETCH NEXT FROM results_cursor INTO @ResultId, @ResultCod, @ResultCobrador;
+    
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        BEGIN TRY
+            SET @SQL = N'SELECT @JsonOut = (SELECT * FROM ' + @TableName + 
+                       N' WHERE Cod = @Cod AND Cobrador = @Cobrador FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)';
+            
+            EXEC sp_executesql @SQL, 
+                 N'@Cod NUMERIC(18,0), @Cobrador NUMERIC(18,0), @JsonOut NVARCHAR(MAX) OUTPUT', 
+                 @ResultCod, @ResultCobrador, @JsonResult OUTPUT;
+            
+            UPDATE #Results
+            SET Data = @JsonResult
+            WHERE ResultId = @ResultId;
+        END TRY
+        BEGIN CATCH
+            -- Ignorar errores al recuperar datos JSON
+        END CATCH
+        
+        FETCH NEXT FROM results_cursor INTO @ResultId, @ResultCod, @ResultCobrador;
+    END
+    
+    CLOSE results_cursor;
+    DEALLOCATE results_cursor;
+END
+
+-- Registrar auditoría si se requiere
+IF @registrarLog = 1
+BEGIN
+    DECLARE @LogMessage NVARCHAR(4000) = 'DynamicUpsertJson: Tabla=' + @tabla + 
+                                       ', Registros=' + CAST((SELECT COUNT(*) FROM #JsonTable) AS VARCHAR) +
+                                       ', Procesados=' + CAST(@ProcessedCount AS VARCHAR) +
+                                       ', Errores=' + CAST((SELECT COUNT(*) FROM #Errors) AS VARCHAR) +
+                                       ', Tiempo=' + CAST(DATEDIFF(MILLISECOND, @StartTime, SYSUTCDATETIME()) AS VARCHAR) + 'ms';
+    
+    -- En un entorno de producción, guardar en tabla de logs
+    -- INSERT INTO LogTable(Message, CreatedAt, RequestId) VALUES(@LogMessage, SYSUTCDATETIME(), @RequestID);
+    --PRINT @LogMessage;
+END
+
+ReturnResults:
+-- Limitar tamaño de respuesta JSON para evitar problemas de memoria
+DECLARE @MaxJsonRows INT = 1000; -- Ajustar según necesidades
+
+-- Devolver resultados en formato JSON estructurado
+SELECT (
+    SELECT 
+        @RequestID AS RequestId,
+        DATEDIFF(MILLISECOND, @StartTime, SYSUTCDATETIME()) AS ExecutionTimeMs,
+        (SELECT COUNT(*) FROM #JsonTable) AS TotalRecords,
+        @ProcessedCount AS ProcessedCount,
+        (SELECT COUNT(*) FROM #Errors) AS ErrorCount,
+        (SELECT COUNT(*) FROM #Results WHERE Operation = 'INSERT') AS InsertCount,
+        (SELECT COUNT(*) FROM #Results WHERE Operation = 'UPDATE') AS UpdateCount,
+        (
+            SELECT TOP (@MaxJsonRows)
+                r.RowId,
+                r.Operation,
+                r.Cod,
+                r.Cobrador,
+                r.RequestTimeUTC,
+                JSON_QUERY(r.Data) AS Record
+            FROM #Results r
+            ORDER BY r.RowId
+            FOR JSON PATH
+        ) AS Results,
+        (
+            SELECT TOP (@MaxJsonRows)
+                e.RowId,
+                e.ErrorCode,
+                e.Field,
+                e.ErrorMessage,
+                CASE 
+                    WHEN LEN(e.JsonData) > 4000 THEN JSON_QUERY(LEFT(e.JsonData, 4000) + '...') 
+                    ELSE JSON_QUERY(e.JsonData)
+                END AS OriginalData
+            FROM #Errors e
+            ORDER BY e.ErrorId
+            FOR JSON PATH
+        ) AS Errors,
+        CASE WHEN (SELECT COUNT(*) FROM #Results) > @MaxJsonRows OR 
+                  (SELECT COUNT(*) FROM #Errors) > @MaxJsonRows 
+             THEN 1 ELSE 0 
+        END AS ResultsTruncated
+    FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+) AS Response;
+
+-- Limpiar tablas temporales
+IF OBJECT_ID('tempdb..#Columns') IS NOT NULL DROP TABLE #Columns;
+IF OBJECT_ID('tempdb..#JsonTable') IS NOT NULL DROP TABLE #JsonTable;
+IF OBJECT_ID('tempdb..#Existing') IS NOT NULL DROP TABLE #Existing;
+IF OBJECT_ID('tempdb..#New') IS NOT NULL DROP TABLE #New;
+IF OBJECT_ID('tempdb..#Results') IS NOT NULL DROP TABLE #Results;
+IF OBJECT_ID('tempdb..#Errors') IS NOT NULL DROP TABLE #Errors;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[PCreaCobradores]    Script Date: 4/12/2025 5:30:49 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [dbo].[PCreaCobradores]
+@Nombres AS varchar(200),
+@Apellidos AS varchar(200),
+@Telefono AS varchar(20),
+@Documento AS varchar(20),
+@Direccion AS varchar(20),
+@Contraseña AS varchar(200),
+@Usuario AS varchar(200),
+@Estado AS Bit,
+@Jefe AS Numeric(18),
+@FechaActual As Date,
+@Cod AS Numeric(18),
+@UsarTransaccion bit = 1 -- Parámetro para controlar si se usa transacción
+AS
+BEGIN
+SET NOCOUNT ON;
+
+-- Solo iniciar transacción si se indica
+IF @UsarTransaccion = 1
+    BEGIN TRAN Tadd;
+
+Declare @CodB as Numeric(18)
+Declare @NumCuentas as Numeric(18)
+Declare @NumCuentasActivas as numeric(18)
+Set @NumCuentasActivas = CAST((Select Count(Cod) as Cod From Cobrador where Jefe=@Jefe And Estado=1) AS numeric (18)) 
+Set @NumCuentas = CAST((Select NumeroCobradores From Jefes Where Cod = @Jefe) AS NUMERIC(18))
+Begin Try
+If @NumCuentasActivas >= @NumCuentas
+Begin
+Select 'El numero maximo de cobradores activos es '+ CAST(@NumCuentas AS varchar(200)) as msg
+IF @UsarTransaccion = 1
+    COMMIT TRAN Tadd
+RETURN
+End
+Insert into Cobrador (Cod,Nombres,Apellidos,Telefono,Documento,Direccion,Contraseña,Usuario,Estado,Jefe) values (@Cod,@Nombres,@Apellidos,@Telefono,@Documento,@Direccion,@Contraseña,@Usuario,@Estado,@Jefe)
+Set @CodB = CAST((Select Isnull(Max(Cod),0)+1 From Bolsa) AS NUMERIC(18))
+Insert into Bolsa(Cod,SaldoActual,Estado,FechaInicio,Cobrador) values (@CodB,0,'A',CONVERT(varchar(12), @FechaActual),@Cod)
+INSERT INTO ValoresBolsa (Cod,Entregas,Valor,Bolsa,Fecha,Cobrador) Values ((Select Isnull(max(Cod),0)+1 From ValoresBolsa Where Cobrador=@Cod ),'Apertura de Caja',0,@CodB,CONVERT(varchar(12), @FechaActual),@Cod)
+IF @UsarTransaccion = 1
+    COMMIT TRAN Tadd
+End try
+Begin Catch
+Select 'Ocurrio un Error: ' + ERROR_MESSAGE() + ' en la línea ' + CONVERT(NVARCHAR(255), ERROR_LINE() ) + '.' as msg
+IF @UsarTransaccion = 1
+    Rollback TRAN Tadd
+End Catch
+END
+GO
+/****** Object:  StoredProcedure [dbo].[PCreaDelegados]    Script Date: 4/12/2025 5:30:49 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [dbo].[PCreaDelegados]
+@Nombres AS varchar(200),
+@Apellidos AS varchar(200),
+@Telefono AS varchar(20),
+@Documento AS varchar(20),
+@Direccion AS varchar(20),
+@Contraseña AS varchar(200),
+@Usuario AS varchar(200),
+@Estado AS Bit,
+@Jefe AS Numeric(18),
+@FechaActual As Date,
+@Cod AS Numeric(18),
+@UsarTransaccion bit = 1 -- Nuevo parámetro
+AS
+BEGIN
+SET NOCOUNT ON;
+
+-- Solo iniciar transacción si se indica
+IF @UsarTransaccion = 1
+    BEGIN TRAN Tadd;
+
+Begin Try
+Insert into Delegado (Cod,Nombres,Apellidos,Telefono,Documento,Direccion,Contraseña,Usuario,Estado,Jefe) values (@Cod,@Nombres,@Apellidos,@Telefono,@Documento,@Direccion,@Contraseña,@Usuario,@Estado,@Jefe)
+
+IF @UsarTransaccion = 1
+    COMMIT TRAN Tadd;
+End try
+Begin Catch
+Select 'Ocurrio un Error: ' + ERROR_MESSAGE() + ' en la línea ' + CONVERT(NVARCHAR(255), ERROR_LINE() ) + '.' as msg
+IF @UsarTransaccion = 1
+    Rollback TRAN Tadd;
+End Catch
+END
+GO
+/****** Object:  StoredProcedure [dbo].[PModCobradores]    Script Date: 4/12/2025 5:30:49 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [dbo].[PModCobradores]
+    @Nombres AS varchar(200),
+    @Apellidos AS varchar(200),
+    @Telefono AS varchar(20),
+    @Documento AS varchar(20),
+    @Direccion AS varchar(20),
+    @Usuario AS varchar(200),
+    @Contraseña AS varchar(200),
+    @Estado AS Bit,
+    @Cod AS Numeric(18),
+    @UsarTransaccion bit = 1 -- Nuevo parámetro
+AS
+BEGIN
+    IF @UsarTransaccion = 1
+        BEGIN TRAN Tadd
+    
+    DECLARE @Jefe as Numeric(18)
+    DECLARE @NumCuentas as Numeric(18)
+    DECLARE @NumCuentasActivas as numeric(18)
+    
+    SET @Jefe = CAST((Select Jefe From Cobrador Where Cod = @Cod) AS NUMERIC(18))
+    
+    BEGIN TRY
+        UPDATE Cobrador 
+        SET Nombres = @Nombres, 
+            Apellidos = @Apellidos, 
+            Telefono = @Telefono, 
+            Documento = @Documento, 
+            Direccion = @Direccion, 
+            Usuario = @Usuario, 
+            Contraseña = @Contraseña, 
+            Estado = @Estado 
+        WHERE Cod = @Cod
+        
+        SET @NumCuentasActivas = CAST((Select Count(Cod) as Cod From Cobrador where Jefe=@Jefe And Estado=1) AS numeric (18)) 
+        SET @NumCuentas = CAST((Select NumeroCobradores From Jefes Where Cod = @Jefe) AS NUMERIC(18))
+        
+        IF @NumCuentasActivas > @NumCuentas
+        BEGIN
+            SELECT 'El numero maximo de cobradores activos es '+ CAST(@NumCuentas AS varchar(200)) as msg
+            IF @UsarTransaccion = 1
+                ROLLBACK TRAN Tadd
+        END
+        ELSE
+        BEGIN
+            IF @UsarTransaccion = 1
+                COMMIT TRAN Tadd
+        END
+    END TRY
+    BEGIN CATCH
+        SELECT 'Ocurrio un Error: ' + ERROR_MESSAGE() + ' en la línea ' + CONVERT(NVARCHAR(255), ERROR_LINE() ) + '.' as msg
+        IF @UsarTransaccion = 1
+            ROLLBACK TRAN Tadd
+    END CATCH
+END
+GO
+/****** Object:  StoredProcedure [dbo].[PModDelegados]    Script Date: 4/12/2025 5:30:49 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [dbo].[PModDelegados]
+    @Nombres AS varchar(200),
+    @Apellidos AS varchar(200),
+    @Telefono AS varchar(20),
+    @Documento AS varchar(20),
+    @Direccion AS varchar(20),
+    @Usuario AS varchar(200),
+    @Contraseña AS varchar(200),
+    @Estado AS Bit,
+    @Cod AS Numeric(18),
+    @UsarTransaccion bit = 1 -- Nuevo parámetro
+AS
+BEGIN
+    IF @UsarTransaccion = 1
+        BEGIN TRAN Tadd
+    
+    BEGIN TRY
+        UPDATE Delegado 
+        SET Nombres = @Nombres, 
+            Apellidos = @Apellidos, 
+            Telefono = @Telefono, 
+            Documento = @Documento, 
+            Direccion = @Direccion, 
+            Usuario = @Usuario, 
+            Contraseña = @Contraseña, 
+            Estado = @Estado
+        WHERE Cod = @Cod
+        
+        
+        IF @UsarTransaccion = 1
+            COMMIT TRAN Tadd
+    END TRY
+    BEGIN CATCH
+        SELECT 'Ocurrio un Error: ' + ERROR_MESSAGE() + ' en la línea ' + CONVERT(NVARCHAR(255), ERROR_LINE() ) + '.' as msg
+        IF @UsarTransaccion = 1
+            ROLLBACK TRAN Tadd
+    END CATCH
+END
+GO

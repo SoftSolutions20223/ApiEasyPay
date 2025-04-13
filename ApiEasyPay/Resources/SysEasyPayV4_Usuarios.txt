@@ -1,0 +1,1595 @@
+﻿USE [master]
+GO
+/****** Object:  Database [SysEasyPayV4_Usuarios]    Script Date: 4/12/2025 5:26:59 PM ******/
+CREATE DATABASE [SysEasyPayV4_Usuarios]
+ CONTAINMENT = NONE
+ ON  PRIMARY 
+( NAME = N'SysEasyPayV4_Usuarios', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL16.EASYPAY\MSSQL\DATA\SysEasyPayV4_Usuarios.mdf' , SIZE = 8192KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB )
+ LOG ON 
+( NAME = N'SysEasyPayV4_Usuarios_log', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL16.EASYPAY\MSSQL\DATA\SysEasyPayV4_Usuarios_log.ldf' , SIZE = 73728KB , MAXSIZE = 2048GB , FILEGROWTH = 65536KB )
+ WITH CATALOG_COLLATION = DATABASE_DEFAULT, LEDGER = OFF
+GO
+ALTER DATABASE [SysEasyPayV4_Usuarios] SET COMPATIBILITY_LEVEL = 160
+GO
+IF (1 = FULLTEXTSERVICEPROPERTY('IsFullTextInstalled'))
+begin
+EXEC [SysEasyPayV4_Usuarios].[dbo].[sp_fulltext_database] @action = 'enable'
+end
+GO
+ALTER DATABASE [SysEasyPayV4_Usuarios] SET ANSI_NULL_DEFAULT OFF 
+GO
+ALTER DATABASE [SysEasyPayV4_Usuarios] SET ANSI_NULLS OFF 
+GO
+ALTER DATABASE [SysEasyPayV4_Usuarios] SET ANSI_PADDING OFF 
+GO
+ALTER DATABASE [SysEasyPayV4_Usuarios] SET ANSI_WARNINGS OFF 
+GO
+ALTER DATABASE [SysEasyPayV4_Usuarios] SET ARITHABORT OFF 
+GO
+ALTER DATABASE [SysEasyPayV4_Usuarios] SET AUTO_CLOSE OFF 
+GO
+ALTER DATABASE [SysEasyPayV4_Usuarios] SET AUTO_SHRINK OFF 
+GO
+ALTER DATABASE [SysEasyPayV4_Usuarios] SET AUTO_UPDATE_STATISTICS ON 
+GO
+ALTER DATABASE [SysEasyPayV4_Usuarios] SET CURSOR_CLOSE_ON_COMMIT OFF 
+GO
+ALTER DATABASE [SysEasyPayV4_Usuarios] SET CURSOR_DEFAULT  GLOBAL 
+GO
+ALTER DATABASE [SysEasyPayV4_Usuarios] SET CONCAT_NULL_YIELDS_NULL OFF 
+GO
+ALTER DATABASE [SysEasyPayV4_Usuarios] SET NUMERIC_ROUNDABORT OFF 
+GO
+ALTER DATABASE [SysEasyPayV4_Usuarios] SET QUOTED_IDENTIFIER OFF 
+GO
+ALTER DATABASE [SysEasyPayV4_Usuarios] SET RECURSIVE_TRIGGERS OFF 
+GO
+ALTER DATABASE [SysEasyPayV4_Usuarios] SET  DISABLE_BROKER 
+GO
+ALTER DATABASE [SysEasyPayV4_Usuarios] SET AUTO_UPDATE_STATISTICS_ASYNC OFF 
+GO
+ALTER DATABASE [SysEasyPayV4_Usuarios] SET DATE_CORRELATION_OPTIMIZATION OFF 
+GO
+ALTER DATABASE [SysEasyPayV4_Usuarios] SET TRUSTWORTHY OFF 
+GO
+ALTER DATABASE [SysEasyPayV4_Usuarios] SET ALLOW_SNAPSHOT_ISOLATION OFF 
+GO
+ALTER DATABASE [SysEasyPayV4_Usuarios] SET PARAMETERIZATION SIMPLE 
+GO
+ALTER DATABASE [SysEasyPayV4_Usuarios] SET READ_COMMITTED_SNAPSHOT OFF 
+GO
+ALTER DATABASE [SysEasyPayV4_Usuarios] SET HONOR_BROKER_PRIORITY OFF 
+GO
+ALTER DATABASE [SysEasyPayV4_Usuarios] SET RECOVERY FULL 
+GO
+ALTER DATABASE [SysEasyPayV4_Usuarios] SET  MULTI_USER 
+GO
+ALTER DATABASE [SysEasyPayV4_Usuarios] SET PAGE_VERIFY CHECKSUM  
+GO
+ALTER DATABASE [SysEasyPayV4_Usuarios] SET DB_CHAINING OFF 
+GO
+ALTER DATABASE [SysEasyPayV4_Usuarios] SET FILESTREAM( NON_TRANSACTED_ACCESS = OFF ) 
+GO
+ALTER DATABASE [SysEasyPayV4_Usuarios] SET TARGET_RECOVERY_TIME = 60 SECONDS 
+GO
+ALTER DATABASE [SysEasyPayV4_Usuarios] SET DELAYED_DURABILITY = DISABLED 
+GO
+ALTER DATABASE [SysEasyPayV4_Usuarios] SET ACCELERATED_DATABASE_RECOVERY = OFF  
+GO
+EXEC sys.sp_db_vardecimal_storage_format N'SysEasyPayV4_Usuarios', N'ON'
+GO
+ALTER DATABASE [SysEasyPayV4_Usuarios] SET QUERY_STORE = ON
+GO
+ALTER DATABASE [SysEasyPayV4_Usuarios] SET QUERY_STORE (OPERATION_MODE = READ_WRITE, CLEANUP_POLICY = (STALE_QUERY_THRESHOLD_DAYS = 30), DATA_FLUSH_INTERVAL_SECONDS = 900, INTERVAL_LENGTH_MINUTES = 60, MAX_STORAGE_SIZE_MB = 1000, QUERY_CAPTURE_MODE = AUTO, SIZE_BASED_CLEANUP_MODE = AUTO, MAX_PLANS_PER_QUERY = 200, WAIT_STATS_CAPTURE_MODE = ON)
+GO
+USE [SysEasyPayV4_Usuarios]
+GO
+/****** Object:  Table [dbo].[BasesDatos]    Script Date: 4/12/2025 5:26:59 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[BasesDatos](
+	[Cod] [numeric](18, 0) NULL,
+	[Bd] [varchar](200) NULL,
+	[Pw] [varchar](200) NULL,
+	[Usu] [varchar](200) NULL,
+	[Host] [varchar](200) NULL,
+	[CantUsuarios] [numeric](18, 0) NULL,
+	[TipoBd] [numeric](18, 0) NULL,
+	[MaxUsuarios] [numeric](18, 0) NULL
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Cobrador]    Script Date: 4/12/2025 5:26:59 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Cobrador](
+	[Nombres] [varchar](200) NULL,
+	[Apellidos] [varchar](200) NULL,
+	[Telefono] [varchar](20) NULL,
+	[Documento] [varchar](20) NULL,
+	[Direccion] [varchar](20) NULL,
+	[Contraseña] [varchar](200) NULL,
+	[Cod] [numeric](18, 0) NOT NULL,
+	[Usuario] [varchar](200) NULL,
+	[Estado] [bit] NULL,
+	[Jefe] [numeric](18, 0) NOT NULL,
+	[SesionActiva] [bit] NOT NULL,
+	[Token] [varchar](2000) NULL,
+	[CodRecuperacion] [varchar](50) NULL,
+	[TiempoExpiracionCodRecuperacion] [datetime] NULL,
+	[InfoDispositivo] [varchar](2000) NULL,
+ CONSTRAINT [PK_Cobrador] PRIMARY KEY CLUSTERED 
+(
+	[Jefe] ASC,
+	[Cod] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Delegado]    Script Date: 4/12/2025 5:26:59 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Delegado](
+	[Nombres] [varchar](200) NULL,
+	[Apellidos] [varchar](200) NULL,
+	[Telefono] [varchar](20) NULL,
+	[Documento] [varchar](20) NULL,
+	[Direccion] [varchar](20) NULL,
+	[Contraseña] [varchar](200) NULL,
+	[Cod] [numeric](18, 0) NOT NULL,
+	[Usuario] [varchar](200) NULL,
+	[Estado] [bit] NULL,
+	[Jefe] [numeric](18, 0) NOT NULL,
+	[SesionActiva] [bit] NOT NULL,
+	[Token] [varchar](2000) NULL,
+	[CodRecuperacion] [varchar](50) NULL,
+	[TiempoExpiracionCodRecuperacion] [datetime] NULL,
+	[InfoDispositivo] [varchar](2000) NULL,
+ CONSTRAINT [PK_Delegado] PRIMARY KEY CLUSTERED 
+(
+	[Jefe] ASC,
+	[Cod] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Jefes]    Script Date: 4/12/2025 5:26:59 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Jefes](
+	[Nombres] [varchar](200) NULL,
+	[Apellidos] [varchar](200) NULL,
+	[Telefono] [varchar](20) NULL,
+	[Documento] [varchar](20) NULL,
+	[Direccion] [varchar](20) NULL,
+	[Contraseña] [varchar](200) NULL,
+	[Cod] [numeric](18, 0) NOT NULL,
+	[Correo] [varchar](200) NULL,
+	[Usuario] [varchar](200) NULL,
+	[DiasRestantes] [numeric](18, 0) NULL,
+	[FechaLimite] [date] NULL,
+	[NumeroCobradores] [numeric](18, 0) NULL,
+	[Bd] [numeric](18, 0) NULL,
+	[TipoCuenta] [numeric](18, 0) NULL,
+	[Domingos] [bit] NULL,
+	[SesionActiva] [bit] NOT NULL,
+	[Token] [varchar](2000) NULL,
+	[InfoDispositivo] [varchar](2000) NULL,
+ CONSTRAINT [PK_Jefes] PRIMARY KEY CLUSTERED 
+(
+	[Cod] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  StoredProcedure [dbo].[DynamicCrudProcedure]    Script Date: 4/12/2025 5:26:59 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [dbo].[DynamicCrudProcedure]
+    @json   VARCHAR(MAX),
+    @accion VARCHAR(200),
+    @tabla  VARCHAR(200)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    -- Tabla para acumular mensajes de error
+    DECLARE @Errors TABLE (ErrorMessage NVARCHAR(MAX));
+    DECLARE @Result NVARCHAR(MAX) = '';
+    DECLARE @SQL NVARCHAR(MAX) = '';
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -------------------------------------------------------------------
+        -- 1. Validar existencia de la tabla
+        -------------------------------------------------------------------
+        IF OBJECT_ID(@tabla) IS NULL
+        BEGIN
+            INSERT INTO @Errors(ErrorMessage)
+            VALUES ('La tabla ' + @tabla + ' no existe.');
+            SELECT (SELECT ErrorMessage FROM @Errors FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS Errores;
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -------------------------------------------------------------------
+        -- 2. Parsear el JSON recibido a una tabla de pares (colName, colValue)
+        -------------------------------------------------------------------
+        DECLARE @JsonData TABLE (colName VARCHAR(200), colValue NVARCHAR(MAX));
+        INSERT INTO @JsonData (colName, colValue)
+        SELECT [key], value
+        FROM OPENJSON(@json);
+
+        -------------------------------------------------------------------
+        -- 3. Obtener metadata extendida de la tabla:
+        --    ColumnName, DataType, IsNullable, CharacterMaximumLength,
+        --    NumericPrecision, NumericScale y DefaultDefinition.
+        -------------------------------------------------------------------
+        DECLARE @Columns TABLE (
+            ColumnName SYSNAME,
+            DataType SYSNAME,
+            IsNullable BIT,
+            CharacterMaximumLength INT,
+            NumericPrecision INT,
+            NumericScale INT,
+            DefaultDefinition NVARCHAR(MAX)
+        );
+        INSERT INTO @Columns (ColumnName, DataType, IsNullable, CharacterMaximumLength, NumericPrecision, NumericScale, DefaultDefinition)
+        SELECT c.name,
+               t.name,
+               c.is_nullable,
+               c.max_length,
+               c.precision,
+               c.scale,
+               dc.definition
+        FROM sys.columns c
+        JOIN sys.types t
+          ON c.user_type_id = t.user_type_id AND c.system_type_id = t.system_type_id
+        LEFT JOIN sys.default_constraints dc
+          ON c.default_object_id = dc.object_id
+        WHERE c.object_id = OBJECT_ID(@tabla);
+
+        -------------------------------------------------------------------
+        -- 4. Verificar que todas las claves del JSON sean válidas (existan en la tabla)
+        -------------------------------------------------------------------
+        DECLARE @InvalidKeys NVARCHAR(MAX) = '';
+        SELECT @InvalidKeys = COALESCE(@InvalidKeys + ', ', '') + j.colName
+        FROM @JsonData j
+        LEFT JOIN @Columns c ON j.colName = c.ColumnName
+        WHERE c.ColumnName IS NULL;
+        IF LEN(@InvalidKeys) > 0
+        BEGIN
+            INSERT INTO @Errors(ErrorMessage)
+            VALUES ('Las siguientes claves del JSON no corresponden a columnas válidas: ' + @InvalidKeys + '.');
+        END
+
+        -------------------------------------------------------------------
+        -- 5. Validar campos obligatorios: columnas que no admiten NULL y sin default,
+        --    exceptuando la columna "Cod" (generada automáticamente).
+        -------------------------------------------------------------------
+        DECLARE @MissingColumns NVARCHAR(MAX) = '';
+        SELECT @MissingColumns = COALESCE(@MissingColumns + ', ', '') + ColumnName
+        FROM @Columns
+        WHERE IsNullable = 0
+          AND ColumnName <> 'Cod'
+          AND DefaultDefinition IS NULL
+          AND ColumnName NOT IN (SELECT colName FROM @JsonData);
+        IF LEN(@MissingColumns) > 0
+        BEGIN
+            INSERT INTO @Errors(ErrorMessage)
+            VALUES ('Faltan las columnas obligatorias: ' + @MissingColumns + '.');
+        END
+
+        -------------------------------------------------------------------
+        -- 6. Validar que las columnas de texto obligatorias no vengan vacías.
+        -------------------------------------------------------------------
+        DECLARE @EmptyTextCols NVARCHAR(MAX) = '';
+        SELECT @EmptyTextCols = COALESCE(@EmptyTextCols + ', ', '') + c.ColumnName
+        FROM @Columns c
+        JOIN @JsonData j ON c.ColumnName = j.colName
+        WHERE c.IsNullable = 0
+          AND c.DataType IN ('char','varchar','nchar','nvarchar','text','ntext')
+          AND LTRIM(RTRIM(j.colValue)) = '';
+        IF LEN(@EmptyTextCols) > 0
+        BEGIN
+            INSERT INTO @Errors(ErrorMessage)
+            VALUES ('Las siguientes columnas de texto no pueden estar vacías: ' + @EmptyTextCols + '.');
+        END
+
+        -------------------------------------------------------------------
+        -- 7. Validar restricciones UNIQUE para índices de una sola columna.
+        -------------------------------------------------------------------
+        DECLARE @UniqueColumns TABLE (ColumnName SYSNAME);
+        INSERT INTO @UniqueColumns (ColumnName)
+        SELECT DISTINCT c.name
+        FROM sys.indexes i
+        JOIN sys.index_columns ic ON i.object_id = ic.object_id AND i.index_id = ic.index_id
+        JOIN sys.columns c ON ic.object_id = c.object_id AND ic.column_id = c.column_id
+        WHERE i.object_id = OBJECT_ID(@tabla)
+          AND i.is_unique = 1
+          AND (SELECT COUNT(*) FROM sys.index_columns WHERE object_id = i.object_id AND index_id = i.index_id) = 1;
+        
+        DECLARE @UniqueCol SYSNAME, @UniqueValue NVARCHAR(MAX), @Exist INT;
+        DECLARE UniqueCursor CURSOR FAST_FORWARD FOR
+            SELECT ColumnName FROM @UniqueColumns
+            WHERE ColumnName IN (SELECT colName FROM @JsonData);
+        OPEN UniqueCursor;
+        FETCH NEXT FROM UniqueCursor INTO @UniqueCol;
+        WHILE @@FETCH_STATUS = 0
+        BEGIN
+            SELECT @UniqueValue = colValue FROM @JsonData WHERE colName = @UniqueCol;
+            SET @SQL = N'SELECT @ExistOut = COUNT(*) FROM ' + QUOTENAME(@tabla) +
+                       N' WHERE ' + QUOTENAME(@UniqueCol) + N' = @UniqueValueParam';
+            SET @Exist = 0;
+            EXEC sp_executesql @SQL, 
+                 N'@UniqueValueParam NVARCHAR(MAX), @ExistOut INT OUTPUT',
+                 @UniqueValueParam = @UniqueValue, @ExistOut = @Exist OUTPUT;
+            IF @Exist > 0
+            BEGIN
+                INSERT INTO @Errors(ErrorMessage)
+                VALUES ('La columna ' + @UniqueCol + ' debe ser única y el valor ' + @UniqueValue + ' ya existe.');
+            END
+            FETCH NEXT FROM UniqueCursor INTO @UniqueCol;
+        END
+        CLOSE UniqueCursor;
+        DEALLOCATE UniqueCursor;
+
+        -------------------------------------------------------------------
+        -- 8. (Opcional) Validar valores numéricos según precisión y escala.
+        --     Aquí se podría extender la validación.
+        -------------------------------------------------------------------
+
+        -------------------------------------------------------------------
+        -- Si se acumularon errores, devolver JSON con errores y abortar.
+        -------------------------------------------------------------------
+        IF EXISTS (SELECT 1 FROM @Errors)
+        BEGIN
+            SELECT (SELECT ErrorMessage FROM @Errors FOR JSON PATH) AS Errores;
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -------------------------------------------------------------------
+        -- 9. Construir y ejecutar SQL dinámico según la acción: INSERT, UPDATE o DELETE.
+        -------------------------------------------------------------------
+        IF LOWER(@accion) = 'insertar'
+        BEGIN
+            DECLARE @ColList NVARCHAR(MAX) = '';
+            DECLARE @ValList NVARCHAR(MAX) = '';
+
+            -- Lista de columnas a insertar (omitiendo "Cod")
+            SELECT @ColList = STUFF((SELECT ', ' + QUOTENAME(ColumnName)
+                                     FROM @Columns
+                                     WHERE ColumnName <> 'Cod'
+                                       AND ColumnName IN (SELECT colName FROM @JsonData)
+                                     FOR XML PATH(''), TYPE
+                                    ).value('.', 'NVARCHAR(MAX)'), 1, 2, '');
+            -- Lista de valores, escapando comillas simples en textos.
+            SELECT @ValList = STUFF((SELECT ', ' +
+                                     CASE 
+                                       WHEN DataType IN ('char','varchar','nchar','nvarchar','text','ntext')
+                                           THEN '''' + REPLACE(colValue, '''', '''''') + ''''
+                                       ELSE colValue
+                                     END
+                                     FROM @Columns c
+                                     JOIN @JsonData j ON c.ColumnName = j.colName
+                                     WHERE c.ColumnName <> 'Cod'
+                                     FOR XML PATH(''), TYPE
+                                    ).value('.', 'NVARCHAR(MAX)'), 1, 2, '');
+
+            SET @SQL = N'INSERT INTO ' + QUOTENAME(@tabla) + ' (Cod, ' + @ColList + ') ' +
+                       N'VALUES ((SELECT ISNULL(MAX(Cod),0)+1 FROM ' + QUOTENAME(@tabla) + '), ' + @ValList + '); ' +
+                       N'SELECT * FROM ' + QUOTENAME(@tabla) +
+                       N' WHERE Cod = (SELECT MAX(Cod) FROM ' + QUOTENAME(@tabla) + ') ' +
+                       N'FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;';
+            EXEC sp_executesql @SQL;
+        END
+        ELSE IF LOWER(@accion) = 'modificar'
+        BEGIN
+            -- Se requiere que el JSON incluya "Cod" y "Cobrador"
+            DECLARE @CodValue NVARCHAR(50), @CobradorValue NVARCHAR(50);
+            SELECT @CodValue = colValue FROM @JsonData WHERE colName = 'Cod';
+            SELECT @CobradorValue = colValue FROM @JsonData WHERE colName = 'Cobrador';
+            IF @CodValue IS NULL OR @CobradorValue IS NULL
+            BEGIN
+                INSERT INTO @Errors(ErrorMessage)
+                VALUES ('Para modificar, se requieren los parámetros Cod y Cobrador.');
+                SELECT (SELECT ErrorMessage FROM @Errors FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS Errores;
+                ROLLBACK TRANSACTION;
+                RETURN;
+            END
+
+            DECLARE @SetClause NVARCHAR(MAX) = '';
+            SELECT @SetClause = STUFF((SELECT ', ' + QUOTENAME(colName) + ' = ' +
+                                       CASE 
+                                         WHEN DataType IN ('char','varchar','nchar','nvarchar','text','ntext')
+                                             THEN '''' + REPLACE(colValue, '''', '''''') + ''''
+                                         ELSE colValue
+                                       END
+                                       FROM @Columns c
+                                       JOIN @JsonData j ON c.ColumnName = j.colName
+                                       WHERE c.ColumnName NOT IN ('Cod','Cobrador')
+                                       FOR XML PATH(''), TYPE
+                                      ).value('.', 'NVARCHAR(MAX)'), 1, 2, '');
+            
+            SET @SQL = N'UPDATE ' + QUOTENAME(@tabla) + 
+                       N' SET ' + @SetClause +
+                       N' WHERE Cod = ' + @CodValue + N' AND Cobrador = ' + QUOTENAME(@CobradorValue,'''') + '; ' +
+                       N'SELECT * FROM ' + QUOTENAME(@tabla) +
+                       N' WHERE Cod = ' + @CodValue + N' AND Cobrador = ' + QUOTENAME(@CobradorValue,'''') +
+                       N' FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;';
+            EXEC sp_executesql @SQL;
+        END
+        ELSE IF LOWER(@accion) = 'eliminar'
+        BEGIN
+            DECLARE @WhereClause NVARCHAR(MAX) = '';
+            SELECT @WhereClause = STUFF((SELECT ' AND ' + QUOTENAME(colName) + ' = ' +
+                                       CASE 
+                                         WHEN DataType IN ('char','varchar','nchar','nvarchar','text','ntext')
+                                             THEN '''' + REPLACE(colValue, '''', '''''') + ''''
+                                         ELSE colValue
+                                       END
+                                       FROM @Columns c
+                                       JOIN @JsonData j ON c.ColumnName = j.colName
+                                       FOR XML PATH(''), TYPE
+                                      ).value('.', 'NVARCHAR(MAX)'), 1, 5, '');
+            IF LEN(@WhereClause) = 0
+            BEGIN
+                INSERT INTO @Errors(ErrorMessage)
+                VALUES ('No se proporcionaron parámetros para la eliminación.');
+                SELECT (SELECT ErrorMessage FROM @Errors FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS Errores;
+                ROLLBACK TRANSACTION;
+                RETURN;
+            END
+            
+            SET @SQL = N'DELETE FROM ' + QUOTENAME(@tabla) +
+                       N' WHERE ' + @WhereClause + '; ' +
+                       N'SELECT ''Registro eliminado correctamente'' AS Mensaje ' +
+                       N'FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;';
+            EXEC sp_executesql @SQL;
+        END
+        ELSE
+        BEGIN
+            INSERT INTO @Errors(ErrorMessage)
+            VALUES ('Acción no reconocida.');
+            SELECT (SELECT ErrorMessage FROM @Errors FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS Errores;
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+        DECLARE @ErrMsg NVARCHAR(4000) = ERROR_MESSAGE();
+        INSERT INTO @Errors(ErrorMessage) VALUES (@ErrMsg);
+        SELECT (SELECT ErrorMessage FROM @Errors FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) AS Errores;
+    END CATCH
+END
+GO
+/****** Object:  StoredProcedure [dbo].[PActualizarEstadoSesion]    Script Date: 4/12/2025 5:26:59 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [dbo].[PActualizarEstadoSesion]
+    @Usuario VARCHAR(200),
+    @Token VARCHAR(2000),
+    @TipoUsuario CHAR(1), -- 'J' para Jefe, 'C' para Cobrador
+	@InfoDispositivo VARCHAR(500)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    IF @TipoUsuario = 'J'
+    BEGIN
+        UPDATE Jefes 
+        SET SesionActiva = 1, 
+            Token = @Token,
+			InfoDispositivo=@InfoDispositivo
+        WHERE Usuario = @Usuario;
+    END
+	ELSE IF @TipoUsuario = 'D'
+    BEGIN
+        UPDATE Delegado 
+        SET SesionActiva = 1, 
+            Token = @Token,
+			InfoDispositivo=@InfoDispositivo
+        WHERE Usuario = @Usuario;
+    END
+    ELSE
+    BEGIN
+        UPDATE Cobrador
+        SET SesionActiva = 1, 
+            Token = @Token,
+			InfoDispositivo=@InfoDispositivo,
+            CodRecuperacion = NULL,
+            TiempoExpiracionCodRecuperacion = NULL
+        WHERE Usuario = @Usuario;
+    END
+    
+    SELECT 'Sesión actualizada correctamente' as Mensaje FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[PCerrarSesion]    Script Date: 4/12/2025 5:26:59 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [dbo].[PCerrarSesion]
+    @Token VARCHAR(2000),
+    @TipoUsuario VARCHAR(10) -- 'J' para Jefe, 'C' para Cobrador
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    BEGIN TRY
+        IF @TipoUsuario = 'J'
+        BEGIN
+            -- Actualizar tabla de Jefes
+            UPDATE Jefes 
+            SET SesionActiva = 0, 
+                Token = NULL,
+                InfoDispositivo = NULL
+            WHERE Token = @Token;
+            
+            IF @@ROWCOUNT > 0
+                SELECT 'Sesión cerrada correctamente.' AS Mensaje FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+            ELSE
+                SELECT 'No se encontró una sesión activa con ese token.' AS MensajeError FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+        END
+		ELSE IF @TipoUsuario = 'D'
+        BEGIN
+            -- Actualizar tabla de Delegados
+            UPDATE Delegado 
+            SET SesionActiva = 0, 
+                Token = NULL,
+                InfoDispositivo = NULL
+            WHERE Token = @Token;
+            
+            IF @@ROWCOUNT > 0
+                SELECT 'Sesión cerrada correctamente.' AS Mensaje FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+            ELSE
+                SELECT 'No se encontró una sesión activa con ese token.' AS MensajeError FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+        END
+        ELSE IF @TipoUsuario = 'C'
+        BEGIN
+            -- Actualizar tabla de Cobradores
+            UPDATE Cobrador
+            SET SesionActiva = 0,
+                Token = NULL,
+                InfoDispositivo = NULL
+            WHERE Token = @Token;
+            
+            IF @@ROWCOUNT > 0
+                SELECT 'Sesión cerrada correctamente.' AS Mensaje FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+            ELSE
+                SELECT 'No se encontró una sesión activa con ese token.'  AS MensajeError FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+        END
+        ELSE
+        BEGIN
+            SELECT 'Tipo de usuario no válido. Use "J" para Jefe o "C" para Cobrador.' AS MensajeError FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+        END
+    END TRY
+    BEGIN CATCH
+        SELECT 'Error al cerrar la sesión: ' + ERROR_MESSAGE() AS MensajeError FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+    END CATCH
+END
+GO
+/****** Object:  StoredProcedure [dbo].[PCreaCobradorEnAmbasDB]    Script Date: 4/12/2025 5:26:59 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [dbo].[PCreaCobradorEnAmbasDB]
+    @Nombres VARCHAR(200),
+    @Apellidos VARCHAR(200),
+    @Telefono VARCHAR(20),
+    @Documento VARCHAR(20),
+    @Direccion VARCHAR(20),
+    @Contraseña VARCHAR(200),
+    @Usuario VARCHAR(200),
+    @Estado BIT,
+    @Jefe NUMERIC(18),
+    @FechaActual DATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    -- Verificar si el usuario ya existe
+    DECLARE @ExisteUsuario INT
+    SELECT @ExisteUsuario = COUNT(1) 
+    FROM (
+        SELECT Usuario FROM Cobrador
+        UNION
+        SELECT Usuario FROM Jefes
+        UNION
+        SELECT Usuario FROM Delegado
+    ) AS Usuarios
+    WHERE Usuario = @Usuario
+    
+    IF @ExisteUsuario > 0
+    BEGIN
+        SELECT 'El nombre de usuario ya existe' MensajeError FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+        RETURN
+    END
+    
+    -- Usar un nombre de transacción único con un GUID para evitar conflictos
+    DECLARE @TransName NVARCHAR(100) = 'Tran_PCreaCobradorEnAmbasDB_' + CAST(NEWID() AS NVARCHAR(36))
+    BEGIN TRANSACTION @TransName
+    
+    DECLARE @Cod NUMERIC(18)
+    SET @Cod = (SELECT ISNULL(MAX(Cod),0)+1 FROM Cobrador)
+    
+    BEGIN TRY
+        -- Insertar en BD de Usuarios
+        INSERT INTO Cobrador (Cod, Nombres, Apellidos, Telefono, Documento, Direccion, Contraseña, Usuario, Estado, Jefe, SesionActiva)
+        VALUES (@Cod, @Nombres, @Apellidos, @Telefono, @Documento, @Direccion, @Contraseña, @Usuario, @Estado, @Jefe, 0)
+        
+        -- Insertar en BD de Sistema - pasar 0 para no usar transacción
+        EXEC SysEasyPayV4.dbo.PCreaCobradores 
+             @Nombres, @Apellidos, @Telefono, @Documento, @Direccion, 
+             @Contraseña, @Usuario, @Estado, @Jefe, @FechaActual, @Cod, 0
+        
+        COMMIT TRANSACTION @TransName
+        SELECT * from Cobrador where Cod= @Cod FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION @TransName
+        SELECT 'Error al crear cobrador: ' + ERROR_MESSAGE() MensajeError FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+        RETURN
+    END CATCH
+END
+GO
+/****** Object:  StoredProcedure [dbo].[PCreaCobradores]    Script Date: 4/12/2025 5:26:59 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[PCreaCobradores]
+@Nombres AS varchar(200),
+@Apellidos AS varchar(200),
+@Telefono AS varchar(20),
+@Documento AS varchar(20),
+@Direccion AS varchar(20),
+@Contraseña AS varchar(200),
+@Usuario AS varchar(200),
+@Estado AS Bit,
+@Jefe AS Numeric(18),
+@FechaActual As Date
+AS
+BEGIN
+SET NOCOUNT ON;
+Begin Tran Tadd
+Declare @Cod as Numeric(18)
+Declare @CodB as Numeric(18)
+Declare @NumCuentas as Numeric(18)
+Declare @NumCuentasActivas as numeric(18)
+Set @NumCuentasActivas = CAST((Select IsNull(Count(Cod),0) as Cod From Cobrador where Jefe=@Jefe And Estado=1) AS numeric (18)) 
+Set @NumCuentas = CAST((Select NumeroCobradores From Jefes Where Cod = @Jefe) AS NUMERIC(18))
+Begin Try
+If @NumCuentasActivas >= @NumCuentas
+Begin
+Select 'El numero maximo de cobradores activos es '+ CAST(@NumCuentas AS varchar(200)) as msg
+COMMIT TRAN Tadd
+RETURN
+End
+Set @Cod = CAST((Select isnull(Max(Cod),0)+1 From Cobrador) AS NUMERIC(18))
+Insert into Cobrador (Cod,Nombres,Apellidos,Telefono,Documento,Direccion,Contraseña,Usuario,Estado,Jefe) values (@Cod,@Nombres,@Apellidos,@Telefono,@Documento,@Direccion,@Contraseña,@Usuario,@Estado,@Jefe)
+Select 'yes' as msg,@Cod as cod
+COMMIT TRAN Tadd
+End try
+Begin Catch
+Select 'Ocurrio un Error: ' + ERROR_MESSAGE() + ' en la línea ' + CONVERT(NVARCHAR(255), ERROR_LINE() ) + '.' as msg
+Rollback TRAN Tadd
+End Catch
+END
+
+
+
+
+GO
+/****** Object:  StoredProcedure [dbo].[PCreaDelegadoEnAmbasDB]    Script Date: 4/12/2025 5:26:59 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [dbo].[PCreaDelegadoEnAmbasDB]
+    @Nombres VARCHAR(200),
+    @Apellidos VARCHAR(200),
+    @Telefono VARCHAR(20),
+    @Documento VARCHAR(20),
+    @Direccion VARCHAR(20),
+    @Contraseña VARCHAR(200),
+    @Usuario VARCHAR(200),
+    @Estado BIT,
+    @Jefe NUMERIC(18),
+    @FechaActual DATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    -- Verificar si el usuario ya existe
+    DECLARE @ExisteUsuario INT
+    SELECT @ExisteUsuario = COUNT(1) 
+    FROM (
+        SELECT Usuario FROM Delegado
+        UNION
+        SELECT Usuario FROM Jefes
+        UNION
+        SELECT Usuario FROM Cobrador
+    ) AS Usuarios
+    WHERE Usuario = @Usuario
+    
+    IF @ExisteUsuario > 0
+    BEGIN
+        SELECT 'El nombre de usuario ya existe' MensajeError FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+        RETURN
+    END
+    
+    -- Usar un nombre de transacción único con un GUID para evitar conflictos
+    DECLARE @TransName NVARCHAR(100) = 'Tran_PCreaDelegadoEnAmbasDB_' + CAST(NEWID() AS NVARCHAR(36))
+    BEGIN TRANSACTION @TransName
+    
+    DECLARE @Cod NUMERIC(18)
+    SET @Cod = (SELECT ISNULL(MAX(Cod),0)+1 FROM Delegado)
+    
+    BEGIN TRY
+        -- Insertar en BD de Usuarios
+        INSERT INTO Delegado (Cod, Nombres, Apellidos, Telefono, Documento, Direccion, Contraseña, Usuario, Estado, Jefe, SesionActiva)
+        VALUES (@Cod, @Nombres, @Apellidos, @Telefono, @Documento, @Direccion, @Contraseña, @Usuario, @Estado, @Jefe, 0)
+        
+        -- Insertar en BD de Sistema - pasar 0 para no usar transacción
+        EXEC SysEasyPayV4.dbo.PCreaDelegados
+             @Nombres, @Apellidos, @Telefono, @Documento, @Direccion, 
+             @Contraseña, @Usuario, @Estado, @Jefe, @FechaActual, @Cod, 0
+        
+        COMMIT TRANSACTION @TransName
+        SELECT * from Delegado where Cod= @Cod FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION @TransName
+        SELECT 'Error al crear Delegado: ' + ERROR_MESSAGE() MensajeError FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+        RETURN
+    END CATCH
+END
+GO
+/****** Object:  StoredProcedure [dbo].[PCreaJefeEnAmbasDB]    Script Date: 4/12/2025 5:26:59 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [dbo].[PCreaJefeEnAmbasDB]
+    @Nombres VARCHAR(200),
+    @Apellidos VARCHAR(200),
+    @Telefono VARCHAR(20),
+    @Documento VARCHAR(20),
+    @Direccion VARCHAR(20),
+    @Contraseña VARCHAR(200),
+    @Usuario VARCHAR(200),
+    @Correo VARCHAR(200)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    -- Verificar si el usuario ya existe
+    DECLARE @ExisteUsuario INT
+    SELECT @ExisteUsuario = COUNT(1) 
+    FROM (
+        SELECT Usuario FROM Cobrador
+        UNION
+        SELECT Usuario FROM Jefes
+        UNION
+        SELECT Usuario FROM Delegados
+    ) AS Usuarios
+    WHERE Usuario = @Usuario
+    
+    IF @ExisteUsuario > 0
+    BEGIN
+        SELECT 'El nombre de usuario ya existe' AS msg
+        RETURN
+    END
+    
+    -- Usar un nombre de transacción único con un GUID para evitar conflictos
+    DECLARE @TransName NVARCHAR(100) = 'Tran_PCreaJefeEnAmbasDB_' + CAST(NEWID() AS NVARCHAR(36))
+    BEGIN TRANSACTION @TransName
+    
+    DECLARE @Cod NUMERIC(18)
+    SET @Cod = (SELECT ISNULL(MAX(Cod),0)+1 FROM Jefes)
+    
+    BEGIN TRY
+        -- Insertar en BD de Usuarios
+        INSERT INTO Jefes (Cod, Nombres, Apellidos, Telefono, Documento, Direccion, Contraseña, Usuario, Correo, DiasRestantes, FechaLimite, NumeroCobradores, SesionActiva)
+        VALUES (@Cod, @Nombres, @Apellidos, @Telefono, @Documento, @Direccion, @Contraseña, @Usuario, @Correo, 30, DATEADD(DAY, 30, GETDATE()), 10, 0)
+        
+        -- Insertar en BD de Sistema - pasar 0 para no usar transacción
+        EXEC SysEasyPayV4.dbo.PCreaJefes 
+             @Nombres, @Apellidos, @Telefono, @Documento, @Direccion, 
+             @Contraseña, @Usuario, @Correo, @Cod, 0
+        
+        -- Crear fondo de inversión para el jefe
+        DECLARE @CodFondo NUMERIC(18) = (SELECT ISNULL(MAX(Cod),0)+1 FROM SysEasyPayV4.dbo.FondoInversion)
+        INSERT INTO SysEasyPayV4.dbo.FondoInversion (Cod, Monto, Jefe)
+        VALUES (@CodFondo, 0, @Cod)
+        
+        COMMIT TRANSACTION @TransName
+        SELECT 'yes' AS msg, @Cod AS cod
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION @TransName
+        SELECT 'Error al crear jefe: ' + ERROR_MESSAGE() AS msg
+        RETURN
+    END CATCH
+END
+GO
+/****** Object:  StoredProcedure [dbo].[PCreaJefes]    Script Date: 4/12/2025 5:26:59 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [dbo].[PCreaJefes]
+@Nombres AS varchar(200),
+@Apellidos AS varchar(200),
+@Telefono AS varchar(20),
+@Documento AS varchar(20),
+@Direccion AS varchar(20),
+@Contraseña AS varchar(200),
+@Usuario AS varchar(200),
+@Correo AS varchar(200)
+AS
+BEGIN
+SET NOCOUNT ON;
+Begin Tran Tadd
+Declare @Cod as Numeric(18)
+Declare @Fecha as date
+Set @Fecha = CONVERT(varchar(12), GETDATE(), 103)
+Set @Fecha = DATEADD (DAY , 30 , @Fecha )
+Begin Try
+Set @Cod = CAST((Select Max(Cod)+1 From Jefes) AS NUMERIC(18))
+Insert into Jefes (Cod,Nombres,Apellidos,Telefono,Documento,Direccion,Contraseña,Usuario,Correo,DiasRestantes,FechaLimite,NumeroCobradores) values (@Cod,@Nombres,@Apellidos,@Telefono,@Documento,@Direccion,@Contraseña,@Usuario,@Correo,30,@Fecha,10)
+Select 'yes' as msg,@Cod as cod
+COMMIT TRAN Tadd
+End try
+Begin Catch
+Select 'Ocurrio un Error: ' + ERROR_MESSAGE() + ' en la línea ' + CONVERT(NVARCHAR(255), ERROR_LINE() ) + '.' as msg
+Rollback TRAN Tadd
+End Catch
+END
+GO
+/****** Object:  StoredProcedure [dbo].[PIniciaSesion]    Script Date: 4/12/2025 5:26:59 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [dbo].[PIniciaSesion]
+    @Usuario         VARCHAR(200),
+    @Contraseña      VARCHAR(200),
+    @CodRecuperacion VARCHAR(50) = NULL  -- Parámetro adicional para cobradores
+AS
+BEGIN
+    SET NOCOUNT ON;
+	set dateformat dmy
+    -- Control de mantenimiento
+    DECLARE @Mantenimiento VARCHAR(20) = 'no';
+    IF @Mantenimiento <> 'no'
+    BEGIN
+        SELECT 'En este momento nos encontramos en mantimiento, intente mas tarde por favor!.' AS MensajeError FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+        RETURN;
+    END
+
+    -------------------------------------------------------------------------
+    -- 1. Inicio de sesión para Jefes
+    -------------------------------------------------------------------------
+    DECLARE @ExisteJefe INT,
+            @PassJefe VARCHAR(200);
+
+    SELECT @ExisteJefe = COUNT(Cod)
+    FROM Jefes
+    WHERE Usuario = @Usuario;
+
+    IF @ExisteJefe > 0
+    BEGIN
+        SELECT @PassJefe = Contraseña
+        FROM Jefes
+        WHERE Usuario = @Usuario;
+
+        IF @Contraseña <> @PassJefe
+        BEGIN
+            SELECT 'Contraseña Incorrecta!.' AS MensajeError FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+            RETURN;
+        END
+        ELSE
+        BEGIN
+            SELECT 
+                J.Nombres,
+				J.Apellidos,
+                J.Cod,
+				J.Usuario,
+				J.Contraseña,
+                BDS.Host as HostBd,
+                BDS.Usu as UsuBd,
+                BDS.Pw as PwBd,
+                J.TipoCuenta AS TipoBd,
+                BDS.Bd AS NameBd,
+                'J' AS Rol
+            FROM Jefes J 
+            INNER JOIN BasesDatos BDS ON J.Bd = BDS.Cod
+            WHERE J.Usuario = @Usuario
+            FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+            RETURN;
+        END
+    END
+
+	    -------------------------------------------------------------------------
+    -- 2. Inicio de sesión para Delegados
+    -------------------------------------------------------------------------
+    DECLARE @ExisteDelegado INT,
+            @PassDelegado VARCHAR(200);
+
+    SELECT @ExisteDelegado = COUNT(Cod)
+    FROM Delegado
+    WHERE Usuario = @Usuario;
+
+    IF @ExisteDelegado > 0
+    BEGIN
+        SELECT @PassDelegado = Contraseña
+        FROM Delegado
+        WHERE Usuario = @Usuario;
+
+        IF @Contraseña <> @PassDelegado
+        BEGIN
+            SELECT 'Contraseña Incorrecta!.' AS MensajeError FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+            RETURN;
+        END
+        ELSE
+        BEGIN
+            SELECT 
+                D.Nombres,
+				D.Apellidos,
+                D.Cod,
+				D.Usuario,
+				D.Contraseña,
+                BDS.Host as HostBd,
+                BDS.Usu as UsuBd,
+                BDS.Pw as PwBd,
+                J.TipoCuenta AS TipoBd,
+                BDS.Bd AS NameBd,
+                'D' AS Rol
+            FROM Delegado D INNER JOIN Jefes J ON J.Cod=D.Jefe 
+            INNER JOIN BasesDatos BDS ON J.Bd = BDS.Cod
+            WHERE D.Usuario = @Usuario
+            FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+            RETURN;
+        END
+    END
+    -------------------------------------------------------------------------
+    -- 3. Inicio de sesión para Cobrador
+    -------------------------------------------------------------------------
+    DECLARE @ExisteCobrador INT,
+            @PassCobrador   VARCHAR(200),
+            @Estado         BIT,
+            @FechaLimite    VARCHAR(20),
+            @SesionActiva   BIT,
+            @CodCobrador    VARCHAR(50),
+			@FechaActual     DATETIME = NULL,  -- Se requiere con minutos y segundos para validar fechas de expiración
+            @TiempoExpiracion DATETIME;
+
+
+	Set @FechaActual=GETDATE();
+    SELECT @ExisteCobrador = COUNT(Cod)
+    FROM Cobrador
+    WHERE Usuario = @Usuario;
+
+    IF @ExisteCobrador > 0
+    BEGIN
+        SELECT 
+            @PassCobrador = Contraseña,
+            @Estado = Estado
+        FROM Cobrador
+        WHERE Usuario = @Usuario;
+
+        IF @Contraseña <> @PassCobrador
+        BEGIN
+            SELECT 'Contraseña Incorrecta!.' AS MensajeError FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+            RETURN;
+        END
+        ELSE
+        BEGIN
+            -- Verificar la vigencia del plan asociado (FechaLimite se obtiene de la tabla Jefes)
+            SELECT @FechaLimite = CONVERT(VARCHAR(12), J.FechaLimite, 103)
+            FROM Cobrador C 
+            INNER JOIN Jefes J ON C.Jefe = J.Cod
+            WHERE C.Usuario = @Usuario;
+
+            IF @FechaActual > CAST(@FechaLimite AS DATE)
+            BEGIN
+                SELECT 'El plan al que se encuentra suscrito ha caducado!.' AS MensajeError FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+                RETURN;
+            END
+
+            -- Verificar que el usuario se encuentre activo
+            IF @Estado = 0
+            BEGIN
+                SELECT 'Este usuario se encuentra inactivo, comuniquese con su administrador!.' AS MensajeError FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+                RETURN;
+            END
+
+            -- Recuperar campos adicionales para validar sesión activa y código de recuperación
+            SELECT 
+                @SesionActiva = SesionActiva,
+                @CodCobrador = Isnull(CodRecuperacion,''),
+                @TiempoExpiracion = TiempoExpiracionCodRecuperacion
+            FROM Cobrador
+            WHERE Usuario = @Usuario;
+
+            -- Si tiene sesión activa, se requiere validar el código de recuperación
+            IF @SesionActiva = 1
+            BEGIN
+                IF @CodRecuperacion IS NULL or @CodRecuperacion = ''
+                BEGIN
+                    SELECT 'Se debe proporcionar el código de recuperación.' AS MensajeError FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+                    RETURN;
+                END
+				ELSE IF @CodCobrador IS NULL or @CodCobrador = ''
+                BEGIN
+                    SELECT 'El administrador debe generar un codigo de recuperacion.' AS MensajeError FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+                    RETURN;
+                END
+                ELSE
+                BEGIN
+                    IF @FechaActual > @TiempoExpiracion
+                    BEGIN
+                        SELECT 'El administrador debe generar otro codigo de recuperacion.' AS MensajeError FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+                        RETURN;
+                    END
+                    ELSE IF @CodRecuperacion <> @CodCobrador
+                    BEGIN
+                        SELECT 'Código de recuperación incorrecto.' AS MensajeError FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+                        RETURN;
+                    END
+                END
+            END
+
+            -- Si todas las validaciones pasan, se completa el inicio de sesión
+            SELECT 
+                CO.Nombres,
+				CO.Apellidos,
+                CO.Cod,
+				CO.Usuario,
+				CO.Contraseña,
+                BDS.Host as HostBd,
+                BDS.Usu as UsuBd,
+                BDS.Pw as PwBd,
+                J.TipoCuenta AS TipoBd,
+                BDS.Bd AS NameBd,
+                'C' AS Rol
+            FROM Cobrador CO 
+            INNER JOIN Jefes J ON CO.Jefe = J.Cod
+            INNER JOIN BasesDatos BDS ON J.Bd = BDS.Cod
+            WHERE CO.Usuario = @Usuario
+            FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+            RETURN;
+        END
+    END
+    ELSE
+    BEGIN
+        SELECT 'Usuario Incorrecto!.' AS MensajeError FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+        RETURN;
+    END
+END
+GO
+/****** Object:  StoredProcedure [dbo].[PIniciaSesion_error]    Script Date: 4/12/2025 5:26:59 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [dbo].[PIniciaSesion_error]
+    @Usuario         VARCHAR(200),
+    @Contraseña      VARCHAR(200),
+    @CodRecuperacion VARCHAR(50) = NULL  -- Parámetro adicional para cobradores
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET DATEFORMAT dmy;
+
+    PRINT 'Inicio del procedimiento PIniciaSesion para el usuario: ' + @Usuario;
+
+    -- Control de mantenimiento
+    DECLARE @Mantenimiento VARCHAR(20) = 'no';
+    IF @Mantenimiento <> 'no'
+    BEGIN
+        PRINT 'Mantenimiento activo. Finalizando procedimiento.';
+        SELECT 'En este momento nos encontramos en mantimiento, intente mas tarde por favor!.' AS msg;
+        RETURN;
+    END
+
+    PRINT 'Mantenimiento verificado. Continuando con el proceso.';
+
+    -------------------------------------------------------------------------
+    -- 1. Inicio de sesión para Jefes
+    -------------------------------------------------------------------------
+    DECLARE @ExisteJefe INT,
+            @PassJefe VARCHAR(200);
+
+    SELECT @ExisteJefe = COUNT(Cod)
+    FROM Jefes
+    WHERE Usuario = @Usuario;
+
+    PRINT 'Verificando existencia de Jefe. ExisteJefe = ' + CAST(@ExisteJefe AS VARCHAR(10));
+
+    IF @ExisteJefe > 0
+    BEGIN
+        SELECT @PassJefe = Contraseña
+        FROM Jefes
+        WHERE Usuario = @Usuario;
+
+        PRINT 'Contraseña del Jefe obtenida. Comparando contraseña...';
+
+        IF @Contraseña <> @PassJefe
+        BEGIN
+            PRINT 'Contraseña incorrecta para Jefe.';
+            SELECT 'Contraseña Incorrecta!.' AS msg;
+            RETURN;
+        END
+        ELSE
+        BEGIN
+            PRINT 'Inicio de sesión de Jefe exitoso. Preparando respuesta JSON.';
+            SELECT 
+                J.Nombres,
+                J.Cod,
+                BDS.Host,
+                BDS.Usu,
+                BDS.Pw,
+                J.TipoCuenta AS TipoBd,
+                BDS.Bd,
+                'A' AS Rol
+            FROM Jefes J 
+            INNER JOIN BasesDatos BDS ON J.Bd = BDS.Cod
+            WHERE J.Usuario = @Usuario
+            FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+            RETURN;
+        END
+    END
+
+    -------------------------------------------------------------------------
+    -- 2. Inicio de sesión para Cobrador
+    -------------------------------------------------------------------------
+    DECLARE @ExisteCobrador INT,
+            @PassCobrador   VARCHAR(200),
+            @Estado         BIT,
+            @FechaLimite    VARCHAR(20),
+            @SesionActiva   BIT,
+            @CodCobrador    VARCHAR(50),
+            @FechaActual    DATETIME = NULL,  -- Se requiere con minutos y segundos para validar fechas de expiración
+            @TiempoExpiracion DATETIME;
+
+    SET @FechaActual = GETDATE();
+    PRINT 'Fecha actual: ' + CONVERT(VARCHAR(30), @FechaActual, 121);
+
+    SELECT @ExisteCobrador = COUNT(Cod)
+    FROM Cobrador
+    WHERE Usuario = @Usuario;
+
+    PRINT 'Verificando existencia de Cobrador. ExisteCobrador = ' + CAST(@ExisteCobrador AS VARCHAR(10));
+
+    IF @ExisteCobrador > 0
+    BEGIN
+        SELECT 
+            @PassCobrador = Contraseña,
+            @Estado = Estado
+        FROM Cobrador
+        WHERE Usuario = @Usuario;
+
+        PRINT 'Contraseña del Cobrador obtenida. Comparando contraseña...';
+
+        IF @Contraseña <> @PassCobrador
+        BEGIN
+            PRINT 'Contraseña incorrecta para Cobrador.';
+            SELECT 'Contraseña Incorrecta!.' AS msg;
+            RETURN;
+        END
+        ELSE
+        BEGIN
+            PRINT 'Contraseña correcta para Cobrador. Verificando fecha límite del plan...';
+
+            -- Verificar la vigencia del plan asociado (FechaLimite se obtiene de la tabla Jefes)
+            SELECT @FechaLimite = CONVERT(VARCHAR(12), J.FechaLimite, 103)
+            FROM Cobrador C 
+            INNER JOIN Jefes J ON C.Jefe = J.Cod
+            WHERE C.Usuario = @Usuario;
+
+            PRINT 'Fecha límite obtenida: ' + @FechaLimite;
+
+            IF @FechaActual > CAST(@FechaLimite AS DATE)
+            BEGIN
+                PRINT 'Plan caducado.';
+                SELECT 'El plan al que se encuentra suscrito ha caducado!.' AS msg;
+                RETURN;
+            END
+
+            -- Verificar que el usuario se encuentre activo
+            IF @Estado = 0
+            BEGIN
+                PRINT 'Usuario inactivo.';
+                SELECT 'Este usuario se encuentra inactivo, comuniquese con su administrador!.' AS msg;
+                RETURN;
+            END
+
+            PRINT 'Usuario activo. Verificando sesión activa y código de recuperación...';
+
+            -- Recuperar campos adicionales para validar sesión activa y código de recuperación
+            SELECT 
+                @SesionActiva = SesionActiva,
+                @CodCobrador = Isnull(CodRecuperacion,'cod'),
+                @TiempoExpiracion = TiempoExpiracionCodRecuperacion
+            FROM Cobrador
+            WHERE Usuario = @Usuario;
+
+            -- Si tiene sesión activa, se requiere validar el código de recuperación
+            IF @SesionActiva = 1
+            BEGIN
+                PRINT 'Sesión activa detectada. Validando código de recuperación...';
+                IF @CodRecuperacion IS NULL
+                BEGIN
+                    PRINT 'Código de recuperación no proporcionado.';
+                    SELECT 'Se debe proporcionar el código de recuperación.' AS msg;
+                    RETURN;
+                END
+                ELSE
+                BEGIN
+                    IF @FechaActual > @TiempoExpiracion
+                    BEGIN
+                        PRINT 'Código de recuperación expirado.';
+                        SELECT 'El administrador debe generar otro codigo de recuperacion' AS msg;
+                        RETURN;
+                    END
+                    ELSE IF @CodRecuperacion <> @CodCobrador
+                    BEGIN
+                        PRINT 'Código de recuperación incorrecto.';
+                        SELECT 'Código de recuperación incorrecto.' AS msg;
+                        RETURN;
+                    END
+                    PRINT 'Código de recuperación validado.';
+                END
+            END
+
+            PRINT 'Inicio de sesión de Cobrador exitoso. Preparando respuesta JSON.';
+
+            SELECT 
+                CO.Nombres,
+                CO.Cod,
+                BDS.Host,
+                BDS.Usu,
+                BDS.Pw,
+                J.TipoCuenta AS TipoBd,
+                BDS.Bd,
+                'U' AS Rol
+            FROM Cobrador CO 
+            INNER JOIN Jefes J ON CO.Jefe = J.Cod
+            INNER JOIN BasesDatos BDS ON J.Bd = BDS.Cod
+            WHERE CO.Usuario = @Usuario
+            FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+            RETURN;
+        END
+    END
+    ELSE
+    BEGIN
+        PRINT 'El usuario no existe ni como Jefe ni como Cobrador.';
+        SELECT 'Usuario Incorrecto!.' AS msg;
+        RETURN;
+    END
+END
+GO
+/****** Object:  StoredProcedure [dbo].[PModCobradorEnAmbasDB]    Script Date: 4/12/2025 5:26:59 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [dbo].[PModCobradorEnAmbasDB]
+    @Cod NUMERIC(18),
+    @Nombres VARCHAR(200),
+    @Apellidos VARCHAR(200),
+    @Telefono VARCHAR(20),
+    @Documento VARCHAR(20),
+    @Direccion VARCHAR(20),
+    @Contraseña VARCHAR(200),
+    @Usuario VARCHAR(200),
+    @Estado BIT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    -- Verificar si el usuario ya existe (excluyendo el registro actual)
+    DECLARE @ExisteUsuario INT
+    SELECT @ExisteUsuario = COUNT(1) 
+    FROM (
+        SELECT Usuario, Cod FROM Cobrador WHERE Usuario = @Usuario AND Cod <> @Cod
+        UNION
+        SELECT Usuario, Cod FROM Jefes
+        UNION
+        SELECT Usuario, Cod FROM Delegado
+    ) AS Usuarios WHERE Usuario = @Usuario
+    
+    
+    IF @ExisteUsuario > 0
+    BEGIN
+        SELECT 'El nombre de usuario ya existe' AS MensajeError FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+        RETURN
+    END
+    
+    -- Verificar si el cobrador existe
+    DECLARE @ExisteCobrador INT
+    SELECT @ExisteCobrador = COUNT(1) FROM Cobrador WHERE Cod = @Cod
+    
+    IF @ExisteCobrador = 0
+    BEGIN
+        SELECT 'El cobrador no existe' AS MensajeError FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+        RETURN
+    END
+    
+    -- Obtener el ID del jefe
+    DECLARE @Jefe NUMERIC(18)
+    SELECT @Jefe = Jefe FROM Cobrador WHERE Cod = @Cod
+    
+    -- Usar un nombre de transacción único con un GUID para evitar conflictos
+    DECLARE @TransName NVARCHAR(100) = 'Tran_PModCobradorEnAmbasDB_' + CAST(NEWID() AS NVARCHAR(36))
+    BEGIN TRANSACTION @TransName
+    
+    BEGIN TRY
+        -- Actualizar en BD de Usuarios
+        UPDATE Cobrador 
+        SET Nombres = @Nombres, 
+            Apellidos = @Apellidos, 
+            Telefono = @Telefono, 
+            Documento = @Documento, 
+            Direccion = @Direccion, 
+            Contraseña = @Contraseña, 
+            Usuario = @Usuario, 
+            Estado = @Estado
+        WHERE Cod = @Cod
+        
+        -- Actualizar en BD de Sistema sin usar transacción
+        EXEC SysEasyPayV4.dbo.PModCobradores 
+             @Nombres, @Apellidos, @Telefono, @Documento, @Direccion, 
+             @Usuario, @Contraseña, @Estado, @Cod, 0 -- Añadir parámetro para no usar transacción
+        
+        COMMIT TRANSACTION @TransName
+        SELECT * from Cobrador where Cod= @Cod FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION @TransName
+        SELECT 'Error al modificar cobrador: ' + ERROR_MESSAGE() AS MensajeError FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+        RETURN
+    END CATCH
+END
+GO
+/****** Object:  StoredProcedure [dbo].[PModCobradores]    Script Date: 4/12/2025 5:26:59 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [dbo].[PModCobradores]
+@Nombres AS varchar(200),
+@Apellidos AS varchar(200),
+@Telefono AS varchar(20),
+@Documento AS varchar(20),
+@Direccion AS varchar(20),
+@Usuario AS varchar(200),
+@Contraseña AS varchar(200),
+@Estado AS Bit,
+@Cod AS Numeric(18)
+AS
+BEGIN
+Begin Tran Tadd
+Declare @Jefe as Numeric(18)
+Declare @NumCuentas as Numeric(18)
+Declare @NumCuentasActivas as numeric(18)
+Set @Jefe = CAST((Select Jefe From Cobrador Where Cod = @Cod) AS NUMERIC(18))
+Begin Try
+update Cobrador set Nombres=@Nombres, Apellidos=@Apellidos, Telefono=@Telefono, Documento=@Documento,Direccion=@Direccion,Usuario=@Usuario,Contraseña=@Contraseña,Estado=@Estado where Cod= @Cod
+Set @NumCuentasActivas = CAST((Select Count(Cod) as Cod From Cobrador where Jefe=@Jefe And Estado=1) AS numeric (18)) 
+Set @NumCuentas = CAST((Select NumeroCobradores From Jefes Where Cod = @Jefe) AS NUMERIC(18))
+If @NumCuentasActivas > @NumCuentas
+Begin
+Select 'El numero maximo de cobradores activos es '+ CAST(@NumCuentas AS varchar(200)) as msg
+Rollback TRAN Tadd
+End
+Else
+Begin
+Select 'yes' as msg
+COMMIT TRAN Tadd
+End
+End try
+Begin Catch
+Select 'Ocurrio un Error: ' + ERROR_MESSAGE() + ' en la línea ' + CONVERT(NVARCHAR(255), ERROR_LINE() ) + '.' as msg
+Rollback TRAN Tadd
+End Catch
+END
+GO
+/****** Object:  StoredProcedure [dbo].[PModDelegadoEnAmbasDB]    Script Date: 4/12/2025 5:26:59 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [dbo].[PModDelegadoEnAmbasDB]
+    @Cod NUMERIC(18),
+    @Nombres VARCHAR(200),
+    @Apellidos VARCHAR(200),
+    @Telefono VARCHAR(20),
+    @Documento VARCHAR(20),
+    @Direccion VARCHAR(20),
+    @Contraseña VARCHAR(200),
+    @Usuario VARCHAR(200),
+    @Estado BIT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    -- Verificar si el usuario ya existe (excluyendo el registro actual)
+    DECLARE @ExisteUsuario INT
+    SELECT @ExisteUsuario = COUNT(0) 
+    FROM (
+        SELECT Usuario, Cod FROM Cobrador
+        UNION
+        SELECT Usuario, Cod FROM Jefes
+        UNION
+        SELECT Usuario, Cod FROM Delegado WHERE Usuario = @Usuario AND Cod <> @Cod
+    ) AS Usuarios WHERE Usuario = @Usuario
+    
+    
+    IF @ExisteUsuario > 0
+    BEGIN
+        SELECT 'El nombre de usuario ya existe' AS MensajeError FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+        RETURN
+    END
+    
+    -- Verificar si el delegado existe
+    DECLARE @ExisteDelegado INT
+    SELECT @ExisteDelegado = COUNT(1) FROM Delegado WHERE Cod = @Cod
+    
+    IF @ExisteDelegado = 0
+    BEGIN
+        SELECT 'El delegado no existe' AS MensajeError FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+        RETURN
+    END
+    
+    -- Obtener el ID del jefe
+    DECLARE @Jefe NUMERIC(18)
+    SELECT @Jefe = Jefe FROM Delegado WHERE Cod = @Cod
+    
+    -- Usar un nombre de transacción único con un GUID para evitar conflictos
+    DECLARE @TransName NVARCHAR(100) = 'Tran_PModDelegadoEnAmbasDB_' + CAST(NEWID() AS NVARCHAR(36))
+    BEGIN TRANSACTION @TransName
+    
+    BEGIN TRY
+        -- Actualizar en BD de Usuarios
+        UPDATE Delegado 
+        SET Nombres = @Nombres, 
+            Apellidos = @Apellidos, 
+            Telefono = @Telefono, 
+            Documento = @Documento, 
+            Direccion = @Direccion, 
+            Contraseña = @Contraseña, 
+            Usuario = @Usuario, 
+            Estado = @Estado
+        WHERE Cod = @Cod
+        
+        -- Actualizar en BD de Sistema sin usar transacción
+        EXEC SysEasyPayV4.dbo.PModDelegados 
+             @Nombres, @Apellidos, @Telefono, @Documento, @Direccion, 
+             @Usuario, @Contraseña, @Estado, @Cod, 0 -- Añadir parámetro para no usar transacción
+        
+        COMMIT TRANSACTION @TransName
+        SELECT * from Delegado where Cod= @Cod FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION @TransName
+        SELECT 'Error al modificar delegado: ' + ERROR_MESSAGE() AS MensajeError FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
+        RETURN
+    END CATCH
+END
+GO
+/****** Object:  StoredProcedure [dbo].[PModJefeEnAmbasDB]    Script Date: 4/12/2025 5:26:59 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [dbo].[PModJefeEnAmbasDB]
+    @Cod NUMERIC(18),
+    @Nombres VARCHAR(200),
+    @Apellidos VARCHAR(200),
+    @Telefono VARCHAR(20),
+    @Documento VARCHAR(20),
+    @Direccion VARCHAR(20),
+    @Contraseña VARCHAR(200),
+    @Usuario VARCHAR(200),
+    @Correo VARCHAR(200),
+    @NumeroCobradores NUMERIC(18)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    -- Verificar si el usuario ya existe (excluyendo el registro actual)
+    DECLARE @ExisteUsuario INT
+    SELECT @ExisteUsuario = COUNT(1) 
+    FROM (
+        SELECT Usuario, Cod FROM Cobrador
+        UNION
+        SELECT Usuario, Cod FROM Jefes
+        UNION
+        SELECT Usuario, Cod FROM Delegado
+    ) AS Usuarios
+    WHERE Usuario = @Usuario AND Cod <> @Cod
+    
+    IF @ExisteUsuario > 0
+    BEGIN
+        SELECT 'El nombre de usuario ya existe' AS msg
+        RETURN
+    END
+    
+    -- Verificar si el jefe existe
+    DECLARE @ExisteJefe INT
+    SELECT @ExisteJefe = COUNT(1) FROM Jefes WHERE Cod = @Cod
+    
+    IF @ExisteJefe = 0
+    BEGIN
+        SELECT 'El jefe no existe' AS msg
+        RETURN
+    END
+    
+    -- Verificar que el número de cobradores no sea menor que los activos actuales
+    DECLARE @CobradoresActivos INT
+    SELECT @CobradoresActivos = COUNT(1) FROM Cobrador WHERE Jefe = @Cod AND Estado = 1
+    
+    IF @NumeroCobradores < @CobradoresActivos
+    BEGIN
+        SELECT 'El número máximo de cobradores no puede ser menor que el número actual de cobradores activos: ' + CAST(@CobradoresActivos AS VARCHAR) AS msg
+        RETURN
+    END
+    
+    -- Usar un nombre de transacción único con un GUID para evitar conflictos
+    DECLARE @TransName NVARCHAR(100) = 'Tran_PModJefeEnAmbasDB_' + CAST(NEWID() AS NVARCHAR(36))
+    BEGIN TRANSACTION @TransName
+    
+    BEGIN TRY
+        -- Actualizar en BD de Usuarios
+        UPDATE Jefes 
+        SET Nombres = @Nombres, 
+            Apellidos = @Apellidos, 
+            Telefono = @Telefono, 
+            Documento = @Documento, 
+            Direccion = @Direccion, 
+            Contraseña = @Contraseña, 
+            Usuario = @Usuario, 
+            Correo = @Correo,
+            NumeroCobradores = @NumeroCobradores
+        WHERE Cod = @Cod
+        
+        -- Actualizar en BD de Sistema sin usar transacción
+        EXEC SysEasyPayV4.dbo.PModJefes 
+             @Nombres, @Apellidos, @Telefono, @Documento, @Direccion, 
+             @Usuario, @Contraseña, @Correo, @NumeroCobradores, @Cod, 0 -- Añadir parámetro para no usar transacción
+        
+        COMMIT TRANSACTION @TransName
+        SELECT 'yes' AS msg
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION @TransName
+        SELECT 'Error al modificar jefe: ' + ERROR_MESSAGE() AS msg
+        RETURN
+    END CATCH
+END
+GO
+USE [master]
+GO
+ALTER DATABASE [SysEasyPayV4_Usuarios] SET  READ_WRITE 
+GO

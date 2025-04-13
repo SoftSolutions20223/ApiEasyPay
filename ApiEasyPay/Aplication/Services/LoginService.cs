@@ -53,7 +53,7 @@ namespace ApiEasyPay.Aplication.Services
             };
         }
 
-        public async Task<(SesionResponseDTO sesion, string errorMsg)> IniciarSesionAsync(string usuario, string contraseña, string codigoRecuperacion = null)
+        public async Task<(SesionResponseDTO sesion, string errorMsg)> IniciarSesionAsync(string usuario, string contraseña, string InfoDispositivo, string codigoRecuperacion = null)
         {
             var comando = new SqlCommand("EXEC PIniciaSesion @Usuario, @Contraseña, @CodRecuperacion");
             comando.Parameters.AddWithValue("@Usuario", usuario);
@@ -78,10 +78,11 @@ namespace ApiEasyPay.Aplication.Services
             string token = GenerateToken(usuario);
 
             // Actualizar estado de sesión en SQL mediante procedimiento almacenado
-            var updateCmd = new SqlCommand("EXEC PActualizarEstadoSesion @Usuario, @Token, @TipoUsuario");
+            var updateCmd = new SqlCommand("EXEC PActualizarEstadoSesion @Usuario, @Token, @TipoUsuario,@InfoDispositivo");
             updateCmd.Parameters.AddWithValue("@Usuario", usuario);
             updateCmd.Parameters.AddWithValue("@Token", token);
             updateCmd.Parameters.AddWithValue("@TipoUsuario", resultado["Rol"]?.ToString());
+            updateCmd.Parameters.AddWithValue("@InfoDispositivo", InfoDispositivo);
 
             JObject updateResult = _conexionSql.SqlJsonCommandObject(true, updateCmd);
             if (updateResult["MensajeError"] != null)

@@ -21,9 +21,11 @@ namespace ApiEasyPay.Controllers
         {
             try
             {
+                string InfoDispositivo = "Marca: " + request.Marca + ", Modelo: " + request.Modelo + ", SistemaOperativo: " + request.Sistema;
                 var (sesion, errorMsg) = await _loginService.IniciarSesionAsync(
                     request.Usuario,
                     request.Contraseña,
+                    InfoDispositivo,
                     request.CodigoRecuperacion);
 
                 if (!string.IsNullOrEmpty(errorMsg))
