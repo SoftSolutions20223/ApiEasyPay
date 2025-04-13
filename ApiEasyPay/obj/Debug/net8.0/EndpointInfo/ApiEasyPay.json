@@ -1414,6 +1414,18 @@
           "codigoRecuperacion": {
             "type": "string",
             "nullable": true
+          },
+          "marca": {
+            "type": "string",
+            "nullable": true
+          },
+          "modelo": {
+            "type": "string",
+            "nullable": true
+          },
+          "sistema": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false

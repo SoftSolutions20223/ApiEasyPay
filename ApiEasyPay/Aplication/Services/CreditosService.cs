@@ -125,27 +125,58 @@ namespace ApiEasyPay.Aplication.Services
         {
             var _delegadoId = ObtenerId();
             var comando = new SqlCommand(@"
-        SELECT 
-            C.Cod AS CodCobrador,
-            C.Nombres + ' ' + C.Apellidos AS Nombres,
-            COUNT(CR.Cod) AS CreditosCreados,
-            SUM(CASE WHEN CR.Estado = 'V' THEN 1 ELSE 0 END) AS CreditosVigentes,
-            SUM(CASE WHEN CR.Estado = 'V' THEN CR.Total ELSE 0 END) AS TotalPrestadoV,
-            SUM(CASE WHEN CR.Estado = 'V' THEN CR.TotalPagar ELSE 0 END) AS TotalPagarV,
-            SUM(CASE WHEN CR.Estado = 'V' THEN CR.TotalPagado ELSE 0 END) AS TotalPagadoV,
-            SUM(CASE WHEN CR.Estado = 'V' THEN CR.TotalPagar - CR.TotalPagado ELSE 0 END) AS SaldoPrestadoV,
-            SUM(CASE WHEN CR.Estado = 'T' THEN 1 ELSE 0 END) AS CreditosTerminados,
-            SUM(CASE WHEN CR.Estado = 'T' THEN CR.Total ELSE 0 END) AS TotalPrestadoT,
-            SUM(CASE WHEN CR.Estado = 'T' THEN CR.TotalPagado ELSE 0 END) AS TotalPagadoT,
-            SUM(CASE WHEN CR.Estado = 'T' THEN CR.TotalPagar ELSE 0 END) AS TotalPagarT,
-            0 AS CarteraEsperada,
-            0 AS Cartera,
-            SUM(CASE WHEN CR.Estado = 'T' THEN CR.TotalPagar - CR.TotalPagado ELSE 0 END) AS SaldoPrestadoT
-        FROM Cobrador C
-        INNER JOIN Delegados_Cobradores DC ON C.Cod = DC.Cobrador
-        LEFT JOIN Creditos CR ON C.Cod = CR.Cobrador
-        WHERE DC.Delegado = " + _delegadoId + @"
-        GROUP BY C.Cod, C.Nombres, C.Apellidos for json path");
+        WITH CreditosAgregados AS (
+    SELECT 
+        C.Cod AS CodCobrador,
+        C.Nombres + ' ' + C.Apellidos AS Nombres,
+        COUNT(CR.Cod) AS CreditosCreados,
+        SUM(CASE WHEN CR.Estado = 'V' THEN 1 ELSE 0 END) AS CreditosVigentes,
+        SUM(CASE WHEN CR.Estado = 'V' THEN CR.Total ELSE 0 END) AS TotalPrestadoV,
+        SUM(CASE WHEN CR.Estado = 'V' THEN CR.TotalPagar ELSE 0 END) AS TotalPagarV,
+        SUM(CASE WHEN CR.Estado = 'V' THEN CR.TotalPagado ELSE 0 END) AS TotalPagadoV,
+        SUM(CASE WHEN CR.Estado = 'V' THEN CR.TotalPagar - CR.TotalPagado ELSE 0 END) AS SaldoPrestadoV,
+        SUM(CASE WHEN CR.Estado = 'T' THEN 1 ELSE 0 END) AS CreditosTerminados,
+        SUM(CASE WHEN CR.Estado = 'T' THEN CR.Total ELSE 0 END) AS TotalPrestadoT,
+        SUM(CASE WHEN CR.Estado = 'T' THEN CR.TotalPagado ELSE 0 END) AS TotalPagadoT,
+        SUM(CASE WHEN CR.Estado = 'T' THEN CR.TotalPagar ELSE 0 END) AS TotalPagarT,
+        SUM(CASE WHEN CR.Estado = 'T' THEN CR.TotalPagar - CR.TotalPagado ELSE 0 END) AS SaldoPrestadoT
+    FROM Cobrador C
+    INNER JOIN Delegados_Cobradores DC ON C.Cod = DC.Cobrador
+    LEFT JOIN Creditos CR ON C.Cod = CR.Cobrador
+    WHERE DC.Delegado = " + _delegadoId + @"
+    GROUP BY C.Cod, C.Nombres, C.Apellidos
+),
+UltimaCajaPorCobrador AS (
+    SELECT 
+        B.Cobrador,
+        B.SaldoActual,
+        ROW_NUMBER() OVER (PARTITION BY B.Cobrador ORDER BY B.FechaInicio DESC) AS RowNum
+    FROM Bolsa B
+    INNER JOIN Cobrador C ON B.Cobrador = C.Cod
+    INNER JOIN Delegados_Cobradores DC ON C.Cod = DC.Cobrador
+    WHERE DC.Delegado = " + _delegadoId + @"
+)
+SELECT 
+    CA.CodCobrador,
+    CA.Nombres,
+    CA.CreditosCreados,
+    CA.CreditosVigentes,
+    CA.TotalPrestadoV,
+    CA.TotalPagarV,
+    CA.TotalPagadoV,
+    CA.SaldoPrestadoV,
+    CA.CreditosTerminados,
+    CA.TotalPrestadoT,
+    CA.TotalPagadoT,
+    CA.TotalPagarT,
+    CA.TotalPagarV + ISNULL(UC.SaldoActual, 0) - CA.TotalPagadoV AS CarteraEsperada,
+    CA.TotalPrestadoV + ISNULL(UC.SaldoActual, 0) - CA.TotalPagadoV AS Cartera,
+    CA.SaldoPrestadoT,
+    ISNULL(UC.SaldoActual, 0) AS SaldoActual
+FROM CreditosAgregados CA
+LEFT JOIN UltimaCajaPorCobrador UC ON CA.CodCobrador = UC.Cobrador AND UC.RowNum = 1
+ORDER BY CA.Nombres
+FOR JSON PATH");
 
             string jsonResult = _conexionSql.SqlJsonComand(false, comando);
             JArray resultado = JArray.Parse(jsonResult);
@@ -160,26 +191,56 @@ namespace ApiEasyPay.Aplication.Services
         {
             var _jefeId = ObtenerId();
             var comando = new SqlCommand(@"
-                SELECT 
-                    C.Cod AS CodCobrador,
-                    C.Nombres + ' ' + C.Apellidos AS Nombres,
-                    COUNT(CR.Cod) AS CreditosCreados,
-                    SUM(CASE WHEN CR.Estado = 'V' THEN 1 ELSE 0 END) AS CreditosVigentes,
-                    SUM(CASE WHEN CR.Estado = 'V' THEN CR.Total ELSE 0 END) AS TotalPrestadoV,
-                    SUM(CASE WHEN CR.Estado = 'V' THEN CR.TotalPagar ELSE 0 END) AS TotalPagarV,
-                    SUM(CASE WHEN CR.Estado = 'V' THEN CR.TotalPagado ELSE 0 END) AS TotalPagadoV,
-                    SUM(CASE WHEN CR.Estado = 'V' THEN CR.TotalPagar - CR.TotalPagado ELSE 0 END) AS SaldoPrestadoV,
-                    SUM(CASE WHEN CR.Estado = 'T' THEN 1 ELSE 0 END) AS CreditosTerminados,
-                    SUM(CASE WHEN CR.Estado = 'T' THEN CR.Total ELSE 0 END) AS TotalPrestadoT,
-                    SUM(CASE WHEN CR.Estado = 'T' THEN CR.TotalPagado ELSE 0 END) AS TotalPagadoT,
-                    SUM(CASE WHEN CR.Estado = 'T' THEN CR.TotalPagar ELSE 0 END) AS TotalPagarT,
-                    0 AS CarteraEsperada,
-                    0 AS Cartera,
-                    SUM(CASE WHEN CR.Estado = 'T' THEN CR.TotalPagar - CR.TotalPagado ELSE 0 END) AS SaldoPrestadoT
-                FROM Cobrador C
-                LEFT JOIN Creditos CR ON C.Cod = CR.Cobrador
-                WHERE C.Jefe = " + _jefeId+@"
-                GROUP BY C.Cod, C.Nombres, C.Apellidos for json path");
+                WITH CreditosAgregados AS (
+    SELECT 
+        C.Cod AS CodCobrador,
+        C.Nombres + ' ' + C.Apellidos AS Nombres,
+        COUNT(CR.Cod) AS CreditosCreados,
+        SUM(CASE WHEN CR.Estado = 'V' THEN 1 ELSE 0 END) AS CreditosVigentes,
+        SUM(CASE WHEN CR.Estado = 'V' THEN CR.Total ELSE 0 END) AS TotalPrestadoV,
+        SUM(CASE WHEN CR.Estado = 'V' THEN CR.TotalPagar ELSE 0 END) AS TotalPagarV,
+        SUM(CASE WHEN CR.Estado = 'V' THEN CR.TotalPagado ELSE 0 END) AS TotalPagadoV,
+        SUM(CASE WHEN CR.Estado = 'V' THEN CR.TotalPagar - CR.TotalPagado ELSE 0 END) AS SaldoPrestadoV,
+        SUM(CASE WHEN CR.Estado = 'T' THEN 1 ELSE 0 END) AS CreditosTerminados,
+        SUM(CASE WHEN CR.Estado = 'T' THEN CR.Total ELSE 0 END) AS TotalPrestadoT,
+        SUM(CASE WHEN CR.Estado = 'T' THEN CR.TotalPagado ELSE 0 END) AS TotalPagadoT,
+        SUM(CASE WHEN CR.Estado = 'T' THEN CR.TotalPagar ELSE 0 END) AS TotalPagarT,
+        SUM(CASE WHEN CR.Estado = 'T' THEN CR.TotalPagar - CR.TotalPagado ELSE 0 END) AS SaldoPrestadoT
+    FROM Cobrador C
+    LEFT JOIN Creditos CR ON C.Cod = CR.Cobrador
+    WHERE C.Jefe = " + _jefeId + @"
+    GROUP BY C.Cod, C.Nombres, C.Apellidos
+),
+UltimaCajaPorCobrador AS (
+    SELECT 
+        B.Cobrador,
+        B.SaldoActual,
+        ROW_NUMBER() OVER (PARTITION BY B.Cobrador ORDER BY B.FechaInicio DESC) AS RowNum
+    FROM Bolsa B
+    INNER JOIN Cobrador C ON B.Cobrador = C.Cod
+    WHERE C.Jefe = " + _jefeId + @"
+)
+SELECT 
+    CA.CodCobrador,
+    CA.Nombres,
+    CA.CreditosCreados,
+    CA.CreditosVigentes,
+    CA.TotalPrestadoV,
+    CA.TotalPagarV,
+    CA.TotalPagadoV,
+    CA.SaldoPrestadoV,
+    CA.CreditosTerminados,
+    CA.TotalPrestadoT,
+    CA.TotalPagadoT,
+    CA.TotalPagarT,
+    CA.TotalPagarV + ISNULL(UC.SaldoActual, 0) - CA.TotalPagadoV AS CarteraEsperada,
+    CA.TotalPrestadoV + ISNULL(UC.SaldoActual, 0) - CA.TotalPagadoV AS Cartera,
+    CA.SaldoPrestadoT,
+    ISNULL(UC.SaldoActual, 0) AS SaldoActual
+FROM CreditosAgregados CA
+LEFT JOIN UltimaCajaPorCobrador UC ON CA.CodCobrador = UC.Cobrador AND UC.RowNum = 1
+ORDER BY CA.Nombres
+FOR JSON PATH");
             string jsonResult = _conexionSql.SqlJsonComand(false, comando);
             JArray resultado = JArray.Parse(jsonResult);
 
