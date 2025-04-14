@@ -102,8 +102,7 @@ namespace ApiEasyPay.Aplication.Services
         FROM Bolsa B 
         INNER JOIN Cobrador C ON B.Cobrador = C.Cod 
         INNER JOIN Delegados_Cobradores DC ON C.Cod = DC.Cobrador
-        WHERE B.Estado = 'A' 
-        AND DC.Delegado = " + delegadoId + @"
+        WHERE DC.Delegado = " + delegadoId + @" And B.FechaInicio ='" + fecha + @"'
         FOR JSON PATH, WITHOUT_ARRAY_WRAPPER");
 
             string resultado = _conexionSql.SqlJsonComand(false, comando);
