@@ -64,7 +64,7 @@
               "RelativeDocumentMoniker": "ApiEasyPay\\Resources\\SysEasyPayV4.txt",
               "ToolTip": "C:\\Users\\crist\\OneDrive\\Documentos\\GitHub\\ApiEasyPay\\ApiEasyPay\\Resources\\SysEasyPayV4.txt",
               "RelativeToolTip": "ApiEasyPay\\Resources\\SysEasyPayV4.txt",
-              "ViewState": "AgIAALcBAAAAAAAAAAAkwMABAAACAAAAAAAAAA==",
+              "ViewState": "AgIAALIBAAAAAAAAAAAkwIMDAAAEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003109|",
               "WhenOpened": "2025-04-19T18:24:24.913Z",
               "EditorCaption": ""
@@ -187,8 +187,7 @@
               "RelativeToolTip": "ApiEasyPay\\Aplication\\Services\\BolsasService.cs",
               "ViewState": "AgIAAIcBAAAAAAAAAAAAAJQBAAAYAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-31T04:56:14.694Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-03-31T04:56:14.694Z"
             }
           ]
         }

@@ -447,6 +447,457 @@ ALTER TABLE [dbo].[Creditos] ADD  CONSTRAINT [DF_Creditos_OrdenRuta]  DEFAULT ((
 GO
 ALTER TABLE [dbo].[Jefes] ADD  CONSTRAINT [DF_Jefes_Domingos]  DEFAULT ((0)) FOR [Domingos]
 GO
+CREATE PROCEDURE CorregirInconsistenciasPagos
+    @Cobrador INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET DATEFORMAT dmy;
+    
+    -- Variables para manejo de errores
+    DECLARE @ErrorMessage NVARCHAR(4000);
+    DECLARE @ErrorSeverity INT;
+    DECLARE @ErrorState INT;
+    
+    -- Variables para el procesamiento de datos
+    DECLARE @CreditoActual INT;
+    DECLARE @TotalPagadoCredito DECIMAL(18,2);
+    DECLARE @TotalRegDiario DECIMAL(18,2);
+    DECLARE @TotalViewCobros DECIMAL(18,2);
+    DECLARE @TotalCuotas DECIMAL(18,2);
+    DECLARE @ValorConsistente DECIMAL(18,2);
+    DECLARE @CoincidenciasCount INT;
+    DECLARE @TablasMasRecientes TABLE (Tabla VARCHAR(50), Valor DECIMAL(18,2), FechaAct DATETIME);
+    DECLARE @FechaMasReciente DATETIME;
+    DECLARE @TablaMasReciente VARCHAR(50);
+    
+    -- Variables para el log de correcciones
+    CREATE TABLE #LogCorrecciones (
+        CreditoId INT,
+        Descripcion VARCHAR(500),
+        ValorAnteriorCredito DECIMAL(18,2),
+        ValorAnteriorRegDiario DECIMAL(18,2),
+        ValorAnteriorViewCobros DECIMAL(18,2),
+        ValorAnteriorCuotas DECIMAL(18,2),
+        ValorCorregido DECIMAL(18,2),
+        FechaCorreccion DATETIME DEFAULT GETDATE()
+    );
+    
+    -- Obtener todos los créditos activos del cobrador
+    DECLARE @CreditosActivos TABLE (Cod INT);
+    
+    INSERT INTO @CreditosActivos
+    SELECT Cod FROM Creditos 
+    WHERE Cobrador = @Cobrador AND Estado = 'V';
+    
+    -- Para cada crédito activo
+    DECLARE CreditosCursor CURSOR FOR SELECT Cod FROM @CreditosActivos;
+    
+    OPEN CreditosCursor;
+    FETCH NEXT FROM CreditosCursor INTO @CreditoActual;
+    
+    -- Variable para indicar si hay algo que corregir
+    DECLARE @RequiereCorreccion BIT = 0;
+    
+    -- Primera pasada: Detectar inconsistencias sin corregir
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        -- Limpiar variables para cada iteración
+        DELETE FROM @TablasMasRecientes;
+        SET @FechaMasReciente = NULL;
+        SET @TablaMasReciente = NULL;
+        SET @ValorConsistente = NULL;
+        
+        -- 1. Obtener los valores de las 4 fuentes
+        SELECT @TotalPagadoCredito = ISNULL(TotalPagado, 0), 
+               @FechaMasReciente = FechaActualizacion
+        FROM Creditos 
+        WHERE Cod = @CreditoActual AND Cobrador = @Cobrador;
+        
+        INSERT INTO @TablasMasRecientes VALUES ('Creditos', @TotalPagadoCredito, @FechaMasReciente);
+        
+        SELECT @TotalRegDiario = ISNULL(SUM(Valor), 0),
+               @FechaMasReciente = MAX(FechaActualizacion)
+        FROM RegDiarioCuotas 
+        WHERE Credito = @CreditoActual AND Cobrador = @Cobrador
+          AND Descripcion = 'PAGO CUOTA';
+        
+        INSERT INTO @TablasMasRecientes VALUES ('RegDiarioCuotas', @TotalRegDiario, @FechaMasReciente);
+        
+        SELECT @TotalViewCobros = ISNULL(SUM(ValorPagadoCuotas), 0),
+               @FechaMasReciente = MAX(FechaActualizacion)
+        FROM ViewCobros 
+        WHERE Credito = @CreditoActual AND Cobrador = @Cobrador;
+        
+        INSERT INTO @TablasMasRecientes VALUES ('ViewCobros', @TotalViewCobros, @FechaMasReciente);
+        
+        SELECT @TotalCuotas = ISNULL(SUM(ValorPagado), 0),
+               @FechaMasReciente = MAX(FechaActualizacion)
+        FROM Cuotas 
+        WHERE Credito = @CreditoActual AND Cobrador = @Cobrador;
+        
+        INSERT INTO @TablasMasRecientes VALUES ('Cuotas', @TotalCuotas, @FechaMasReciente);
+        
+        -- 2. Contar coincidencias
+        WITH ValoresUnicos AS (
+            SELECT Valor, COUNT(*) AS Coincidencias
+            FROM @TablasMasRecientes
+            GROUP BY Valor
+        )
+        SELECT TOP 1 @ValorConsistente = Valor, @CoincidenciasCount = Coincidencias
+        FROM ValoresUnicos
+        ORDER BY Coincidencias DESC, Valor DESC;
+        
+        -- 3. Verificar si hay inconsistencias
+        IF @TotalPagadoCredito <> @ValorConsistente OR 
+           @TotalRegDiario <> @ValorConsistente OR 
+           @TotalViewCobros <> @ValorConsistente OR 
+           @TotalCuotas <> @ValorConsistente
+        BEGIN
+            SET @RequiereCorreccion = 1;
+            -- Registrar que se necesita corrección pero no lo hacemos aquí aún
+        END
+        
+        FETCH NEXT FROM CreditosCursor INTO @CreditoActual;
+    END
+    
+    -- Solo si hay correcciones que hacer, iniciamos transacción
+    IF @RequiereCorreccion = 1
+    BEGIN
+        -- Reiniciar el cursor para la segunda pasada con correcciones
+        CLOSE CreditosCursor;
+        DEALLOCATE CreditosCursor;
+        DECLARE CreditosCursor CURSOR FOR SELECT Cod FROM @CreditosActivos;
+        OPEN CreditosCursor;
+        FETCH NEXT FROM CreditosCursor INTO @CreditoActual;
+        
+        BEGIN TRY
+            -- Ahora sí iniciamos la transacción porque hay algo que corregir
+            BEGIN TRANSACTION;
+            
+            WHILE @@FETCH_STATUS = 0
+        BEGIN
+            -- Limpiar variables para cada iteración
+            DELETE FROM @TablasMasRecientes;
+            SET @FechaMasReciente = NULL;
+            SET @TablaMasReciente = NULL;
+            SET @ValorConsistente = NULL;
+            
+            -- 1. Obtener los valores de las 4 fuentes
+            SELECT @TotalPagadoCredito = ISNULL(TotalPagado, 0), 
+                   @FechaMasReciente = FechaActualizacion
+            FROM Creditos 
+            WHERE Cod = @CreditoActual AND Cobrador = @Cobrador;
+            
+            INSERT INTO @TablasMasRecientes VALUES ('Creditos', @TotalPagadoCredito, @FechaMasReciente);
+            
+            SELECT @TotalRegDiario = ISNULL(SUM(Valor), 0),
+                   @FechaMasReciente = MAX(FechaActualizacion)
+            FROM RegDiarioCuotas 
+            WHERE Credito = @CreditoActual AND Cobrador = @Cobrador
+              AND Descripcion = 'PAGO CUOTA';
+            
+            INSERT INTO @TablasMasRecientes VALUES ('RegDiarioCuotas', @TotalRegDiario, @FechaMasReciente);
+            
+            SELECT @TotalViewCobros = ISNULL(SUM(ValorPagadoCuotas), 0),
+                   @FechaMasReciente = MAX(FechaActualizacion)
+            FROM ViewCobros 
+            WHERE Credito = @CreditoActual AND Cobrador = @Cobrador;
+            
+            INSERT INTO @TablasMasRecientes VALUES ('ViewCobros', @TotalViewCobros, @FechaMasReciente);
+            
+            SELECT @TotalCuotas = ISNULL(SUM(ValorPagado), 0),
+                   @FechaMasReciente = MAX(FechaActualizacion)
+            FROM Cuotas 
+            WHERE Credito = @CreditoActual AND Cobrador = @Cobrador;
+            
+            INSERT INTO @TablasMasRecientes VALUES ('Cuotas', @TotalCuotas, @FechaMasReciente);
+            
+            -- 2. Contar coincidencias
+            WITH ValoresUnicos AS (
+                SELECT Valor, COUNT(*) AS Coincidencias
+                FROM @TablasMasRecientes
+                GROUP BY Valor
+            )
+            SELECT TOP 1 @ValorConsistente = Valor, @CoincidenciasCount = Coincidencias
+            FROM ValoresUnicos
+            ORDER BY Coincidencias DESC, Valor DESC;
+            
+            -- Si no hay mayoría clara (empate), usar fecha más reciente
+            IF @CoincidenciasCount <= 2
+            BEGIN
+                SELECT TOP 1 @TablaMasReciente = Tabla, @ValorConsistente = Valor, @FechaMasReciente = FechaAct
+                FROM @TablasMasRecientes
+                ORDER BY FechaAct DESC;
+            END
+            
+            -- 3. Verificar si hay inconsistencias
+            IF @TotalPagadoCredito <> @ValorConsistente OR 
+               @TotalRegDiario <> @ValorConsistente OR 
+               @TotalViewCobros <> @ValorConsistente OR 
+               @TotalCuotas <> @ValorConsistente
+            BEGIN
+                -- Registrar la corrección en el log
+                INSERT INTO #LogCorrecciones 
+                    (CreditoId, Descripcion, ValorAnteriorCredito, ValorAnteriorRegDiario, 
+                     ValorAnteriorViewCobros, ValorAnteriorCuotas, ValorCorregido)
+                VALUES 
+                    (@CreditoActual, 
+                     CASE 
+                        WHEN @CoincidenciasCount >= 3 THEN 'Corrección por mayoría' 
+                        ELSE 'Corrección por fecha más reciente (' + @TablaMasReciente + ')'
+                     END,
+                     @TotalPagadoCredito, @TotalRegDiario, @TotalViewCobros, @TotalCuotas, @ValorConsistente);
+                
+                -- 4. Corregir inconsistencias
+                
+                -- 4.1 Corregir Creditos si es necesario
+                IF @TotalPagadoCredito <> @ValorConsistente
+                BEGIN
+                    UPDATE Creditos
+                    SET TotalPagado = @ValorConsistente,
+                        FechaActualizacion = GETDATE()
+                    WHERE Cod = @CreditoActual AND Cobrador = @Cobrador;
+                END
+                
+                -- 4.2 Corregir RegDiarioCuotas si es necesario
+                IF @TotalRegDiario <> @ValorConsistente
+                BEGIN
+                    -- Si no hay registros, crear uno nuevo
+                    IF NOT EXISTS (SELECT 1 FROM RegDiarioCuotas WHERE Credito = @CreditoActual AND Cobrador = @Cobrador AND Descripcion = 'PAGO CUOTA')
+                    BEGIN
+                        -- Obtener una bolsa activa
+                        DECLARE @CodBolsa INT;
+                        SELECT TOP 1 @CodBolsa = Cod FROM Bolsa WHERE Cobrador = @Cobrador AND Estado = 'A';
+                        
+                        -- Si no hay bolsa activa, crear una
+                        IF @CodBolsa IS NULL
+                        BEGIN
+                            DECLARE @NuevoBolsaCod INT;
+                            SELECT @NuevoBolsaCod = ISNULL(MAX(Cod), 0) + 1 FROM Bolsa;
+                            
+                            INSERT INTO Bolsa (Cod, SaldoActual, Estado, FechaInicio, Cobrador, FechaActualizacion)
+                            VALUES (@NuevoBolsaCod, 0, 'A', CONVERT(DATE, GETDATE()), @Cobrador, GETDATE());
+                            
+                            SET @CodBolsa = @NuevoBolsaCod;
+                        END
+                        
+                        -- Crear un nuevo registro
+                        DECLARE @NuevoRegDiarioCod INT;
+                        SELECT @NuevoRegDiarioCod = ISNULL(MAX(Cod), 0) + 1 FROM RegDiarioCuotas;
+                        
+                        INSERT INTO RegDiarioCuotas 
+                            (Cod, Credito, Fecha, Visitado, Valor, Bolsa, Descripcion, Cobrador, FechaActualizacion)
+                        VALUES 
+                            (@NuevoRegDiarioCod, @CreditoActual, GETDATE(), 1, @ValorConsistente, @CodBolsa, 'PAGO CUOTA', @Cobrador, GETDATE());
+                    END
+                    ELSE
+                    BEGIN
+                        -- Si ya existe un registro único para la fecha actual, actualizarlo
+                        DECLARE @RegDiarioCod INT;
+                        SELECT TOP 1 @RegDiarioCod = Cod 
+                        FROM RegDiarioCuotas 
+                        WHERE Credito = @CreditoActual AND Cobrador = @Cobrador AND Descripcion = 'PAGO CUOTA'
+                        ORDER BY Fecha DESC;
+                        
+                        UPDATE RegDiarioCuotas
+                        SET Valor = @ValorConsistente,
+                            FechaActualizacion = GETDATE()
+                        WHERE Cod = @RegDiarioCod AND Cobrador = @Cobrador;
+                    END
+                END
+                
+                -- 4.3 Corregir ViewCobros si es necesario
+                IF @TotalViewCobros <> @ValorConsistente
+                BEGIN
+                    -- Si no hay registros, crear uno nuevo
+                    IF NOT EXISTS (SELECT 1 FROM ViewCobros WHERE Credito = @CreditoActual AND Cobrador = @Cobrador)
+                    BEGIN
+                        DECLARE @NuevoViewCobrosCod INT;
+                        SELECT @NuevoViewCobrosCod = ISNULL(MAX(Cod), 0) + 1 FROM ViewCobros;
+                        
+                        INSERT INTO ViewCobros 
+                            (Cod, Credito, ValorPagadoCuotas, ValorPagadoDeduda, ValorPagadoExtra, Visitado, Fecha, Cobrador, FechaActualizacion)
+                        VALUES 
+                            (@NuevoViewCobrosCod, @CreditoActual, @ValorConsistente, 0, 0, 1, GETDATE(), @Cobrador, GETDATE());
+                    END
+                    ELSE
+                    BEGIN
+                        -- Si ya existe un registro único para la fecha actual, actualizarlo
+                        DECLARE @ViewCobrosCod INT;
+                        SELECT TOP 1 @ViewCobrosCod = Cod 
+                        FROM ViewCobros 
+                        WHERE Credito = @CreditoActual AND Cobrador = @Cobrador
+                        ORDER BY Fecha DESC;
+                        
+                        UPDATE ViewCobros
+                        SET ValorPagadoCuotas = @ValorConsistente,
+                            FechaActualizacion = GETDATE()
+                        WHERE Cod = @ViewCobrosCod AND Cobrador = @Cobrador;
+                    END
+                END
+                
+                -- 4.4 Corregir Cuotas si es necesario - Esta es la parte más compleja
+                IF @TotalCuotas <> @ValorConsistente
+                BEGIN
+                    -- Obtener el valor de cuota del crédito
+                    DECLARE @ValorCuota DECIMAL(18,2);
+                    SELECT @ValorCuota = ValorCuota FROM Creditos WHERE Cod = @CreditoActual AND Cobrador = @Cobrador;
+                    
+                    -- Reset all cuotas state
+                    UPDATE Cuotas 
+                    SET Estado = 'PE', 
+                        ValorPagado = 0, 
+                        Debe = Valor,
+                        Visitado = 1,
+                        FechaActualizacion = GETDATE()
+                    WHERE Credito = @CreditoActual AND Cobrador = @Cobrador;
+                    
+                    -- Algoritmo similar al de ModCuotasCreditosD para redistribuir pagos
+                    DECLARE @Saldo DECIMAL(18,2) = @ValorConsistente;
+                    DECLARE @CodCuota INT;
+                    DECLARE @ValorCuotaActual DECIMAL(18,2);
+                    
+                    WHILE @Saldo > 0
+                    BEGIN
+                        -- Obtener la siguiente cuota pendiente
+                        SELECT TOP 1 @CodCuota = Cod, @ValorCuotaActual = Valor
+                        FROM Cuotas 
+                        WHERE Estado = 'PE' 
+                          AND Credito = @CreditoActual 
+                          AND Cobrador = @Cobrador
+                        ORDER BY NumCuota ASC;
+                        
+                        -- Si no hay más cuotas pendientes, salir del ciclo
+                        IF @CodCuota IS NULL BREAK;
+                        
+                        -- Si el saldo cubre completamente la cuota
+                        IF @Saldo >= @ValorCuotaActual
+                        BEGIN
+                            UPDATE Cuotas 
+                            SET Estado = 'PA', 
+                                ValorPagado = @ValorCuotaActual, 
+                                Debe = 0,
+                                FechaActualizacion = GETDATE()
+                            WHERE Cod = @CodCuota AND Cobrador = @Cobrador;
+                            
+                            SET @Saldo = @Saldo - @ValorCuotaActual;
+                        END
+                        -- Si el saldo cubre parcialmente la cuota
+                        ELSE
+                        BEGIN
+                            UPDATE Cuotas 
+                            SET Estado = 'PE', 
+                                ValorPagado = @Saldo, 
+                                Debe = @ValorCuotaActual - @Saldo,
+                                FechaActualizacion = GETDATE()
+                            WHERE Cod = @CodCuota AND Cobrador = @Cobrador;
+                            
+                            SET @Saldo = 0;
+                        END
+                    END
+                    
+                    -- Actualizar CuotaActual en la tabla Creditos
+                    DECLARE @CuotaActual INT;
+                    SELECT @CuotaActual = ISNULL(MAX(NumCuota), 0)
+                    FROM Cuotas 
+                    WHERE Credito = @CreditoActual 
+                      AND Cobrador = @Cobrador
+                      AND Estado = 'PA';
+                    
+                    UPDATE Creditos
+                    SET CuotaActual = @CuotaActual,
+                        FechaActualizacion = GETDATE()
+                    WHERE Cod = @CreditoActual AND Cobrador = @Cobrador;
+                END
+                
+                -- 5. Actualizar la bolsa con valores consistentes si es necesario
+                DECLARE @CodBolsaActiva INT;
+                SELECT TOP 1 @CodBolsaActiva = Cod FROM Bolsa WHERE Cobrador = @Cobrador AND Estado = 'A';
+                
+                IF @CodBolsaActiva IS NOT NULL
+                BEGIN
+                    -- Recalcular totales para la bolsa
+                    DECLARE @TotalCobradoBolsa DECIMAL(18,2);
+                    DECLARE @TotalCobradoBolsaExt DECIMAL(18,2);
+                    
+                    SELECT @TotalCobradoBolsa = ISNULL(SUM(Valor), 0)
+                    FROM RegDiarioCuotas 
+                    WHERE Bolsa = @CodBolsaActiva AND Descripcion = 'PAGO CUOTA';
+                    
+                    SELECT @TotalCobradoBolsaExt = ISNULL(SUM(Valor), 0)
+                    FROM RegDiarioCuotas 
+                    WHERE Bolsa = @CodBolsaActiva AND Descripcion = 'PAGO EXTRAOFICIAL';
+                    
+                    UPDATE Bolsa
+                    SET TotalCobradoCUO = @TotalCobradoBolsa,
+                        TotalCobradoEXT = @TotalCobradoBolsaExt,
+                        TotalCobrado = @TotalCobradoBolsa + @TotalCobradoBolsaExt,
+                        FechaActualizacion = GETDATE()
+                    WHERE Cod = @CodBolsaActiva AND Cobrador = @Cobrador;
+                END
+            END
+            
+            FETCH NEXT FROM CreditosCursor INTO @CreditoActual;
+        END
+        
+        -- 6. Validación final
+        DECLARE @ErroresFinales INT = 0;
+        
+        -- Verificar si hay inconsistencias finales
+        SELECT @ErroresFinales = COUNT(*)
+        FROM @CreditosActivos ca
+        CROSS APPLY (
+            -- Verifica que los 4 montos coincidan ahora
+            SELECT CASE WHEN COUNT(DISTINCT v.Valor) > 1 THEN 1 ELSE 0 END AS Inconsistencia
+            FROM (
+                SELECT TotalPagado AS Valor FROM Creditos WHERE Cod = ca.Cod AND Cobrador = @Cobrador
+                UNION ALL
+                SELECT SUM(Valor) FROM RegDiarioCuotas WHERE Credito = ca.Cod AND Cobrador = @Cobrador AND Descripcion = 'PAGO CUOTA'
+                UNION ALL
+                SELECT SUM(ValorPagadoCuotas) FROM ViewCobros WHERE Credito = ca.Cod AND Cobrador = @Cobrador
+                UNION ALL
+                SELECT SUM(ValorPagado) FROM Cuotas WHERE Credito = ca.Cod AND Cobrador = @Cobrador
+            ) v
+            WHERE v.Valor IS NOT NULL
+        ) ec
+        WHERE ec.Inconsistencia = 1;
+        
+        -- Si hay inconsistencias finales, devolver error
+        IF @ErroresFinales > 0
+        BEGIN
+            RAISERROR('Persisten inconsistencias después de las correcciones en %d créditos.', 16, 1, @ErroresFinales);
+        END
+        
+        COMMIT TRANSACTION;
+        
+        -- Devolver el log de correcciones
+        SELECT * FROM #LogCorrecciones;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+            
+        SELECT 
+            @ErrorMessage = ERROR_MESSAGE(),
+            @ErrorSeverity = ERROR_SEVERITY(),
+            @ErrorState = ERROR_STATE();
+            
+        -- Devolver el error
+        RAISERROR(@ErrorMessage, @ErrorSeverity, @ErrorState);
+    END CATCH
+    END
+    ELSE
+    BEGIN
+        -- No había correcciones necesarias
+        SELECT 'No se encontraron inconsistencias que corregir para el cobrador ' + CAST(@Cobrador AS VARCHAR) AS Mensaje;
+    END
+    
+    CLOSE CreditosCursor;
+    DEALLOCATE CreditosCursor;
+    
+    DROP TABLE #LogCorrecciones;
+END;
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE Procedure [dbo].[ModCuotasCreditosD]
