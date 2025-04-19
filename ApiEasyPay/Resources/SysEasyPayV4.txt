@@ -447,6 +447,250 @@ ALTER TABLE [dbo].[Creditos] ADD  CONSTRAINT [DF_Creditos_OrdenRuta]  DEFAULT ((
 GO
 ALTER TABLE [dbo].[Jefes] ADD  CONSTRAINT [DF_Jefes_Domingos]  DEFAULT ((0)) FOR [Domingos]
 GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE Procedure [dbo].[ModCuotasCreditosD]
+@CodCredito As Varchar(200),
+@TotalPagar AS money,
+@Visitado As Bit,
+@Fecha As Date,
+@Registrando As Bit,
+@CodCobrador as Numeric(18),
+@TotalPagarExtOf AS money,
+@txt as varchar(500) = null output
+As
+Begin
+SET NOCOUNT ON;
+if @CodCobrador > 0
+begin
+Declare @Valor as Money
+Declare @CodBolsa as Numeric(18)
+Declare @TotalBolsa as money
+Declare @ExistePagoDiario Numeric(18)	
+Declare @ExistePagoDiarioHisto Numeric(18)	
+Declare @ExistePagoDiarioExtOf Numeric(18)	
+Declare @CodExistePagoDiario As Numeric(18)	
+Declare @CodExistePagoDiarioHisto As Numeric(18)	
+Declare @CodExistePagoDiarioExtOf As Numeric(18)	
+Declare @ValortotalPagadoCr as money
+Declare @ValortotalPagadoCrExtOf as money
+Declare @NuevoValortotal as money
+Declare @NuevoValortotalExtOf as money
+Declare @ValortotalPagadoHoy as money
+Declare @ValortotalPagadoHoyExt as money
+Declare @ValorFinal as Money
+Declare @ValorFinalCuotas as Money
+Declare @ValorFinalViews as Money
+Declare @ValorFinalRefDiarios as Money
+Declare @ValorCredito as Money
+Declare @CodRegDiarioCuotas as Numeric(18)
+Set @ValortotalPagadoHoy = IsNull(CAST((Select Sum(Rd.Valor) as total From RegDiarioCuotas Rd Inner Join Bolsa B on B.Cod = Rd.Bolsa Inner Join Creditos Cr On Rd.Credito = Cr.Cod where Cr.Cod=@CodCredito And B.Estado='A' And Rd.Fecha = CONVERT(varchar(12), @Fecha) and Rd.Descripcion='PAGO CUOTA') AS money),0) 
+set @ValortotalPagadoHoyExt=IsNull(CAST((Select Sum(Rd.Valor) as total From RegDiarioCuotas Rd Inner Join Bolsa B on B.Cod = Rd.Bolsa Inner Join Creditos Cr On Rd.Credito = Cr.Cod where Cr.Cod=@CodCredito And B.Estado='A' And Rd.Fecha = CONVERT(varchar(12), @Fecha) and Rd.Descripcion='PAGO EXTRAOFICIAL') AS money),0)
+Set @ExistePagoDiario = IsNull(CAST((Select Count(R.Cod) as total From RegDiarioCuotas R Inner Join Bolsa B On R.Bolsa = B.Cod where B.Estado='A' And Credito=@CodCredito And Fecha=CONVERT(varchar(12), @Fecha) and Descripcion='PAGO CUOTA') AS numeric (18))  ,0) 
+Set @CodExistePagoDiario = IsNull(CAST((Select R.Cod as total From RegDiarioCuotas R Inner Join Bolsa B On R.Bolsa = B.Cod where B.Estado='A' And  Credito=@CodCredito And Fecha=CONVERT(varchar(12), @Fecha) and Descripcion='PAGO CUOTA') AS numeric (18)) ,0) 
+Set @ExistePagoDiarioExtOf = IsNull(CAST((Select Count(R.Cod) as total From RegDiarioCuotas R Inner Join Bolsa B On R.Bolsa = B.Cod where B.Estado='A' And Credito=@CodCredito And Fecha=CONVERT(varchar(12), @Fecha) and Descripcion='PAGO EXTRAOFICIAL') AS numeric (18)),0) 
+Set @CodExistePagoDiarioExtOf = IsNull(CAST((Select R.Cod as total From RegDiarioCuotas R Inner Join Bolsa B On R.Bolsa = B.Cod where B.Estado='A' And  Credito=@CodCredito And Fecha=CONVERT(varchar(12), @Fecha) and Descripcion='PAGO EXTRAOFICIAL') AS numeric (18)),0) 
+Set @ExistePagoDiarioHisto = IsNull(CAST((Select Count(R.Cod) as total From ViewCobros R  where Credito=@CodCredito And Fecha=CONVERT(varchar(12), @Fecha)) AS numeric (18)),0) 
+Set @CodExistePagoDiarioHisto = IsNull(CAST((Select R.Cod as total From ViewCobros R where Credito=@CodCredito And Fecha=CONVERT(varchar(12), @Fecha)) AS numeric (18)),0) 
+
+if @Registrando =1
+begin
+Set @ValortotalPagadoCr = IsNull(CAST((Select TotalPagado as total From Creditos where Cod=@CodCredito) AS money),0)
+Set @ValortotalPagadoCrExtOf = IsNull(CAST((Select TotalPagExtOfi as total From Creditos where Cod=@CodCredito) AS money),0)
+end
+else
+begin
+Set @ValortotalPagadoCr = IsNull(CAST((Select TotalPagado as total From Creditos where Cod=@CodCredito) AS money),0)
+Set @ValortotalPagadoCr=@ValortotalPagadoCr-@ValortotalPagadoHoy
+Set @ValortotalPagadoCrExtOf = IsNull(CAST((Select TotalPagExtOfi as total From Creditos where Cod=@CodCredito) AS money),0)
+Set @ValortotalPagadoCrExtOf=@ValortotalPagadoCrExtOf-@ValortotalPagadoHoyExt
+end
+Set @Valor = CAST((Select ValorCuota From Creditos Where Cod = @CodCredito) AS Money)
+Set @NuevoValortotal = @ValortotalPagadoCr + @TotalPagar
+Set @NuevoValortotalExtOf = @ValortotalPagadoCrExtOf + @TotalPagarExtOf
+Set @CodBolsa = CAST((Select Cod as Codigo From Bolsa Where Estado = 'A' And Cobrador=@CodCobrador) AS numeric (18)) 
+Set @TotalBolsa = CAST((Select SaldoActual as Codigo From Bolsa Where Estado='A' And Cobrador=@CodCobrador) AS money) 
+Begin Try
+Declare @SepuedeModificar as money
+Set @SepuedeModificar = @TotalBolsa - @ValortotalPagadoHoy - @ValortotalPagadoHoyExt + @TotalPagar + @TotalPagarExtOf
+
+If @SepuedeModificar < 0
+Begin
+set @txt='Error al guardar, el valor del saldo de la bolsa no puede ser inferior a 0!.'
+RETURN
+End
+
+
+
+Update Creditos Set TotalPagado = @ValortotalPagadoCr,TotalPagExtOfi=@ValortotalPagadoCrExtOf Where Cod = @CodCredito
+if @Registrando <1
+begin
+Update Bolsa Set SaldoActual = SaldoActual - @ValortotalPagadoHoy - @ValortotalPagadoHoyExt Where Cod = @CodBolsa
+end
+
+Update Cuotas Set Visitado=1, Estado='PE', Debe=Valor,ValorPagado=0 Where Credito = @CodCredito
+
+
+
+
+
+Declare @ValortotalPagado as money
+Declare @ValorPagarBolsa as money
+Declare @CodCuota as Numeric(18)
+Declare @CuotaActual as Numeric(18)
+If @NuevoValortotal > @Valor
+Begin  
+Declare @Saldo as money
+Set @Saldo = @NuevoValortotal
+WHILE @Saldo > 0 
+Begin
+Set @CodCuota = CAST((Select Top 1 Cod as Codigo From Cuotas Where Estado = 'PE' And Credito=@CodCredito Order by NumCuota Asc) AS numeric (18)) 
+
+If @Saldo > @Valor
+Begin
+Update Cuotas Set Visitado=1, Estado='PA', Debe=0,ValorPagado=@Valor Where Cod = @CodCuota
+Set @Saldo = @Saldo - @Valor
+CONTINUE
+End
+
+If @Saldo = @Valor
+Begin
+Update Cuotas Set Visitado=1, Estado='PA', Debe=0,ValorPagado=@Valor Where Cod = @CodCuota
+Set @Saldo = 0
+BREAK  
+End
+
+If @Saldo < @Valor
+Begin
+Update Cuotas Set Visitado=1, Estado='PE', ValorPagado=@Saldo Where Cod = @CodCuota
+Update Cuotas Set Debe=Valor - @Saldo Where Cod = @CodCuota
+Set @Saldo = 0
+BREAK  
+End
+
+End
+End
+------------------
+Else
+Begin
+Set @CodCuota = CAST((Select Top 1 Cod as Codigo From Cuotas Where Estado = 'PE' And Credito=@CodCredito Order by NumCuota Asc) AS numeric (18)) 
+Update Cuotas Set Visitado=1, Estado='PE',ValorPagado=@NuevoValortotal Where Cod = @CodCuota
+Update Cuotas Set Debe=Valor - ValorPagado Where Cod = @CodCuota
+End
+
+------------------Termina proceso de pagar cuotas
+
+
+If @ExistePagoDiario > 0
+Begin
+if @Registrando =1
+begin 
+Update RegDiarioCuotas Set Valor=Valor+ @TotalPagar,Visitado=@Visitado Where Cod = @CodExistePagoDiario
+end
+else
+begin
+Update RegDiarioCuotas Set Valor=  @TotalPagar,Visitado=@Visitado Where Cod = @CodExistePagoDiario
+if @TotalPagar <= 0
+begin
+Delete From RegDiarioCuotas where Cod=@CodExistePagoDiario
+end
+end
+End
+Else
+Begin
+if @TotalPagar >0
+begin
+Set @CodRegDiarioCuotas = CAST((Select IsNull(Max(Cod),0)+1 from RegDiarioCuotas) AS numeric (18))
+Insert into RegDiarioCuotas (Cod,Credito,Fecha,Visitado,Valor,Bolsa,Descripcion) Values (@CodRegDiarioCuotas,@CodCredito,CONVERT(varchar(12), @Fecha),@Visitado,@TotalPagar,@CodBolsa,'PAGO CUOTA')
+End
+End
+
+If @ExistePagoDiarioExtOf > 0
+Begin
+if @Registrando =1
+begin 
+Update RegDiarioCuotas Set Valor=Valor+ @TotalPagarExtOf,Visitado=@Visitado Where Cod = @CodExistePagoDiarioExtOf
+end
+else
+begin
+Update RegDiarioCuotas Set Valor=  @TotalPagarExtOf,Visitado=@Visitado Where Cod = @CodExistePagoDiarioExtOf
+if @TotalPagarExtOf <= 0
+begin
+Delete From RegDiarioCuotas where Cod=@CodExistePagoDiarioExtOf
+end
+end
+End
+Else
+Begin
+if @TotalPagarExtOf >0
+begin
+Set @CodRegDiarioCuotas = CAST((Select IsNull(Max(Cod),0)+1 from RegDiarioCuotas) AS numeric (18))
+Insert into RegDiarioCuotas (Cod,Credito,Fecha,Visitado,Valor,Bolsa,Descripcion) Values (@CodRegDiarioCuotas,@CodCredito,CONVERT(varchar(12), @Fecha),@Visitado,@TotalPagarExtOf,@CodBolsa,'PAGO EXTRAOFICIAL')
+End
+End
+
+Set @ValortotalPagadoHoy = IsNull(CAST((Select Sum(Rd.Valor) as total From RegDiarioCuotas Rd Inner Join Creditos Cr On Rd.Credito = Cr.Cod where Cr.Cod=@CodCredito  And Rd.Fecha = CONVERT(varchar(12), @Fecha) and Rd.Descripcion='PAGO CUOTA') AS money),0) 
+set @ValortotalPagadoHoyExt=IsNull(CAST((Select Sum(Rd.Valor) as total From RegDiarioCuotas Rd Inner Join Creditos Cr On Rd.Credito = Cr.Cod where Cr.Cod=@CodCredito And Rd.Fecha = CONVERT(varchar(12), @Fecha) and Rd.Descripcion='PAGO EXTRAOFICIAL') AS money),0)
+
+
+If @ExistePagoDiarioHisto > 0
+Begin
+Update ViewCobros Set ValorPagadoCuotas=@ValortotalPagadoHoy,ValorPagadoExtra=@ValortotalPagadoHoyExt,Visitado=@Visitado Where Cod = @CodExistePagoDiarioHisto
+End
+Else
+Begin
+Set @CodRegDiarioCuotas = CAST(IsNull((Select Max(Cod)+1 from ViewCobros),1) AS numeric (18))
+Insert into ViewCobros (Cod,Credito,Fecha,Visitado,ValorPagadoCuotas,ValorPagadoDeduda,ValorPagadoExtra,Cobrador) Values (@CodRegDiarioCuotas,@CodCredito,CONVERT(varchar(12), @Fecha),@Visitado,@ValortotalPagadoHoy,0,@ValortotalPagadoHoyExt,@CodCobrador)
+End
+
+
+Set @CuotaActual = CAST((Select Top 1 NumCuota as Codigo From Cuotas Where Estado = 'PA' And Credito=@CodCredito Order by NumCuota DESC) AS numeric (18)) 
+Update Creditos Set TotalPagado = @NuevoValortotal,CuotaActual = @CuotaActual,TotalPagExtOfi=@NuevoValortotalExtOf Where Cod = @CodCredito
+Set @ValorFinal = CAST((Select TotalPagado as Val From Creditos Where Cod =@CodCredito ) AS money)
+Set @ValorCredito = CAST((Select TotalPagar as Val From Creditos Where Cod =@CodCredito ) AS money)
+Set @ValorFinalRefDiarios = CAST(IsNull((Select Sum(Valor) as Val From RegDiarioCuotas Where Credito =@CodCredito and Descripcion='PAGO CUOTA'),0) AS money)
+Set @ValorFinalCuotas = CAST(IsNull((Select Sum(ValorPagado) as Val From Cuotas Where Credito =@CodCredito And ValorPagado > 0 ),0) AS money)
+Set @ValorFinalViews = CAST(IsNull((Select Sum(ValorPagadoCuotas) as Val From ViewCobros Where Credito =@CodCredito And ValorPagadoCuotas > 0 ),0) AS money)
+If @ValorFinal > @ValorCredito
+Begin 
+set @txt='Esta ingresando un valor superior al saldo restante del credito. Si no es asi, pongase en contacto con el servicio tecnico!.'
+RETURN
+End
+
+
+If @ValorFinal = @ValorFinalRefDiarios and @ValorFinalRefDiarios = @ValorFinalCuotas and @ValorFinalRefDiarios= @ValorFinalViews
+Begin 
+declare @algo as varchar
+End
+Else
+Begin
+set @txt='Ha Ocurrido Un Error, Intente Nuevamente o Pongase en Contacto Con Mantenimiento!. '+ CAST(@ValorFinal AS varchar(20))+' '+ CAST(@ValorFinalCuotas AS varchar(20))+' '+CAST(@ValorFinalRefDiarios AS varchar(20))
+RETURN
+end
+
+Declare @TotalCobradoBolsa As Money
+Set @TotalCobradoBolsa = IsNull(CAST((Select Sum(Rd.Valor) as total From RegDiarioCuotas Rd Inner Join Bolsa B on B.Cod = Rd.Bolsa where B.Cod=@CodBolsa And Rd.Descripcion='PAGO CUOTA') AS money),0) 
+Declare @TotalCobradoBolsaExt As Money
+Set @TotalCobradoBolsaExt = IsNull(CAST((Select Sum(Rd.Valor) as total From RegDiarioCuotas Rd Inner Join Bolsa B on B.Cod = Rd.Bolsa where B.Cod=@CodBolsa And Rd.Descripcion='PAGO EXTRAOFICIAL') AS money),0) 
+Update Bolsa Set SaldoActual = SaldoActual + @TotalPagar+@TotalPagarExtOf,TotalCobradoCUO=@TotalCobradoBolsa,TotalCobrado=@TotalCobradoBolsa+@TotalCobradoBolsaExt,TotalCobradoEXT=@TotalCobradoBolsaExt Where Cod = @CodBolsa
+End try
+
+Begin Catch
+set @txt='Ocurrio un Error: ' + ERROR_MESSAGE() + ' en la línea ' + CONVERT(NVARCHAR(255), ERROR_LINE() ) + '.'
+return
+End Catch
+set @txt='Datos Guardados Correctamente!.'
+RETURN
+End
+else
+begin
+set @txt='Ha Ocurrido Un Error, Inicie Sesion Nuevamente!.'
+RETURN
+end
+end
+
+
+
 /****** Object:  StoredProcedure [dbo].[DynamicUpsertJson]    Script Date: 4/12/2025 5:30:49 PM ******/
 SET ANSI_NULLS ON
 GO
