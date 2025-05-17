@@ -102,7 +102,7 @@ namespace ApiEasyPay.Aplication.Services
         FROM Bolsa B 
         INNER JOIN Cobrador C ON B.Cobrador = C.Cod 
         INNER JOIN Delegados_Cobradores DC ON C.Cod = DC.Cobrador
-        WHERE DC.Delegado = " + delegadoId + @" And B.FechaInicio ='" + fecha + @"'
+        WHERE DC.Delegado = " + delegadoId + @" And CONVERT(DATE,B.FechaInicio) ='" + fecha + @"'
         FOR JSON PATH, WITHOUT_ARRAY_WRAPPER");
 
             string resultado = _conexionSql.SqlJsonComand(false, comando);
@@ -280,13 +280,13 @@ FOR JSON PATH, WITHOUT_ARRAY_WRAPPER");
             ISNULL(B.TotalCobradoEXT, 0) AS TotalCobradoEXT,
             ISNULL(B.TotalCobrado, 0) AS TotalCobrado,
             ISNULL(B.TotalPrestado, 0) AS TotalUsado,
-            CONVERT(VARCHAR(12), B.FechaFin, 103) AS FechaFin,
+            B.FechaFin AS FechaFin,
             C.Cod AS CodCobrador,
             B.Cod AS CodBolsa,
             C.Nombres + ' ' + C.Apellidos AS Nombres,
             C.Documento AS Dni,
             B.SaldoActual AS SaldoActual,
-            CONVERT(VARCHAR(12), B.FechaInicio, 103) AS FechaInicio,
+            B.FechaInicio AS FechaInicio,
             D.Cod AS CodDelegado,
             D.Nombres + ' ' + D.Apellidos AS NombreDelegado
         FROM Bolsa B 
@@ -339,7 +339,7 @@ FOR JSON PATH, WITHOUT_ARRAY_WRAPPER");
             C.Nombres + ' ' + C.Apellidos AS Nombres,
             C.Documento AS Dni,
             B.SaldoActual AS SaldoActual,
-            CONVERT(VARCHAR(12), B.FechaInicio, 103) AS FechaInicio,
+            B.FechaInicio AS FechaInicio,
             -- Contar créditos creados hoy para este cobrador
             ISNULL((
                 SELECT COUNT(CR.Cod) 
@@ -561,7 +561,7 @@ FOR JSON PATH, WITHOUT_ARRAY_WRAPPER");
             C.Nombres + ' ' + C.Apellidos AS Nombres,
             C.Documento AS Dni,
             B.SaldoActual AS SaldoActual,
-            CONVERT(VARCHAR(12), B.FechaInicio, 103) AS FechaInicio,
+            B.FechaInicio AS FechaInicio,
             -- Contar créditos creados hoy para este cobrador
             ISNULL((
                 SELECT COUNT(CR.Cod) 
@@ -579,7 +579,7 @@ FOR JSON PATH, WITHOUT_ARRAY_WRAPPER");
             ), 0) AS CreditosTerminadosHoy
         FROM Bolsa B 
         INNER JOIN Cobrador C ON B.Cobrador = C.Cod 
-        WHERE B.FechaInicio='" + Fecha + @"' And C.Jefe = " + _jefeId + " FOR JSON PATH");
+        WHERE CONVERT(DATE, B.FechaInicio) ='" + Fecha + @"' And C.Jefe = " + _jefeId + " FOR JSON PATH");
 
             string jsonResult = _conexionSql.SqlJsonComand(false, comando);
             JArray resultado = JArray.Parse(jsonResult);
@@ -626,7 +626,7 @@ FOR JSON PATH, WITHOUT_ARRAY_WRAPPER");
             C.Nombres + ' ' + C.Apellidos AS Nombres,
             C.Documento AS Dni,
             B.SaldoActual AS SaldoActual,
-            CONVERT(VARCHAR(12), B.FechaInicio, 103) AS FechaInicio,
+            B.FechaInicio AS FechaInicio,
             -- Contar créditos creados hoy para este cobrador
             ISNULL((
                 SELECT COUNT(CR.Cod) 
@@ -645,7 +645,7 @@ FOR JSON PATH, WITHOUT_ARRAY_WRAPPER");
         FROM Bolsa B 
         INNER JOIN Cobrador C ON B.Cobrador = C.Cod 
         INNER JOIN Delegados_Cobradores DC ON C.Cod = DC.Cobrador
-        WHERE B.FechaInicio = '" + Fecha + @"' 
+        WHERE CONVERT(DATE,B.FechaInicio) = '" + Fecha + @"' 
         AND DC.Delegado = " + delegadoId + " FOR JSON PATH");
 
             string jsonResult = _conexionSql.SqlJsonComand(false, comando);
@@ -810,13 +810,13 @@ FOR JSON PATH, WITHOUT_ARRAY_WRAPPER");
                     ISNULL(B.TotalCobradoEXT, 0) AS TotalCobradoEXT,
                     ISNULL(B.TotalCobrado, 0) AS TotalCobrado,
                     ISNULL(B.TotalPrestado, 0) AS TotalUsado,
-                    CONVERT(VARCHAR(12), B.FechaFin, 103) AS FechaFin,
+                    B.FechaFin AS FechaFin,
                     C.Cod AS CodCobrador,
                     B.Cod AS CodBolsa,
                     C.Nombres + ' ' + C.Apellidos AS Nombres,
                     C.Documento AS Dni,
                     B.SaldoActual AS SaldoActual,
-                    CONVERT(VARCHAR(12), B.FechaInicio, 103) AS FechaInicio
+                    B.FechaInicio AS FechaInicio
                 FROM Bolsa B 
                 INNER JOIN Cobrador C ON B.Cobrador = C.Cod 
                 WHERE B.Estado = 'C' AND C.Jefe ="+_jefeId + " for json path");
@@ -869,7 +869,7 @@ FOR JSON PATH, WITHOUT_ARRAY_WRAPPER");
             ) AS CreditosTerminadosHoy
         FROM Bolsa B 
         INNER JOIN Cobrador C ON B.Cobrador = C.Cod 
-        WHERE C.Jefe = " + _jefeId + @" And B.FechaInicio ='" + fecha + @"'
+        WHERE C.Jefe = " + _jefeId + @" And CONVERT(DATE, B.FechaInicio) ='" + fecha + @"'
         FOR JSON PATH, WITHOUT_ARRAY_WRAPPER");
 
             string resultado = _conexionSql.SqlJsonComand(false, comando);
@@ -1087,7 +1087,7 @@ FOR JSON PATH, WITHOUT_ARRAY_WRAPPER");
             Entregas AS Descripcion,
             Cod,
             Valor,
-            CONVERT(VARCHAR(12), Fecha, 103) AS Fecha
+            Fecha AS Fecha
         FROM ValoresBolsa 
         WHERE Entregas is Not Null And Entregas <> ''
           AND Bolsa = " + codBolsa.ToString() + @"
@@ -1116,7 +1116,7 @@ FOR JSON PATH, WITHOUT_ARRAY_WRAPPER");
         VB.Credito,
         VB.Cod,
         VB.Valor,
-        CONVERT(VARCHAR(12), VB.Fecha, 103) AS Fecha,
+        VB.Fecha AS Fecha,
         C.TotalPagar AS TotalPagar,
         C.NumeroDeCuotas AS NumeroDeCuotas,
         C.PorceInteres AS PorceInteres,
@@ -1224,7 +1224,7 @@ FOR JSON PATH, WITHOUT_ARRAY_WRAPPER");
             Gasto AS Descripcion,
             Cod,
             Valor,
-            CONVERT(VARCHAR(12), Fecha, 103) AS Fecha
+            Fecha AS Fecha
         FROM ValoresBolsa 
         WHERE Gasto is Not Null And Gasto <> ''
           AND Bolsa = " + codBolsa.ToString() + @"
@@ -1637,14 +1637,14 @@ FOR JSON PATH, WITHOUT_ARRAY_WRAPPER");
             RD.Descripcion,
             RD.Lat,
             RD.Long,
-            CONVERT(VARCHAR(12), RD.Fecha, 103) AS FechaFormateada,
+            RD.Fecha AS FechaFormateada,
             C.Nombres + ' ' + C.Apellidos AS NombreCliente,
             C.Documento AS DocumentoCliente
         FROM RegDiarioCuotas RD
         INNER JOIN Creditos CR ON RD.Credito = CR.Cod And CR.Cobrador=RD.Cobrador
         INNER JOIN Clientes C ON CR.Cliente = C.Cod And C.Cobrador= CR.Cobrador
         WHERE RD.Bolsa = " + codBolsa.ToString() + @"
-        AND RD.Cobrador = " + cobradorId.ToString() + @"
+        AND RD.Cobrador = " + cobradorId.ToString() + @" AND RD.Valor > 0 
         ORDER BY RD.Fecha DESC FOR JSON PATH");
 
             string jsonResult = _conexionSql.SqlJsonComand(false, comando);
@@ -1685,7 +1685,7 @@ FOR JSON PATH, WITHOUT_ARRAY_WRAPPER");
             RD.Visitado,
             RD.Valor,
             RD.Descripcion,
-            CONVERT(VARCHAR(12), RD.Fecha, 103) AS FechaFormateada,
+            RD.Fecha AS FechaFormateada,
             C.Nombres + ' ' + C.Apellidos AS NombreCliente,
             C.Documento AS DocumentoCliente,
             CB.Nombres + ' ' + CB.Apellidos AS NombreCobrador,
@@ -1771,7 +1771,7 @@ FOR JSON PATH, WITHOUT_ARRAY_WRAPPER");
             RD.Visitado,
             RD.Valor,
             RD.Descripcion,
-            CONVERT(VARCHAR(12), RD.Fecha, 103) AS FechaFormateada,
+            RD.Fecha AS FechaFormateada,
             C.Nombres + ' ' + C.Apellidos AS NombreCliente,
             C.Documento AS DocumentoCliente,
             CB.Nombres + ' ' + CB.Apellidos AS NombreCobrador,

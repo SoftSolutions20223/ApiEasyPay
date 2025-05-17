@@ -415,7 +415,7 @@ FOR JSON PATH");
     SELECT 
         RD.*,
         B.Estado AS EstadoBolsa,
-        CONVERT(VARCHAR(10), RD.Fecha, 103) AS FechaFormateada
+        RD.Fecha AS FechaFormateada
     FROM RegDiarioCuotas RD
     INNER JOIN Bolsa B ON RD.Bolsa = B.Cod AND RD.Cobrador = B.Cobrador
     WHERE RD.Credito = " + creditoId.ToString() + " AND RD.Cobrador = " + cobradorId.ToString() + @"

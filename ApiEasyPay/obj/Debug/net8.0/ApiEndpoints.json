@@ -855,6 +855,42 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "ApiEasyPay.Controllers.VersionesUserController",
+    "Method": "ObtenerVersionApp",
+    "RelativePath": "api/VersionesUser",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.VersionesUserController",
+    "Method": "ActualizarVersionApp",
+    "RelativePath": "api/VersionesUser",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "ApiEasyPay.Aplication.DTOs.VersionAppRequestDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ApiEasyPay.Controllers.VersionesUserController",
+    "Method": "ActualizarVersionAppDesdeHeader",
+    "RelativePath": "api/VersionesUser/header",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "Program\u002B\u003C\u003Ec",
     "Method": "\u003C\u003CMain\u003E$\u003Eb__0_4",
     "RelativePath": "AppEasyPayV4957*_ConexBd",

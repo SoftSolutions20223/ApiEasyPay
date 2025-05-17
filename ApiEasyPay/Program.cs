@@ -47,6 +47,7 @@ builder.Services.AddScoped<CustomJsonDeserializer>();
 builder.Services.AddScoped<SincronizacionService>();
 builder.Services.AddScoped<CreditosService>();
 builder.Services.AddScoped<BolsasService>();
+builder.Services.AddScoped<VersionAppService>();
 
 
 

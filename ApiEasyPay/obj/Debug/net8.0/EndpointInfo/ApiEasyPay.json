@@ -1327,6 +1327,64 @@
         }
       }
     },
+    "/api/VersionesUser": {
+      "get": {
+        "tags": [
+          "VersionesUser"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "VersionesUser"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/VersionAppRequestDTO"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VersionAppRequestDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VersionAppRequestDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/VersionAppRequestDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/VersionesUser/header": {
+      "post": {
+        "tags": [
+          "VersionesUser"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/WeatherForecast": {
       "get": {
         "tags": [
@@ -1563,6 +1621,16 @@
           "jefe": {
             "type": "number",
             "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "VersionAppRequestDTO": {
+        "type": "object",
+        "properties": {
+          "versionApp": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false

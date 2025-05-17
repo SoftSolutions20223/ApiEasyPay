@@ -14,6 +14,7 @@ namespace ApiEasyPay.Aplication.Services
         private readonly IHttpContextAccessor _httpContextAccessor;
 
 
+
         public UsuariosService(ConexionSql conexionSql, IHttpContextAccessor httpContextAccessor, ConexionMongo conexionMongo)
         {
             _conexionSql = conexionSql;
@@ -25,6 +26,8 @@ namespace ApiEasyPay.Aplication.Services
 
             // Inicializar valores desde el contexto HTTP
         }
+
+
 
         private JObject ObtenerSesion()
         {
@@ -205,13 +208,15 @@ namespace ApiEasyPay.Aplication.Services
         {
             try
             {
+                var sesion = ObtenerSesion();
+                var _jefeId = sesion["Cod"]?.Value<int>() ?? 0;
                 string tabla = tipoUsuario.ToUpper() == "D" ? "Delegado" : "Cobrador";
                 SqlCommand comando;
 
                 // Verificar si se solicitan todos los usuarios
                 if (codigo == "*")
                 {
-                    comando = new SqlCommand($"SELECT * FROM {tabla} For json path");
+                    comando = new SqlCommand($"SELECT * FROM {tabla} where jefe={_jefeId.ToString()} For json path");
                 }
                 else
                 {
