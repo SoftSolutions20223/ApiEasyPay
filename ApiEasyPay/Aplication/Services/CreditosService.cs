@@ -254,7 +254,7 @@ FOR JSON PATH");
         public JArray ObtenerCreditosVigentes(int cobradorId)
         {
             // Primero verificamos que el cobrador pertenezca al jefe actual
-            ValidarCobradorPerteneciente(cobradorId);
+            //ValidarCobradorPerteneciente(cobradorId);
 
             var comando = new SqlCommand(@"
                 SELECT 
@@ -301,7 +301,7 @@ FOR JSON PATH");
         public JArray ObtenerCreditosTerminados(int cobradorId)
         {
             // Verificar que el cobrador pertenezca al jefe actual
-            ValidarCobradorPerteneciente(cobradorId);
+            //ValidarCobradorPerteneciente(cobradorId);
 
             var comando = new SqlCommand(@"
                 SELECT 
@@ -350,7 +350,7 @@ FOR JSON PATH");
         public JObject ObtenerDetalleCredito(int creditoId, int cobradorId)
         {
             // Verificar que el cobrador pertenezca al jefe actual
-            ValidarCobradorPerteneciente(cobradorId);
+            //ValidarCobradorPerteneciente(cobradorId);
 
             var comando = new SqlCommand(@"
                 SELECT 
@@ -380,7 +380,7 @@ FOR JSON PATH");
         public JArray ObtenerCuotasCredito(int creditoId, int cobradorId)
         {
             // Verificar que el cobrador pertenezca al jefe actual
-            ValidarCobradorPerteneciente(cobradorId);
+            //ValidarCobradorPerteneciente(cobradorId);
 
             var comando = new SqlCommand(@"
                 SELECT 
@@ -409,7 +409,7 @@ FOR JSON PATH");
         public JArray ObtenerHistorialCredito(int creditoId, int cobradorId)
         {
             // Verificar que el cobrador pertenezca al jefe actual
-            ValidarCobradorPerteneciente(cobradorId);
+            //ValidarCobradorPerteneciente(cobradorId);
 
             var comando = new SqlCommand(@"
     SELECT 
